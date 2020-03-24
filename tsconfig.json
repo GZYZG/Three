@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "rootDir": "./src/",
+        "outDir": "./tsdist/",
+        "noImplicitAny": true,
+        "module": "commonjs",
+        "target": "es5",
+        "allowJs": true
+    },
+    "exclude": [
+        "node_modules",
+        "111.j",
+        "lib",
+        "dist",
+        "tsdist",
+        "webpack.congfig.ts"
+    ],
+    "include": [
+        "./src"
+    ]
+  }
