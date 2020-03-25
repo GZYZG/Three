@@ -18,10 +18,9 @@ export class ParentsLink extends Line2 {
         super();
         this.father = dad;
         this.mother = mom;
-        // var fPos = (new THREE.Vector3()).copy(dad.position);
-        // var mPos = (new THREE.Vector3()).copy(mom.position);
         let fPos = calcMonkeyCommunityPos(dad);
         let mPos = calcMonkeyCommunityPos(mom);
+        //console.log("fpos:", fPos, "  mpos:", mPos);
         var geo = new LineGeometry();
         geo.setPositions(new Array(fPos.x, fPos.y, fPos.z, mPos.x, mPos.y, mPos.z ) );
         geo.setColors( new Array(  0, 0, .5, 0, 0, .5  ) );
@@ -116,7 +115,7 @@ export class KidKinshipNodeLink extends Line2{
         this.kinshipNode = kinshipNode;
         var geo = new LineGeometry();
         let kn = calcMonkeyCommunityPos(kid);
-        kn.add( this.kinshipNode.position.negate() );
+        kn.add( this.kinshipNode.position.clone().negate() );
 
         //console.log(pn, kn);
         //geo.setPositions(new Array(pn.x, pn.y, pn.z, kn.x, kn.y, kn.z ) );

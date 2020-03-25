@@ -13,7 +13,7 @@ export abstract class Unit extends THREE.Group {
     public name : string;
     public radius : number;
 
-    constructor( radius : number, name : string) {
+    constructor( radius : number, name : string, position : THREE.Vector3) {
         // var sp_geo = new THREE.SphereGeometry(radius,100,100, 0, Math.PI*2, Math.PI / 2, Math.PI);
         // var sp_mat = new THREE.MeshLambertMaterial( { color: 0x000, transparent: true, opacity: 0.2, wireframe: false } )
         // super(sp_geo, sp_mat);
@@ -21,10 +21,16 @@ export abstract class Unit extends THREE.Group {
         this.radius = radius;
         this.name = name;
         this.startMembers = new Array<Monkey>();
+        this.position.set(position.x, position.y, position.z);
 
     }
 
     public getName() : string{ return this.name; }
+
+    // public set position(pos : THREE.Vector3){
+    //     this.position.set(pos.x, pos.y, pos.z);
+
+    // }
 
 }
 
@@ -33,9 +39,9 @@ export class OMU extends Unit {
     public mom: Female;
     public kinships : Array<Kinship>;
 
-    constructor (radius : number) {
+    constructor (radius : number, position : THREE.Vector3) {
         var name = Math.random().toPrecision(4).toString();
-        super( radius, "OMU-"+name);
+        super( radius, "OMU-"+name, position);
         this.unitType = UNIT_TYPE.AMU;
         this.kinships = new Array<Kinship>();
         //var geometry = new THREE.BoxGeometry(2,2,2);
@@ -122,7 +128,7 @@ export class OMU extends Unit {
                 //console.log( "sphere : ", sph.position);
                 if( layerType == LAYER_TYPE.AF) {
                     let n = Math.floor( Math.random() * 3 );
-                    if( n <= 0) return;
+                    if( n <= 0) break;
                     var ks = new Kinship(this.mainMale, sph, this.createKids( n ) );
                     this.kinships.push(ks);
                     console.log('ks:',ks);
@@ -161,9 +167,9 @@ export class OMU extends Unit {
 }
 
 export class AMU extends Unit {
-    constructor(radius : number) {
+    constructor(radius : number, position : THREE.Vector3) {
         let name = 'AMU-'+Math.random().toPrecision(4).toString();
-        super(radius, name);
+        super(radius, name, position);
         this.unitType = UNIT_TYPE.AMU
 
         this.addLayer( 1 + Math.floor( Math.random() * 7 ));
@@ -213,9 +219,9 @@ export class AMU extends Unit {
 }
 
 export class FIU extends Unit {
-    constructor(radius : number) {
+    constructor(radius : number, position:THREE.Vector3) {
         let name = 'FIU-'+Math.random().toPrecision(4).toString();
-        super(radius, name);
+        super(radius, name, position);
         this.unitType = UNIT_TYPE.FIU;
 
         this.addLayer( 1 + Math.floor( Math.random() * 7 ));

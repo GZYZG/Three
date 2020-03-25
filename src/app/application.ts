@@ -83,24 +83,20 @@ export class Application{
     }
 
     public addUnits() {
-        var sph = new OMU( 15 );
-        sph.position.set(30, 0, 30);
+        var sph = new OMU( 15, new THREE.Vector3(30, 0, 30) );
         monkeys = this.monkeys = sph.startMembers;
         this.scene.add( sph );
 
-        var sph2 = new OMU( 15 );
+        var sph2 = new OMU( 15, new THREE.Vector3(-30, 0, 30) );
         monkeys = monkeys.concat(sph2.startMembers);
-        sph2.position.set(-30, 0, 30);
         this.scene.add(sph2);
 
-        var sph3 = new OMU( 15 );
+        var sph3 = new OMU( 15, new THREE.Vector3(30, 0, -30) );
         monkeys = monkeys.concat( sph3.startMembers );
-        sph3.position.set(30, 0, -30);
         this.scene.add(sph3);
 
-        var sph4 = new OMU( 15 );
+        var sph4 = new OMU( 15, new THREE.Vector3(-30, 0, -30));
         monkeys = monkeys.concat( sph4.startMembers );
-        sph4.position.set(-30, 0, -30);
         this.scene.add(sph4);
 
         sph.kinships.forEach(ks => {
@@ -117,13 +113,11 @@ export class Application{
         })
 
 
-        var sph5 = new FIU( 10 );
-        sph5.position.set(60, 0, -60);
+        var sph5 = new FIU( 10, new THREE.Vector3(60, 0, -60) );
         monkeys = monkeys.concat( sph5.startMembers );
         this.scene.add( sph5 );
 
-        var sph6 = new AMU( 10 );
-        sph6.position.set(-60, 0, 60);
+        var sph6 = new AMU( 10, new THREE.Vector3(-60, 0, 60) );
         monkeys = monkeys.concat( sph6.startMembers );
         this.scene.add( sph6 );
     }
