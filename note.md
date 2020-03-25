@@ -29,16 +29,12 @@ Object3D的position属性时相对坐标，指相对于父对象的坐标。若�
 ### 4. 坐标系的问题
 > 屏幕坐标  <br>
 > 世界坐标  <br>  
+
+![](https://img-blog.csdn.net/20180904172030185?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXRhbWluZzE=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
 ### 5. bugs
 1.Uncaught TypeError: Cannot read property 'boundingSphere' of undefined
 > 问题出在renderer调用render函数时，scene的物体没有geometry。
 参考：[Cannot read property 'boundingSphere' of undefined](https://stackoverflow.com/questions/51057266/cannot-read-property-boundingsphere-of-undefined)  
-
-
-
-
-
-![](https://img-blog.csdn.net/20180904172030185?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXRhbWluZzE=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
-
 
 
