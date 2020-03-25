@@ -5,11 +5,11 @@ import { Colors } from 'three';
 import { LineGeometry } from '../threelibs/LineGeometry';
 import { LineMaterial } from '../threelibs/LineMaterial';
 import { Line2 } from '../threelibs/Line2';
-import { SHIP_NODE_RADIUS } from './basis';
+import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos } from './basis';
 
 
 
-export class kinshipNode extends THREE.Mesh {
+export class KinshipNode extends THREE.Mesh {
     public kpNodeLink : KPNodeLink;
     private _kids : Array<Monkey>;
     constructor (kids : Array<Monkey>) {
@@ -40,8 +40,10 @@ export class kinshipNode extends THREE.Mesh {
 export class ParentsNode extends THREE.Mesh {
     public father : Male;
     public mother : Female;
-    constructor () {
+    constructor (father : Male, mother : Female) {
         super();
+        this.father = father;
+        this.mother = mother;
         this.geometry = new THREE.SphereBufferGeometry( SHIP_NODE_RADIUS, 30, 30);
         this.material = new THREE.MeshLambertMaterial( { color: 0x008, vertexColors: true, side: THREE.DoubleSide } );
     }
@@ -52,7 +54,7 @@ export class Kinship extends THREE.Group {
     public father : Male;
     public mother : Female;
     public kids : Array<Monkey>;
-    public kinshipNode : kinshipNode;
+    public kinshipNode : KinshipNode;
     public parentsLink : ParentsLink;
     public parentsNode : ParentsNode;
     public KPNodeLink : KPNodeLink;
@@ -71,7 +73,7 @@ export class Kinship extends THREE.Group {
         this.addParentsNode();
         this.addKinshipNode();
         this.addKPNodeLink();
-        //this.addCurve();
+        
         this.addKidsKinshipLink();
     }
     
@@ -79,29 +81,74 @@ export class Kinship extends THREE.Group {
         var link = new ParentsLink(this.father, this.mother );
         this.parentsLink = link;
         console.log("parentsLink:", this.parentsLink );
-        this.add(this.parentsLink);
+        this.attach(this.parentsLink);
     }
 
     public addParentsNode() {
-        this.parentsNode = new ParentsNode();
-        var pos =  this.calcParentsNodePos() ;
+        this.parentsNode = new ParentsNode(this.father, this.mother);
+        var pos =  calcParentsNodePos(this.father, this.mother) ;
         this.parentsNode.position.set( pos.x, pos.y, pos.z);
-        this.parentsLink.add(this.parentsNode);
+        this.attach(this.parentsNode);
         console.log("parentsNode:", this.parentsNode );
     }
 
     public addKinshipNode() {
-        this.kinshipNode = new kinshipNode(this.kids);
-        let pos = this.calcKinshipNodePos();
+        this.kinshipNode = new KinshipNode(this.kids);
+        console.log("addKinshipNode --- kinshipNode:  ",this.kinshipNode );
+        let pos = calcKinshipNodePos(this.parentsNode);
         this.kinshipNode.position.set(pos.x, pos.y, pos.z);
-        this.add(this.kinshipNode );
+        this.attach(this.kinshipNode );
     }
 
     public addKPNodeLink() {
         this.KPNodeLink = new KPNodeLink(this.parentsNode, this.kinshipNode );
-        this.parentsLink.attach(this.KPNodeLink);
+        this.attach(this.KPNodeLink);
         this.kinshipNode.kpNodeLink = this.KPNodeLink;
         console.log("KPNodeLink:", this.KPNodeLink);
+        console.log("addKPNodeLink --- kinshipNode:  ",this.kinshipNode );
+    }
+
+    
+
+    public addKidsKinshipLink(type="xz") {
+        if( this.kids.length == 0) return;
+        var R = 5;
+        var pos = (new THREE.Vector3()).copy( this.kinshipNode.position );
+        let theta = Math.PI * 2 / this.kids.length;
+        let i = 0;
+        let x = 0, y = 0, z = 0;
+        switch( type){
+            case 'xz': 
+                this.kids.forEach(kid => {
+                    z = Math.sin( i * theta ) * R;
+                    x = Math.cos( i * theta ) * R;
+                    kid.position.set( x + pos.x,  pos.y, z + pos.z );
+                    i += 1;
+                });
+                break;
+            case 'xy':
+                this.kids.forEach(kid => {
+                    x = Math.sin( i * theta ) * R;
+                    y = Math.cos( i * theta ) * R;
+                    kid.position.set( x + pos.x, y + pos.y, pos.z );
+                    i += 1;
+                });
+                break;
+        }
+        console.log("addKidsKinshipLink --- kinshipNode:  ",this.kinshipNode );
+        
+
+        var links = new Array();
+        this.kids.forEach(kid =>{
+            console.log("annoymous --- kinshipNode:  ",this.kinshipNode );
+            let link = new KidKinshipNodeLink(this.kinshipNode, kid);
+            links.push(link);
+            this.kinshipNode.add(link);
+        })
+        // links.forEach(e => {
+        //     this.kinshipNode.add(e);
+        // });
+        
     }
 
     public addCurve() {
@@ -132,46 +179,6 @@ export class Kinship extends THREE.Group {
         var line = new Line2(geo, mat);
         this.parentsLink.add(line);
 
-    }
-
-    public addKidsKinshipLink(type="xz") {
-        if( this.kids.length == 0) return;
-        var R = 5;
-        var pos = (new THREE.Vector3()).copy( this.kinshipNode.position );
-        let theta = Math.PI * 2 / this.kids.length;
-        let i = 0;
-        let x = 0, y = 0, z = 0;
-        switch( type){
-            case 'xz': 
-                this.kids.forEach(kid => {
-                    z = Math.sin( i * theta ) * R;
-                    x = Math.cos( i * theta ) * R;
-                    kid.position.set( x + pos.x,  pos.y, z + pos.z );
-                    i += 1;
-                });
-                break;
-            case 'xy':
-                this.kids.forEach(kid => {
-                    x = Math.sin( i * theta ) * R;
-                    y = Math.cos( i * theta ) * R;
-                    kid.position.set( x + pos.x, y + pos.y, pos.z );
-                    i += 1;
-                });
-                break;
-        }
-
-        
-        var links = new Array();
-        this.kids.forEach(kid =>{
-            
-            let link = new KidKinshipNodeLink(this.kinshipNode, kid);
-            links.push(link);
-            //this.kinshipNode.add(link);
-        })
-        links.forEach(e => {
-            this.kinshipNode.add(e);
-        });
-        
     }
 
     private calcParentsNodePos() : THREE.Vector3 {

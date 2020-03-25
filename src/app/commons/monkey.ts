@@ -1,16 +1,18 @@
 import * as THREE from 'three';
 import { UNIT_TYPE, LAYER_TYPE, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS } from './basis';
+import { Unit} from './Unit';
 
 export abstract class Monkey extends THREE.Mesh{
     private genda: string;
-    private unit: object;
+    private unit: Unit;
     private social_level: string;
     public birth : Date;
     public father : Male;
     public mother : Female;
 
-    constructor( genda:string, id:number, name:string, /* unit:object, social_level:string */ ){
+    constructor( unit: Unit, genda:string, id:number, name:string, /* unit:object, social_level:string */ ){
         super();
+        this.unit = unit;
         this.genda = genda;
         //this.id = id;
         this.name = name;
@@ -24,7 +26,7 @@ export abstract class Monkey extends THREE.Mesh{
 
     public getSocialLevel():string { return this.social_level; }
 
-    public getUnit():object { return this.unit; }
+    public getUnit():Unit { return this.unit; }
     
     public abstract selected() : void;
 
@@ -35,8 +37,8 @@ export abstract class Monkey extends THREE.Mesh{
 export class Male extends Monkey {
     private unselectedMat : THREE.Material;
     private selectedMat : THREE.Material;
-    constructor (id:number, name:string/*, unit:object, social_level:string*/ ) {
-        super('male', id, name/*, unit, social_level*/);
+    constructor (id:number, name:string, unit:Unit /*, social_level:string*/ ) {
+        super(unit, 'male', id, name/*, unit, social_level*/);
         // this.geometry = new THREE.BoxGeometry(2,2,2);
         this.geometry = new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);
         this.material = new THREE.MeshBasicMaterial( { color: 0x000,  vertexColors: true,  side: THREE.DoubleSide} );
@@ -61,8 +63,8 @@ export class Male extends Monkey {
 export class Female extends Monkey {
     private unselectedMat : THREE.Material;
     private selectedMat : THREE.Material;
-    constructor (id:number, name:string/*, unit:object, social_level:string */) {
-        super('female', id, name/*, unit, social_level*/);
+    constructor (id:number, name:string, unit:Unit/*, social_level:string */) {
+        super(unit, 'female', id, name/*, unit, social_level*/);
         //this.geometry = new THREE.SphereGeometry(2,30,30);
         this.geometry = new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 30, 30);
         this.material = new THREE.MeshLambertMaterial( { color: 0x000, side: THREE.DoubleSide } );

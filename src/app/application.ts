@@ -103,6 +103,20 @@ export class Application{
         sph4.position.set(-30, 0, -30);
         this.scene.add(sph4);
 
+        sph.kinships.forEach(ks => {
+            this.scene.add(ks);
+        })
+        sph2.kinships.forEach(ks => {
+            this.scene.add(ks);
+        })
+        sph3.kinships.forEach(ks => {
+            this.scene.add(ks);
+        })
+        sph4.kinships.forEach(ks => {
+            this.scene.add(ks);
+        })
+
+
         var sph5 = new FIU( 10 );
         sph5.position.set(60, 0, -60);
         monkeys = monkeys.concat( sph5.startMembers );

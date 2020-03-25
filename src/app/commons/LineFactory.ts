@@ -3,10 +3,12 @@ import { LineMaterial} from '../threelibs/LineMaterial';
 import { Line2 } from '../threelibs/Line2';
 import * as THREE from 'three';
 import { Male, Female, Monkey } from './monkey';
-import { ParentsNode, kinshipNode} from './Kinship';
+import { ParentsNode, KinshipNode} from './Kinship';
 import { Line } from '../threelibs/three';
 import { LineSegments } from '../threelibs/three.module';
-import { KID_SHIP_NODE_LINK_WIDTH, SHIP_PARENTS_NODE_LINK_WIDTH, PARENTS_LINK_WIDTH } from './basis';
+import { KID_SHIP_NODE_LINK_WIDTH, SHIP_PARENTS_NODE_LINK_WIDTH, PARENTS_LINK_WIDTH, calcMonkeyCommunityPos } from './basis';
+
+
 
 export class ParentsLink extends Line2 {
     public father : Male;
@@ -16,8 +18,10 @@ export class ParentsLink extends Line2 {
         super();
         this.father = dad;
         this.mother = mom;
-        var fPos = (new THREE.Vector3()).copy(dad.position);
-        var mPos = (new THREE.Vector3()).copy(mom.position);
+        // var fPos = (new THREE.Vector3()).copy(dad.position);
+        // var mPos = (new THREE.Vector3()).copy(mom.position);
+        let fPos = calcMonkeyCommunityPos(dad);
+        let mPos = calcMonkeyCommunityPos(mom);
         var geo = new LineGeometry();
         geo.setPositions(new Array(fPos.x, fPos.y, fPos.z, mPos.x, mPos.y, mPos.z ) );
         geo.setColors( new Array(  0, 0, .5, 0, 0, .5  ) );
@@ -36,8 +40,8 @@ export class ParentsLink extends Line2 {
 export class KPNodeLink extends Line2 {
     //public parentsLink : ParentsLink;
     public parentsNode : ParentsNode;
-    public kinshipNode : kinshipNode;
-    constructor (parentsNode : ParentsNode, kinshipNode : kinshipNode, type="curve" ) {
+    public kinshipNode : KinshipNode;
+    constructor (parentsNode : ParentsNode, kinshipNode : KinshipNode, type="curve" ) {
         super();
 
         this.kinshipNode = kinshipNode;
@@ -103,16 +107,16 @@ export class KPNodeLink extends Line2 {
 }
 
 export class KidKinshipNodeLink extends Line2{
-    public kinshipNode : kinshipNode;
+    public kinshipNode : KinshipNode;
 
-    constructor( kinshipNode : kinshipNode, kid : Monkey ){
+    constructor( kinshipNode : KinshipNode, kid : Monkey ){
         super();
+        this.geometry = geo;
+        this.material = mat;
+        this.kinshipNode = kinshipNode;
         var geo = new LineGeometry();
-        var pn = new THREE.Vector3();
-        var kn = new THREE.Vector3();
-        kinshipNode.getWorldPosition(pn);
-        kid.getWorldPosition(kn);
-        kn.add(pn.negate());
+        let kn = calcMonkeyCommunityPos(kid);
+        kn.add( this.kinshipNode.position.negate() );
 
         //console.log(pn, kn);
         //geo.setPositions(new Array(pn.x, pn.y, pn.z, kn.x, kn.y, kn.z ) );
@@ -124,9 +128,8 @@ export class KidKinshipNodeLink extends Line2{
         });
         mat.resolution.set(window.innerWidth, window.innerHeight);
 
+        
         this.geometry = geo;
         this.material = mat;
-        this.kinshipNode = kinshipNode;
-
     }
 }

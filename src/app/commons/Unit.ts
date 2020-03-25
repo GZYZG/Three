@@ -4,7 +4,7 @@ import { Monkey, Male, Female } from './monkey';
 import { Kinship} from './Kinship';
 
 
-abstract class Unit extends THREE.Group {
+export abstract class Unit extends THREE.Group {
     public startMembers : Array<Monkey>;
     public allMembers : Array<Monkey>;
     public currentMoment : Date;
@@ -31,15 +31,17 @@ abstract class Unit extends THREE.Group {
 export class OMU extends Unit {
     public mainMale : Male;
     public mom: Female;
+    public kinships : Array<Kinship>;
 
     constructor (radius : number) {
         var name = Math.random().toPrecision(4).toString();
         super( radius, "OMU-"+name);
         this.unitType = UNIT_TYPE.AMU;
+        this.kinships = new Array<Kinship>();
         //var geometry = new THREE.BoxGeometry(2,2,2);
         //var material = new THREE.MeshBasicMaterial( { color: 0x000,  side: THREE.DoubleSide} );
         // var cube = new THREE.Mesh( geometry, material );
-        this.mainMale = new Male(0, "主雄" );
+        this.mainMale = new Male(0, "主雄", this);
         this.mainMale.position.set( this.position.x, this.position.y, this.position.z );
         this.add(this.mainMale);
         this.startMembers.push( this.mainMale );
@@ -106,14 +108,14 @@ export class OMU extends Unit {
             var _z = Math.sin( i * seg * t ) * rk;
             if( Math.random() <= maleRatio){
                 // 生成一个雄性
-                var cube = new Male(i+1, this.name+'.'+layerType+'.'+(i+1).toString() )
+                var cube = new Male(i+1, this.name+'.'+layerType+'.'+(i+1).toString(), this )
                 cube.position.set( x + _x, y + _y, z + _z);
                 this.add(cube);
                 this.startMembers.push(cube);
                 //console.log( "cube : ", cube.position);
             } else {
                 // 生成一个雌性
-                var sph = new Female(i+1, this.name+'.'+layerType+'.'+(i+1).toString() );
+                var sph = new Female(i+1, this.name+'.'+layerType+'.'+(i+1).toString(), this );
                 sph.position.set( x + _x, y + _y, z + _z);
                 this.add(sph);
                 this.startMembers.push( sph);
@@ -122,8 +124,9 @@ export class OMU extends Unit {
                     let n = Math.floor( Math.random() * 3 );
                     if( n <= 0) return;
                     var ks = new Kinship(this.mainMale, sph, this.createKids( n ) );
+                    this.kinships.push(ks);
                     console.log('ks:',ks);
-                    this.add(ks);
+                    //this.add(ks);
 
                     
                     //console.log(line );
@@ -139,11 +142,11 @@ export class OMU extends Unit {
         for( var i = 0; i < n; i++) {
             if( Math.random() <= maleRatio){
                 // 生成一个雄性
-                let kid = new Male(i+1, this.name+'.Babe.Boy.'+(i+1).toString() )
+                let kid = new Male(i+1, this.name+'.Babe.Boy.'+(i+1).toString(), this );
                 kids.push(kid);
             } else {
                 // 生成一个雌性
-                let kid = new Female(i+1, this.name+'.Babe.Girl.'+(i+1).toString() );
+                let kid = new Female(i+1, this.name+'.Babe.Girl.'+(i+1).toString(), this );
                 kids.push(kid);
             }
             
@@ -192,19 +195,18 @@ export class AMU extends Unit {
             var _z = Math.sin( i * seg * t ) * rk;
             if( Math.random() <= maleRatio){
                 // 生成一个雄性
-                var cube = new Male(i+1, this.name+'.Male.'+(i+1) );
+                var cube = new Male(i+1, this.name+'.Male.'+(i+1), this );
                 cube.position.set( x + _x, y + _y, z + _z);
                 this.add(cube);
                 this.startMembers.push(cube);
                 //console.log( "cube : ", cube.position);
             } else {
                 // 生成一个雌性
-                var sph = new Female(i+1, this.name+'.Female.'+(i+1) );
+                var sph = new Female(i+1, this.name+'.Female.'+(i+1), this );
                 sph.position.set( x + _x, y + _y, z + _z);
                 this.add(sph);
-                this.startMembers.push( sph);
+                this.startMembers.push( sph );
                 //console.log( "sphere : ", sph.position);
-                
             }
         }
     }
@@ -245,14 +247,14 @@ export class FIU extends Unit {
             var _z = Math.sin( i * seg * t ) * rk;
             if( Math.random() <= maleRatio){
                 // 生成一个雄性
-                var cube = new Male(i+1, this.name+'.Male.'+(i+1) )
+                var cube = new Male(i+1, this.name+'.Male.'+(i+1), this )
                 cube.position.set( x + _x, y + _y, z + _z);
                 this.add(cube);
                 this.startMembers.push(cube);
                 //console.log( "cube : ", cube.position);
             } else {
                 // 生成一个雌性
-                var sph = new Female(i+1, this.name+'.Female.'+(i+1) );
+                var sph = new Female(i+1, this.name+'.Female.'+(i+1), this );
                 sph.position.set( x + _x, y + _y, z + _z);
                 this.add(sph);
                 this.startMembers.push( sph);
