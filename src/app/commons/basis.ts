@@ -9,13 +9,18 @@ export const enum UNIT_TYPE {
 };
 
 export const enum LAYER_TYPE {
+    // 将单元分为五层：成年雌性层、成年雄性层（无）、亚成年雄性层、亚成年雌性层（无）、青年猴层、少年猴层、婴幼猴层
     AF="AF",
     AM="AM",
     SAM="SAM",
     SAF="SAF",
     YMonkey="YMonkey",
     JMonkey="JMonkey",
-    IMonkey="IMonkey"
+    IMonkey="IMonkey",
+    // 将单元分为3层：成年层、青年层、少年层
+    ADULT="ADULT",
+    YOUNG="YOUNG",
+    JUVENILE="JUVENILE"
 };
 
 export const enum GENDA {
@@ -23,6 +28,12 @@ export const enum GENDA {
     FEMALE="female",
     UNKNOWN="unknown"
 }
+
+// 川金丝猴年龄分界
+export const JUVENILE_AGE = 3;  // 小于3岁则为少年猴
+export const FEMALE_YOUNG_AGE = 4;  // 大于三岁小于等于4岁的为青年雌性
+export const MALE_YOUNG_AGE = 5;    // 大于三岁小于等于5岁的为青年雄性
+
 
 export const MALE_CUBE_LENGTH = 1.5;
 
@@ -37,6 +48,20 @@ export const SHIP_PARENTS_NODE_LINK_WIDTH = 2.5;
 export const KID_SHIP_NODE_LINK_WIDTH = 2.2;
 
 export const LAYER_COLOR = 0xaaaaaa;
+
+// 关于单元在社区内布局的参数，所有单元的球心均位于同一平面
+// 单元分布在一条条环带上
+export const STARTRADIUS = 15;      // 起始的不放置单元的环带的周长
+export const RINGWIDTH = 40;        // 每个环带的宽度
+// UNIT_RING[i] = j, 表示第 i 个单元放置在第 j 条环带上，i, j 均从0开始计数
+export const UNIT_RING = [0, 0, 0, 
+                                1, 1, 1, 1, 
+                                2, 2, 2, 2, 2,
+                                3, 3, 3, 3, 3, 3,
+                                4, 4, 4, 4, 4, 4, 4,  
+                                5, 5, 5, 5, 5, 5, 5, 5];
+// UNITNUM_ON_RING[i] = j 表示第 i 个环带上放置 j 个单元，i 从0开始计数
+export const UNITNUM_ON_RING = [3, 4, 5, 6, 7, 8];
 
 export  function calcMonkeyCommunityPos (monkey : Monkey) : THREE.Vector3{
     let unitPos = monkey.getUnit().position.clone();
