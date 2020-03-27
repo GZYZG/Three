@@ -4,14 +4,15 @@ import { DragControls } from './controls/DragControls';
 import { TransformControls } from './controls/TransformControls';
 import { TrackballControls } from './controls/TrackballControls';
 import { Stats } from './debug/stats.module';
-import { OMU, AMU, FIU } from './commons/Unit';
+import { OMU, AMU, FIU, Unit } from './commons/Unit';
 import { Monkey } from './commons/monkey';
 import { LineGeometry} from './threelibs/LineGeometry'
 import { LineMaterial} from './threelibs/LineMaterial';
 import { Line2} from './threelibs/Line2';
 import { GUI } from './threelibs/dat.gui.module';
+import { UNIT_RING, UNITNUM_ON_RING, STARTRADIUS, RINGWIDTH } from './commons/basis';
 
-var monkeys = Array<Monkey>();
+var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
 var scene : THREE.Scene;
 var renderer : THREE.WebGLRenderer;
@@ -38,7 +39,7 @@ export class Application{
     private trackballControl : any;
     private mouse_X : number;
     private mouse_Y : number;
-    private monkeys : Array<Monkey>; 
+    private monkeys : Set<Monkey>; 
     // controllers
     private dragControl : any;
     private transformControl : any ;
@@ -83,43 +84,63 @@ export class Application{
     }
 
     public addUnits() {
-        var sph = new OMU( 15, new THREE.Vector3(30, 0, 30) );
-        monkeys = this.monkeys = sph.startMembers;
-        this.scene.add( sph );
+        var units = new Array<Unit>();
+        var unit:Unit;
+        // 先创建一定数量的单元，但是先不设置坐标
+        for(let i = 0; i < 10; i++){
+            let t = Math.random();
+            if( t < 0.8){
+                unit = new OMU(15);
+            }else if( t < 0.93 ){
+                unit = new AMU(15);
+            }else{
+                unit = new FIU(10);
+            }
+            units.push(unit);
+            unit.allMembers.forEach( m =>{
+                monkeys.push(m);
+            })
+        }
+        console.log("units:", units);
+        // 对 单元的位置进行布局
+        let x , z, nth, num, seg, R, theta;
+        for(let i = 0; i < units.length; ){
+            nth = UNIT_RING[i];
+            num = UNITNUM_ON_RING[nth];
+            seg = Math.PI * 2 / num;
+            R = STARTRADIUS + ( nth + .5 ) * RINGWIDTH ;
+            theta = Math.random() * Math.PI * 2;
+            for(let j = 0; j < num && i < units.length; j++){
+                x = R * Math.cos( (theta + j * seg ) % ( Math.PI * 2) );
+                z = R * Math.sin( (theta + j * seg ) % ( Math.PI * 2) );
+                console.log("units[",i,"]: ", units[i]);
+                units[i].position.set(x, 0, z);
+                
+                i++;
+            }
+            
+        }
 
-        var sph2 = new OMU( 15, new THREE.Vector3(-30, 0, 30) );
-        monkeys = monkeys.concat(sph2.startMembers);
-        this.scene.add(sph2);
 
-        var sph3 = new OMU( 15, new THREE.Vector3(30, 0, -30) );
-        monkeys = monkeys.concat( sph3.startMembers );
-        this.scene.add(sph3);
-
-        var sph4 = new OMU( 15, new THREE.Vector3(-30, 0, -30));
-        monkeys = monkeys.concat( sph4.startMembers );
-        this.scene.add(sph4);
-
-        sph.kinships.forEach(ks => {
-            this.scene.add(ks);
+        units.forEach( u =>{
+            this.scene.add(u);
         })
-        sph2.kinships.forEach(ks => {
-            this.scene.add(ks);
-        })
-        sph3.kinships.forEach(ks => {
-            this.scene.add(ks);
-        })
-        sph4.kinships.forEach(ks => {
-            this.scene.add(ks);
-        })
+
+        // sph.kinships.forEach(ks => {
+        //     this.scene.add(ks);
+        // })
+        // sph2.kinships.forEach(ks => {
+        //     this.scene.add(ks);
+        // })
+        // sph3.kinships.forEach(ks => {
+        //     this.scene.add(ks);
+        // })
+        // sph4.kinships.forEach(ks => {
+        //     this.scene.add(ks);
+        // })
 
 
-        var sph5 = new FIU( 10, new THREE.Vector3(60, 0, -60) );
-        monkeys = monkeys.concat( sph5.startMembers );
-        this.scene.add( sph5 );
-
-        var sph6 = new AMU( 10, new THREE.Vector3(-60, 0, 60) );
-        monkeys = monkeys.concat( sph6.startMembers );
-        this.scene.add( sph6 );
+        
     }
 
     private initDragControl( objs : Array<object>) {

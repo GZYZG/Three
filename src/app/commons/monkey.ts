@@ -7,24 +7,27 @@ export abstract class Monkey extends THREE.Mesh{
     public _name : string;
     private _genda: GENDA;
     //private social_level: string;
-    public birthDate : Date;
+    readonly _birthDate : Date;
     readonly _father : Male;
     readonly _mother : Female;
-    public kids : Array<Monkey>;
+    private _kids : Set<Monkey>;
 
-    public _unit : Unit;
+    private _unit : Unit;
 
-    constructor( genda:GENDA, id:number, name:string, unit : Unit ){
+    constructor( genda:GENDA, id:number, name:string, unit: Unit, birthDate ?: Date ){
         super();
         this.genda = genda;
         this.name = name;
-        this.unit = unit;
+        // this.unit = unit;
         this._ID = id;
-
-        this.kids = new Array<Monkey>();
+        if( birthDate ){
+            this._birthDate = birthDate;
+        } else {
+            this._birthDate = new Date();
+        }
+        this._kids = new Set<Monkey>();
+        this.unit = unit;
     }
-
-    // public getSocialLevel():string { return this.social_level; }
 
     public getUnit():Unit { return this.unit; }
     
@@ -48,6 +51,19 @@ export abstract class Monkey extends THREE.Mesh{
         this._unit = unit;
     }
 
+    public addKid( kid : Monkey ){
+        this._kids.add(kid);
+    }
+    
+    public get kids(){
+        var ret = new Set<Monkey>();
+        this._kids.forEach( kid => {
+            ret.add(kid);
+        })
+
+        return ret;
+    }
+
     public get genda () {
         return this._genda;
     }
@@ -64,6 +80,10 @@ export abstract class Monkey extends THREE.Mesh{
         this._genda = genda;
     }
 
+    public get birthDate() {
+        return this._birthDate;
+    }
+
     public abstract selected() : void;
 
     public abstract unselected() : void;
@@ -74,8 +94,8 @@ export abstract class Monkey extends THREE.Mesh{
 export class Male extends Monkey {
     private unselectedMat : THREE.Material;
     private selectedMat : THREE.Material;
-    constructor (id:number, name:string, unit:Unit /*, social_level:string*/ ) {
-        super(GENDA.MALE, id, name, unit/*, social_level*/);
+    constructor (id:number, name:string,  unit:Unit, birthDate?: Date, /*, social_level:string*/ ) {
+        super(GENDA.MALE, id, name, unit, birthDate/*, social_level*/);
         this.geometry = new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);
         this.material = new THREE.MeshBasicMaterial( { color: 0x000,  vertexColors: true,  side: THREE.DoubleSide} );
         this.unselectedMat = this.material;
@@ -99,8 +119,8 @@ export class Male extends Monkey {
 export class Female extends Monkey {
     private unselectedMat : THREE.Material;
     private selectedMat : THREE.Material;
-    constructor (id:number, name:string, unit:Unit/*, social_level:string */) {
-        super( GENDA.FEMALE, id, name, unit/*, social_level*/);
+    constructor (id:number, name:string, unit:Unit, birthDate?: Date/*, social_level:string */) {
+        super( GENDA.FEMALE, id, name, unit, birthDate/*, social_level*/);
         //this.geometry = new THREE.SphereGeometry(2,30,30);
         this.geometry = new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 30, 30);
         this.material = new THREE.MeshLambertMaterial( { color: 0x000, side: THREE.DoubleSide } );
