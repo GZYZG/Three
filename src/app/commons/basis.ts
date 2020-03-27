@@ -18,6 +18,12 @@ export const enum LAYER_TYPE {
     IMonkey="IMonkey"
 };
 
+export const enum GENDA {
+    MALE="male",
+    FEMALE="female",
+    UNKNOWN="unknown"
+}
+
 export const MALE_CUBE_LENGTH = 1.5;
 
 export const FEMALE_SPHERE_RADIUS = 1;
@@ -84,7 +90,16 @@ export function calcKinshipNodePos(parentsNode : ParentsNode, type:string="curve
 
     return ret;
 }
+/*
+至此，将可视化的层级进一步确定。其中单元和Kinship处于同一级别。
+Kinship通过attach 包含
+ParentsLink、ParentsNode、KinshipNode、KPNodeLink，其中KinshipNode通过add
+包含KidKinshipNodeLink。则单元、ParentsLink、ParentsNode、KinshipNode、KPNodeLink的position均为相对于社群的相对位置，KidKinshipNodeLink的position为相对KinshipNode的相对位置，Monkey的position为相对于Unit的相对位置。
 
+本次完成了KinshipNode的位置的计算，使其与father、mother位于同一平面内。
+
+
+*/
 
 export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, type:string="xz") : THREE.Vector3{
     var ret = new THREE.Vector3();

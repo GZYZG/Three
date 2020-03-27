@@ -1,36 +1,73 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, LAYER_TYPE, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS } from './basis';
+import { UNIT_TYPE, LAYER_TYPE, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA } from './basis';
 import { Unit} from './Unit';
 
 export abstract class Monkey extends THREE.Mesh{
-    private genda: string;
-    private unit: Unit;
-    private social_level: string;
-    public birth : Date;
-    public father : Male;
-    public mother : Female;
+    readonly _ID : number;
+    public _name : string;
+    private _genda: GENDA;
+    //private social_level: string;
+    public birthDate : Date;
+    readonly _father : Male;
+    readonly _mother : Female;
+    public kids : Array<Monkey>;
 
-    constructor( unit: Unit, genda:string, id:number, name:string, /* unit:object, social_level:string */ ){
+    public _unit : Unit;
+
+    constructor( genda:GENDA, id:number, name:string, unit : Unit ){
         super();
-        this.unit = unit;
         this.genda = genda;
-        //this.id = id;
         this.name = name;
-        // this.unit = unit;
-        // this.social_level = social_level;
+        this.unit = unit;
+        this._ID = id;
+
+        this.kids = new Array<Monkey>();
     }
 
-    public getName():string{ return this.name; }
-
-    public getGebda():string { return this.genda; }
-
-    public getSocialLevel():string { return this.social_level; }
+    // public getSocialLevel():string { return this.social_level; }
 
     public getUnit():Unit { return this.unit; }
     
+    public get ID (){
+        return this._ID;
+    }
+
+    public get name (){
+        return this._name;
+    }
+
+    public set name ( newName : string){
+        this._name = newName;
+    }
+
+    public get unit () {
+        return this._unit;
+    }
+    
+    public set unit ( unit : Unit ){
+        this._unit = unit;
+    }
+
+    public get genda () {
+        return this._genda;
+    }
+
+    public get father(){
+        return this._father;
+    }
+
+    public get mother() {
+        return this._mother;
+    }
+
+    public set genda( genda : GENDA){
+        this._genda = genda;
+    }
+
     public abstract selected() : void;
 
     public abstract unselected() : void;
+
     
 }
 
@@ -38,8 +75,7 @@ export class Male extends Monkey {
     private unselectedMat : THREE.Material;
     private selectedMat : THREE.Material;
     constructor (id:number, name:string, unit:Unit /*, social_level:string*/ ) {
-        super(unit, 'male', id, name/*, unit, social_level*/);
-        // this.geometry = new THREE.BoxGeometry(2,2,2);
+        super(GENDA.MALE, id, name, unit/*, social_level*/);
         this.geometry = new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);
         this.material = new THREE.MeshBasicMaterial( { color: 0x000,  vertexColors: true,  side: THREE.DoubleSide} );
         this.unselectedMat = this.material;
@@ -64,7 +100,7 @@ export class Female extends Monkey {
     private unselectedMat : THREE.Material;
     private selectedMat : THREE.Material;
     constructor (id:number, name:string, unit:Unit/*, social_level:string */) {
-        super(unit, 'female', id, name/*, unit, social_level*/);
+        super( GENDA.FEMALE, id, name, unit/*, social_level*/);
         //this.geometry = new THREE.SphereGeometry(2,30,30);
         this.geometry = new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 30, 30);
         this.material = new THREE.MeshLambertMaterial( { color: 0x000, side: THREE.DoubleSide } );

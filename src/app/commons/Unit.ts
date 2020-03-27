@@ -5,52 +5,69 @@ import { Kinship} from './Kinship';
 
 
 export abstract class Unit extends THREE.Group {
-    public startMembers : Array<Monkey>;
-    public allMembers : Array<Monkey>;
-    public currentMoment : Date;
-    public startMoment : Date;
-    public unitType : UNIT_TYPE;
-    public name : string;
+    public _ID : number;
+    readonly _unitType : UNIT_TYPE;
+    public _name : string;
     public radius : number;
 
-    constructor( radius : number, name : string, position : THREE.Vector3) {
-        // var sp_geo = new THREE.SphereGeometry(radius,100,100, 0, Math.PI*2, Math.PI / 2, Math.PI);
-        // var sp_mat = new THREE.MeshLambertMaterial( { color: 0x000, transparent: true, opacity: 0.2, wireframe: false } )
-        // super(sp_geo, sp_mat);
+    public createdDate : Date;
+    public vanishDate : Date;
+    public currentMoment : Date;
+
+    public currentMembers : Array<Monkey>;  // 单元当前的成员
+    public allMembers : Array<Monkey>;      // 曾属于单元的所有成员
+    constructor( radius : number, name : string, position : THREE.Vector3, unitType : UNIT_TYPE) {
         super();
         this.radius = radius;
         this.name = name;
-        this.startMembers = new Array<Monkey>();
-        this.position.set(position.x, position.y, position.z);
-
+        this.currentMembers = new Array<Monkey>();
+        this.position = position;//set(position.x, position.y, position.z);
+        this._unitType = unitType;
     }
 
-    public getName() : string{ return this.name; }
+    public set ID( id : number){
+        this._ID = id;
+    }
 
-    // public set position(pos : THREE.Vector3){
-    //     this.position.set(pos.x, pos.y, pos.z);
+    public get ID(){
+        return this._ID;
+    }
 
-    // }
+    public get unitType (){
+        return this._unitType
+    }
+
+
+    public get name(){
+        return this._name;
+    }
+
+    public set name( name : string){
+        this._name = name;
+    }
+
+    public set position(pos : THREE.Vector3){
+        this.position.set(pos.x, pos.y, pos.z);
+
+    }
 
 }
 
 export class OMU extends Unit {
     public mainMale : Male;
-    public mom: Female;
-    public kinships : Array<Kinship>;
+
+    public adultLayer : Array<Monkey>;
+    public youngLayer : Array<Monkey>;
+    public juvenileLayer : Array<Monkey>;
 
     constructor (radius : number, position : THREE.Vector3) {
         var name = Math.random().toPrecision(4).toString();
-        super( radius, "OMU-"+name, position);
-        this.unitType = UNIT_TYPE.AMU;
-        this.kinships = new Array<Kinship>();
-        //var geometry = new THREE.BoxGeometry(2,2,2);
-        //var material = new THREE.MeshBasicMaterial( { color: 0x000,  side: THREE.DoubleSide} );
-        // var cube = new THREE.Mesh( geometry, material );
+        super( radius, "OMU-"+name, position, UNIT_TYPE.OMU);
+        
         this.mainMale = new Male(0, "主雄", this);
         this.mainMale.position.set( this.position.x, this.position.y, this.position.z );
         this.add(this.mainMale);
-        this.startMembers.push( this.mainMale );
+        this.currentMembers.push( this.mainMale );
         this.addLayer(1 + Math.floor( Math.random() * 7 ), LAYER_TYPE.AF);
         this.addLayer(1 + Math.floor( Math.random() * 2 ), LAYER_TYPE.SAM);
         this.addLayer(1 + Math.floor( Math.random() * 4 ), LAYER_TYPE.YMonkey);
@@ -141,7 +158,8 @@ export class OMU extends Unit {
         }
     }
 
-
+    
+    
     public createKids(n : number ){
         var kids = new Array<Monkey>();
         let maleRatio = 0.4;
