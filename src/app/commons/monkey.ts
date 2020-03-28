@@ -1,6 +1,8 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, LAYER_TYPE, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA } from './basis';
+import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA } from './basis';
 import { Unit} from './Unit';
+import { Kinship } from './Kinship';
+import { KidKinshipNodeLink } from './LineFactory';
 
 export abstract class Monkey extends THREE.Mesh{
     readonly _ID : number;
@@ -8,13 +10,16 @@ export abstract class Monkey extends THREE.Mesh{
     private _genda: GENDA;
     //private social_level: string;
     readonly _birthDate : Date;
+    public ageLevel : AGE_LEVEL;
     readonly _father : Male;
     readonly _mother : Female;
     private _kids : Set<Monkey>;
+    public kinship : Array<Kinship>;
+    public kidKinshipLink : KidKinshipNodeLink;
 
     private _unit : Unit;
 
-    constructor( genda:GENDA, id:number, name:string, unit: Unit, birthDate ?: Date ){
+    constructor( genda:GENDA, id:number, name:string, unit: Unit, father?: Male, mother?: Female, birthDate ?: Date ){
         super();
         this.genda = genda;
         this.name = name;
@@ -25,8 +30,25 @@ export abstract class Monkey extends THREE.Mesh{
         } else {
             this._birthDate = new Date();
         }
+        if( father ){ this._father = father; }
+        else{ this._father = null; }
+        if( mother ){ this._mother = mother; }
+        else{ this._mother = mother; }
+
         this._kids = new Set<Monkey>();
         this.unit = unit;
+        this.kinship = new Array<Kinship>();
+        this.kidKinshipLink = null;
+    }
+
+    public changePosition(pos : THREE.Vector3){
+        // 当猴子的位置改变时触发的事件
+        console.log(" 你在改变 ", this, " 的位置, ", this.position, " ===> ", pos);
+        // 调用原生的 .position.set方法完成位置的改变
+        var ret = this.position.set(pos.x, pos.y, pos.z);
+
+        
+       
     }
 
     public getUnit():Unit { return this.unit; }
@@ -84,12 +106,14 @@ export abstract class Monkey extends THREE.Mesh{
         return this._birthDate;
     }
 
+
     public abstract selected() : void;
 
     public abstract unselected() : void;
 
     
 }
+
 
 export class Male extends Monkey {
     private unselectedMat : THREE.Material;

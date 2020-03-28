@@ -8,7 +8,7 @@ export const enum UNIT_TYPE {
     FIU="FIU"
 };
 
-export const enum LAYER_TYPE {
+export const enum AGE_LEVEL {
     // 将单元分为五层：成年雌性层、成年雄性层（无）、亚成年雄性层、亚成年雌性层（无）、青年猴层、少年猴层、婴幼猴层
     AF="AF",
     AM="AM",
@@ -39,7 +39,7 @@ export const MALE_CUBE_LENGTH = 1.5;
 
 export const FEMALE_SPHERE_RADIUS = 1;
 
-export const SHIP_NODE_RADIUS = .6;
+export const SHIP_NODE_RADIUS = .4;
 
 export const PARENTS_LINK_WIDTH = 2;
 
@@ -55,13 +55,13 @@ export const STARTRADIUS = 15;      // 起始的不放置单元的环带的周�
 export const RINGWIDTH = 40;        // 每个环带的宽度
 // UNIT_RING[i] = j, 表示第 i 个单元放置在第 j 条环带上，i, j 均从0开始计数
 export const UNIT_RING = [0, 0, 0, 
-                                1, 1, 1, 1, 
-                                2, 2, 2, 2, 2,
-                                3, 3, 3, 3, 3, 3,
-                                4, 4, 4, 4, 4, 4, 4,  
-                                5, 5, 5, 5, 5, 5, 5, 5];
+                                1, 1, 1, 1, 1,
+                                2, 2, 2, 2, 2, 2,
+                                3, 3, 3, 3, 3, 3, 3,
+                                4, 4, 4, 4, 4, 4, 4, 4, 
+                                5, 5, 5, 5, 5, 5, 5, 5, 5];
 // UNITNUM_ON_RING[i] = j 表示第 i 个环带上放置 j 个单元，i 从0开始计数
-export const UNITNUM_ON_RING = [3, 4, 5, 6, 7, 8];
+export const UNITNUM_ON_RING = [3, 5, 6, 7, 8, 9];
 
 export  function calcMonkeyCommunityPos (monkey : Monkey) : THREE.Vector3{
     let unitPos = monkey.getUnit().position.clone();

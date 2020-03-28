@@ -11,36 +11,12 @@ import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos } 
 
 export class KinshipNode extends THREE.Mesh {
     public kpNodeLink : KPNodeLink;
-    private _kids : Array<Monkey>;
-    constructor (kids : Array<Monkey>) {
+    //private _kids : Array<Monkey>;
+    constructor () {
         super();
-        //this.kpNodeLink = link;
-        // kids.forEach(kid =>{
-        //     this.attach(kid);
-        // })
-        this._kids = new Array<Monkey>();
         this.geometry = new THREE.SphereBufferGeometry(SHIP_NODE_RADIUS, 30, 30);
         this.material = new THREE.MeshLambertMaterial( { color: 0x000088, vertexColors: true, side: THREE.DoubleSide } );
-    }
-
-    public get kids() : Array<Monkey>{
-        return this._kids;
-    }
-
-    public set kids(kids : Array<Monkey>) {
-        this._kids = kids;
-    }
-
-    public addKids(kids : Array<Monkey> ){
-        this._kids = this._kids.concat(kids);
-    }
-
-    public addKid(kid : Monkey){
-        this._kids.push(kid);
-        return this;
-    }
-
-    
+    } 
 }
 
 export class ParentsNode extends THREE.Mesh {
@@ -57,6 +33,7 @@ export class ParentsNode extends THREE.Mesh {
 
 
 export class Kinship extends THREE.Group {
+    // 一个Kinship对象代表一对夫妇及其所生的所有孩子
     public father : Male;
     public mother : Female;
     public kids : Array<Monkey>;
@@ -65,26 +42,27 @@ export class Kinship extends THREE.Group {
     public parentsNode : ParentsNode;
     public KPNodeLink : KPNodeLink;
     public kidLinks : Array<object>;
-    public unitRadius : number;
 
     constructor (father : Male, mother : Female, kids : Array<Monkey>, unitRadius : number = 30) {
         super();
         
         this.father = father;
         this.mother = mother;
-        this.kids = kids;
-        this.unitRadius = unitRadius;
+        this.kids = new Array<Monkey>();
+        kids.forEach( kid => {
+            this.kids.push(kid);
+        });
         
         this.addParentsLink();
         this.addParentsNode();
         this.addKinshipNode();
         this.addKPNodeLink();
-        
         this.addKidsKinshipLink();
     }
     
     public addParentsLink() {
         var link = new ParentsLink(this.father, this.mother );
+        
         this.parentsLink = link;
         //console.log("parentsLink:", this.parentsLink );
         this.attach(this.parentsLink);
@@ -99,7 +77,7 @@ export class Kinship extends THREE.Group {
     }
 
     public addKinshipNode() {
-        this.kinshipNode = new KinshipNode(this.kids);
+        this.kinshipNode = new KinshipNode();
         let pos = calcKinshipNodePos(this.parentsNode);
         this.kinshipNode.position.set(pos.x, pos.y, pos.z);
         this.attach(this.kinshipNode );
@@ -115,78 +93,41 @@ export class Kinship extends THREE.Group {
     
 
     public addKidsKinshipLink(type="xz") {
+        /*
+            这里会涉及到孩子的位置的计算，孩子的位置是会受到其父母的单元归属及孩子的单元归属的影响的，情况分类如下：
+            1、父母在同一个单元：
+               1）子与父母在同一个单元
+               2）子与父母不在同一个单元
+            2、父母不在同一个单元：
+                1）子与父在同一单元
+                2）子与母在同一单元
+                3）子在父、母之外的单元 
+        */
         if( this.kids.length == 0) return;
-        var R = 5;
-        var pos =  this.kinshipNode.position.clone();
-        let theta = Math.PI * 2 / this.kids.length;
-        let i = 0;
-        let x = 0, y = 0, z = 0;
-        this.kids.forEach(kid => {
-            let pos = calcKidPos(this.kinshipNode, kid);
-            //console.log("kid:", kid, " kid pos:", pos);
-            kid.position.set(pos.x, pos.y, pos.z);
-            this.kinshipNode.addKid(kid);
-        })
+        // 以下代码为计算孩子的位置
+        // var R = 5;
+        // var pos =  this.kinshipNode.position.clone();
+        // let theta = Math.PI * 2 / this.kids.length;
+        // let i = 0;
+        // let x = 0, y = 0, z = 0;
+        // this.kids.forEach(kid => {
+        //     let pos = calcKidPos(this.kinshipNode, kid);
+        //     //console.log("kid:", kid, " kid pos:", pos);
+        //     kid.position.set(pos.x, pos.y, pos.z);
+        //     this.kinshipNode.addKid(kid);
+        // })
         
-        var links = new Array();
+        // 创建孩子Monkey 与 KinshipNode的连接线
         this.kids.forEach(kid =>{
-            
             let link = new KidKinshipNodeLink(this.kinshipNode, kid);
-            links.push(link);
             this.kinshipNode.add(link);
+            kid.kidKinshipLink = link;
+            
         })
         // links.forEach(e => {
         //     this.kinshipNode.add(e);
         // });
         
-    }
-
-    public addCurve() {
-        var pos1 = this.parentsNode.position.clone();
-        var pos2 = this.kinshipNode.position.clone();
-
-        var curve = new THREE.CatmullRomCurve3([
-            pos1, new THREE.Vector3(23, 25, 0), pos2
-        ]);
-
-        var points = curve.getPoints(50);
-        var positions = new Array();
-        var colors = new Array();
-        points.forEach(p => {
-            positions.push( p.x, p.y, p.z );
-            colors.push( 0, 0, 1);
-        })
-
-        var geo = new LineGeometry();
-        geo.setPositions(positions);
-        geo.setColors( colors);
-        var mat = new LineMaterial({
-            linewidth : 2,
-            vertexColors : true,
-        })
-        mat.resolution.set(window.innerWidth, window.innerHeight);
-
-        var line = new Line2(geo, mat);
-        this.parentsLink.add(line);
-
-    }
-
-    private calcParentsNodePos() : THREE.Vector3 {
-        var mPos = (new THREE.Vector3()).copy( this.mother.position );
-        var pos = new THREE.Vector3();
-        pos.copy( (new THREE.Vector3()).copy( this.father.position ) );
-        pos.add( mPos ).multiplyScalar(2).divideScalar(3);
-        return pos;
-
-    }
-
-    private calcKinshipNodePos () : THREE.Vector3 {
-        var pos = this.parentsNode.position.clone();
-        let scale = Math.abs( 5 / pos.x );
-        scale = scale > 3 ? 3: scale;
-        var npos = new THREE.Vector3(pos.x * (1 + scale )  , pos.y + 10, pos.z * ( 1 +scale ) );
-        console.log("kinshipNode pos:", npos,"  scale:", scale, " pos.z:",pos.z, " pos.x:",pos.x);
-        return npos;
     }
 
 }

@@ -11,6 +11,7 @@ import { LineMaterial} from './threelibs/LineMaterial';
 import { Line2} from './threelibs/Line2';
 import { GUI } from './threelibs/dat.gui.module';
 import { UNIT_RING, UNITNUM_ON_RING, STARTRADIUS, RINGWIDTH } from './commons/basis';
+import { unitsLayout } from './commons/PositionCalc';
 
 var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
@@ -103,23 +104,24 @@ export class Application{
         }
         console.log("units:", units);
         // 对 单元的位置进行布局
-        let x , z, nth, num, seg, R, theta;
-        for(let i = 0; i < units.length; ){
-            nth = UNIT_RING[i];
-            num = UNITNUM_ON_RING[nth];
-            seg = Math.PI * 2 / num;
-            R = STARTRADIUS + ( nth + .5 ) * RINGWIDTH ;
-            theta = Math.random() * Math.PI * 2;
-            for(let j = 0; j < num && i < units.length; j++){
-                x = R * Math.cos( (theta + j * seg ) % ( Math.PI * 2) );
-                z = R * Math.sin( (theta + j * seg ) % ( Math.PI * 2) );
-                console.log("units[",i,"]: ", units[i]);
-                units[i].position.set(x, 0, z);
+        unitsLayout(units);
+        // let x , z, nth, num, seg, R, theta;
+        // for(let i = 0; i < units.length; ){
+        //     nth = UNIT_RING[i];
+        //     num = UNITNUM_ON_RING[nth];
+        //     seg = Math.PI * 2 / num;
+        //     R = STARTRADIUS + ( nth + .5 ) * RINGWIDTH ;
+        //     theta = Math.random() * Math.PI * 2;
+        //     for(let j = 0; j < num && i < units.length; j++){
+        //         x = R * Math.cos( (theta + j * seg ) % ( Math.PI * 2) );
+        //         z = R * Math.sin( (theta + j * seg ) % ( Math.PI * 2) );
+        //         console.log("units[",i,"]: ", units[i]);
+        //         units[i].position.set(x, 0, z);
                 
-                i++;
-            }
+        //         i++;
+        //     }
             
-        }
+        // }
 
 
         units.forEach( u =>{
