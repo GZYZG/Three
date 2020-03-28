@@ -55,13 +55,20 @@ export const STARTRADIUS = 15;      // 起始的不放置单元的环带的周�
 export const RINGWIDTH = 40;        // 每个环带的宽度
 // UNIT_RING[i] = j, 表示第 i 个单元放置在第 j 条环带上，i, j 均从0开始计数
 export const UNIT_RING = [0, 0, 0, 
-                                1, 1, 1, 1, 1,
-                                2, 2, 2, 2, 2, 2,
-                                3, 3, 3, 3, 3, 3, 3,
-                                4, 4, 4, 4, 4, 4, 4, 4, 
-                                5, 5, 5, 5, 5, 5, 5, 5, 5];
+                          1, 1, 1, 1, 1, 1,
+                          2, 2, 2, 2, 2, 2, 2,
+                          3, 3, 3, 3, 3, 3, 3, 3,
+                          4, 4, 4, 4, 4, 4, 4, 4, 4,  
+                          5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
+
 // UNITNUM_ON_RING[i] = j 表示第 i 个环带上放置 j 个单元，i 从0开始计数
-export const UNITNUM_ON_RING = [3, 5, 6, 7, 8, 9];
+export const UNITNUM_ON_RING = [UNIT_RING.filter(e => e == 0).length,
+                                UNIT_RING.filter(e => e == 1).length,
+                                UNIT_RING.filter(e => e == 2).length,
+                                UNIT_RING.filter(e => e == 3).length,
+                                UNIT_RING.filter(e => e == 4).length,
+                                UNIT_RING.filter(e => e == 6).length
+                            ];
 
 export  function calcMonkeyCommunityPos (monkey : Monkey) : THREE.Vector3{
     let unitPos = monkey.getUnit().position.clone();
@@ -127,11 +134,22 @@ ParentsLink、ParentsNode、KinshipNode、KPNodeLink，其中KinshipNode通过ad
 */
 
 export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, type:string="xz") : THREE.Vector3{
+    if( kid.father.unit != kid.mother.unit || kid.unit != kid.father.unit){
+        // 父母不在同一个单元或者父母在同一个单元，但是孩子不与父母在同一个单元
+        return calcMonkeyCommunityPos(kid);
+    }
+    // 父母子均在同一单元
     var ret = new THREE.Vector3();
+    // N_SEG 表示 父母子均在同一个单元时的KinshipNode上连的孩子结点数量
     let N_SEG = 6;
     var pos =  kinshipNode.position.clone();
     let theta = Math.PI * 2 / N_SEG;
-    let i = kinshipNode.kids.length;
+    let i = 0; //kinshipNode.kids.length;
+    kinshipNode.kids.forEach( k => {
+        if(kid.unit == k.unit){
+            i++;
+        }
+    })
     switch( type){
         case 'xz': 
             ret.z = Math.sin( i * theta ) * R;
@@ -151,4 +169,8 @@ export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, 
     // console.log("kid.position: ", ret);
 
     return ret;
+}
+
+export function randomInt(minNum: number, maxNum: number){
+    return Math.ceil(Math.random()*(maxNum-minNum)+minNum ); 
 }
