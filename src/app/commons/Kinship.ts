@@ -12,11 +12,21 @@ import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos } 
 export class KinshipNode extends THREE.Mesh {
     public kpNodeLink : KPNodeLink;
     //private _kids : Array<Monkey>;
+    private _kids : Array<Monkey>;
     constructor () {
         super();
+        this._kids = new Array<Monkey>();
         this.geometry = new THREE.SphereBufferGeometry(SHIP_NODE_RADIUS, 30, 30);
         this.material = new THREE.MeshLambertMaterial( { color: 0x000088, vertexColors: true, side: THREE.DoubleSide } );
     } 
+
+    public get kids() {
+        return this._kids;
+    }
+
+    public addKid( kid : Monkey ){
+        this._kids.push( kid );
+    }
 }
 
 export class ParentsNode extends THREE.Mesh {
@@ -49,26 +59,37 @@ export class Kinship extends THREE.Group {
         this.father = father;
         this.mother = mother;
         this.kids = new Array<Monkey>();
-        kids.forEach( kid => {
-            this.kids.push(kid);
-        });
+        
         
         this.addParentsLink();
         this.addParentsNode();
         this.addKinshipNode();
+
         this.addKPNodeLink();
+        kids.forEach( kid => {
+            this.kids.push(kid);
+            this.addKid(kid);
+        });
         this.addKidsKinshipLink();
     }
     
+    
+
     public addParentsLink() {
-        var link = new ParentsLink(this.father, this.mother );
+        let link : ParentsLink;
+        if( this.father.unit == this.mother.unit){
+            link = new ParentsLink(this.father, this.mother, "curve" );
+        }else{
+            link = new ParentsLink(this.father, this.mother );
+        }
         
         this.parentsLink = link;
         //console.log("parentsLink:", this.parentsLink );
-        this.attach(this.parentsLink);
+        this.attach( this.parentsLink );
     }
 
     public addParentsNode() {
+        
         this.parentsNode = new ParentsNode(this.father, this.mother);
         var pos =  calcParentsNodePos(this.father, this.mother) ;
         this.parentsNode.position.set( pos.x, pos.y, pos.z);
@@ -90,7 +111,15 @@ export class Kinship extends THREE.Group {
         console.log("KPNodeLink:", this.KPNodeLink);
     }
 
-    
+    public addKid( kid : Monkey ){
+        // 当父母子均在同一单元时会重新计算孩子的位置
+        this.kids.push( kid );
+        this.kinshipNode.kids.push(kid);
+        let pos = calcKidPos(this.kinshipNode, kid);
+        kid.position.set(pos.x, pos.y, pos.z);
+        this.kinshipNode.addKid(kid);
+        
+    }
 
     public addKidsKinshipLink(type="xz") {
         /*

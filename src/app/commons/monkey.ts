@@ -11,8 +11,8 @@ export abstract class Monkey extends THREE.Mesh{
     //private social_level: string;
     readonly _birthDate : Date;
     public ageLevel : AGE_LEVEL;
-    readonly _father : Male;
-    readonly _mother : Female;
+    public _father : Male;
+    public _mother : Female;
     private _kids : Set<Monkey>;
     public kinship : Array<Kinship>;
     public kidKinshipLink : KidKinshipNodeLink;
@@ -90,6 +90,14 @@ export abstract class Monkey extends THREE.Mesh{
         return this._genda;
     }
 
+    public set father( father : Male ){
+        this._father = father;
+    }
+
+    public set mother( mother : Female ){
+        this._mother = mother;
+    }
+
     public get father(){
         return this._father;
     }
@@ -119,7 +127,7 @@ export class Male extends Monkey {
     private unselectedMat : THREE.Material;
     private selectedMat : THREE.Material;
     constructor (id:number, name:string,  unit:Unit, birthDate?: Date, /*, social_level:string*/ ) {
-        super(GENDA.MALE, id, name, unit, birthDate/*, social_level*/);
+        super(GENDA.MALE, id, name, unit/*, social_level*/);
         this.geometry = new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);
         this.material = new THREE.MeshBasicMaterial( { color: 0x000,  vertexColors: true,  side: THREE.DoubleSide} );
         this.unselectedMat = this.material;
@@ -144,7 +152,7 @@ export class Female extends Monkey {
     private unselectedMat : THREE.Material;
     private selectedMat : THREE.Material;
     constructor (id:number, name:string, unit:Unit, birthDate?: Date/*, social_level:string */) {
-        super( GENDA.FEMALE, id, name, unit, birthDate/*, social_level*/);
+        super( GENDA.FEMALE, id, name, unit/*, social_level*/);
         //this.geometry = new THREE.SphereGeometry(2,30,30);
         this.geometry = new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 30, 30);
         this.material = new THREE.MeshLambertMaterial( { color: 0x000, side: THREE.DoubleSide } );

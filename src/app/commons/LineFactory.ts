@@ -14,12 +14,12 @@ export class ParentsLink extends Line2 {
     public father : Male;
     public mother : Female;
 
-    constructor ( dad: Male, mom: Female, type:string="line"){
+    constructor ( dad: Male, mom: Female, linkType:string="line"){
         super();
         this.father = dad;
         this.mother = mom;
         let geo ;
-        switch( type){
+        switch( linkType){
             case "line" :
                 geo = this.lineTypeGeometry();
                 break;

@@ -16,14 +16,14 @@ export abstract class Unit extends THREE.Group {
     public vanishDate : Date;
     private _currentMoment : Date;
 
-    public currentMembers : Set<Monkey>;  // 单元当前的成员
-    public allMembers : Set<Monkey>;      // 曾属于单元的所有成员
+    public currentMembers : Array<Monkey>;  // 单元当前的成员
+    public allMembers : Array<Monkey>;      // 曾属于单元的所有成员
     constructor( radius : number, name : string, unitType : UNIT_TYPE, createdDate? : Date ) {
         super();
         this.radius = radius;
         this.name = name;
-        this.currentMembers = new Set<Monkey>();
-        this.allMembers = new Set<Monkey>();
+        this.currentMembers = new Array<Monkey>();
+        this.allMembers = new Array<Monkey>();
         if( !createdDate){
             this.createdDate = createdDate;
         } else {
@@ -75,12 +75,18 @@ export abstract class Unit extends THREE.Group {
     }
 
     public pushMonkey( monkey : Monkey){
-        this.currentMembers.add( monkey );
+        if( this.currentMembers.includes( monkey )){
+            return;
+        }
+        this.currentMembers.push( monkey );
         monkey.unit = this;
     }
 
     public popMonkey( monkey : Monkey ){
-        this.currentMembers.add(monkey);
+        if( ! this.currentMembers.includes( monkey)){
+            return;
+        }
+        this.currentMembers.push(monkey);
         monkey.unit = null;
     }
 }
@@ -88,19 +94,24 @@ export abstract class Unit extends THREE.Group {
 export class OMU extends Unit {
     private _mainMale : Male;
 
-    public adultLayer : Set<Monkey>;
-    public youngLayer : Set<Monkey>;
-    public juvenileLayer : Set<Monkey>;
+    public adultLayer : Array<Monkey>;
+    public youngLayer : Array<Monkey>;
+    public juvenileLayer : Array<Monkey>;
 
     constructor (radius : number) {
         var name = Math.random().toPrecision(4).toString();
         super( radius, "OMU-"+name, UNIT_TYPE.OMU);
+        this.adultLayer = new Array<Monkey>();
+        this.youngLayer = new Array<Monkey>();
+        this.juvenileLayer = new Array<Monkey>();
         
         this._mainMale = new Male(0, "主雄", this);
+        this._mainMale.ageLevel = AGE_LEVEL.ADULT;
+        this.adultLayer.push( this._mainMale );
         this.mainMale.position.set( this.position.x, this.position.y, this.position.z );
         this.add(this.mainMale);
-        this.currentMembers.add( this.mainMale );
-        this.allMembers.add( this.mainMale);
+        this.currentMembers.push( this.mainMale );
+        this.allMembers.push( this.mainMale);
         
         // this.addLayer_5(1 + Math.floor( Math.random() * 7 ), AGE_LEVEL.AF);
         // this.addLayer_5(1 + Math.floor( Math.random() * 2 ), AGE_LEVEL.SAM);
@@ -128,12 +139,12 @@ export class OMU extends Unit {
         let timedelta = this.currentMoment.getTime() - monkey.birthDate.getTime();
         let age = timedelta / 1000 / 60 / 60 / 24 / 365;
         if( age <  JUVENILE_AGE){
-            this.juvenileLayer.add( monkey );
+            this.juvenileLayer.push( monkey );
         } else if( (monkey.genda == GENDA.MALE && age <= MALE_YOUNG_AGE)  || 
                    (monkey.genda == GENDA.FEMALE && age <= FEMALE_YOUNG_AGE ) ) {
-            this.youngLayer.add(monkey);
+            this.youngLayer.push(monkey);
         } else {
-            this.adultLayer.add(monkey );
+            this.adultLayer.push(monkey );
         }
 
         
@@ -215,7 +226,7 @@ export class OMU extends Unit {
             monkey.ageLevel = layerType;
             monkey.position.set( x + _x, y + _y, z + _z);
             this.add(monkey);
-            this.allMembers.add(monkey);
+            this.allMembers.push(monkey);
         }
     }
 
@@ -227,21 +238,25 @@ export class OMU extends Unit {
         var _y : number;
         var rk : number;
         var maleRatio : number;
+        let tempLayer;
         switch(layerType) {
             case AGE_LEVEL.ADULT:
                 rk = this.radius;
                 _y = y;
                 maleRatio = -1;
+                tempLayer = this.adultLayer;
                 break;
             case AGE_LEVEL.YOUNG:
                 rk = this.radius * Math.sqrt(8) / 3;
                 _y = -.33 * this.radius;
                 maleRatio = .4;
+                tempLayer = this.youngLayer;
                 break;
             case AGE_LEVEL.JUVENILE:
                 rk = this.radius * Math.sqrt(5) / 3;
                 _y = -.67 * this.radius;
                 maleRatio = .5;
+                tempLayer = this.juvenileLayer;
                 break;
             default:
                 break;
@@ -272,10 +287,14 @@ export class OMU extends Unit {
                 // 生成一个雌性
                 monkey = new Female(i+1, this.name+'.'+layerType+'.'+(i+1).toString(), this );
             }
-            monkey.position.set( x + _x, y + _y, z + _z);
+            //monkey.position.set( x + _x, y + _y, z + _z);
             //monkey.changePosition( new THREE.Vector3(x + _x, y + _y, z + _z) );
+            monkey.ageLevel = layerType;
+            tempLayer.push(monkey);
             this.add(monkey);
-            this.allMembers.add(monkey);
+            this.allMembers.push(monkey);
+            this.currentMembers.push(monkey);
+            
         }
     }
 
@@ -299,7 +318,7 @@ export class OMU extends Unit {
             
         }
         kids.forEach(kid => {
-            this.allMembers.add( kid );
+            this.allMembers.push( kid );
         })
         this.add(...kids);
         console.log( this.allMembers );
@@ -347,9 +366,11 @@ export class AMU extends Unit {
                 // 生成一个雌性
                 monkey = new Female(i+1, this.name+'.Female.'+(i+1), this );
             }
-            monkey.position.set( x + _x, y + _y, z + _z);
+            //monkey.position.set( x + _x, y + _y, z + _z);
             this.add(monkey);
-            this.allMembers.add( monkey);
+            this.currentMembers.push( monkey );
+            this.allMembers.push( monkey);
+            monkey.ageLevel = AGE_LEVEL.ADULT;
         }
     }
 }
@@ -392,9 +413,11 @@ export class FIU extends Unit {
                 // 生成一个雌性
                 monkey = new Female(i+1, this.name+'.Female.'+(i+1), this );
             }
-            monkey.position.set( x + _x, y + _y, z + _z);
+            //monkey.position.set( x + _x, y + _y, z + _z);
             this.add(monkey);
-            this.allMembers.add(monkey);
+            this.currentMembers.push( monkey );
+            this.allMembers.push(monkey);
+            monkey.ageLevel = AGE_LEVEL.ADULT;
         }
     }
 }
