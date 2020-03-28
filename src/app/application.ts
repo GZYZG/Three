@@ -10,8 +10,9 @@ import { LineGeometry} from './threelibs/LineGeometry'
 import { LineMaterial} from './threelibs/LineMaterial';
 import { Line2} from './threelibs/Line2';
 import { GUI } from './threelibs/dat.gui.module';
-import { UNIT_RING, UNITNUM_ON_RING, STARTRADIUS, RINGWIDTH } from './commons/basis';
-import { unitsLayout } from './commons/PositionCalc';
+import { UNIT_RING, UNITNUM_ON_RING, STARTRADIUS, RINGWIDTH, UNIT_TYPE, GENDA, randomInt } from './commons/basis';
+import { unitsLayout, OMULayout, AMULayout, FIULayout } from './commons/PositionCalc';
+import { Kinship } from './commons/Kinship';
 
 var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
@@ -88,7 +89,7 @@ export class Application{
         var units = new Array<Unit>();
         var unit:Unit;
         // 先创建一定数量的单元，但是先不设置坐标
-        for(let i = 0; i < 10; i++){
+        for(let i = 0; i < 12; i++){
             let t = Math.random();
             if( t < 0.8){
                 unit = new OMU(15);
@@ -105,43 +106,84 @@ export class Application{
         console.log("units:", units);
         // 对 单元的位置进行布局
         unitsLayout(units);
-        // let x , z, nth, num, seg, R, theta;
-        // for(let i = 0; i < units.length; ){
-        //     nth = UNIT_RING[i];
-        //     num = UNITNUM_ON_RING[nth];
-        //     seg = Math.PI * 2 / num;
-        //     R = STARTRADIUS + ( nth + .5 ) * RINGWIDTH ;
-        //     theta = Math.random() * Math.PI * 2;
-        //     for(let j = 0; j < num && i < units.length; j++){
-        //         x = R * Math.cos( (theta + j * seg ) % ( Math.PI * 2) );
-        //         z = R * Math.sin( (theta + j * seg ) % ( Math.PI * 2) );
-        //         console.log("units[",i,"]: ", units[i]);
-        //         units[i].position.set(x, 0, z);
-                
-        //         i++;
-        //     }
-            
-        // }
-
-
+  
         units.forEach( u =>{
+            switch( u.unitType ){
+                case UNIT_TYPE.OMU:
+                    OMULayout( u);
+                    break;
+                case UNIT_TYPE.AMU:
+                    AMULayout(u);
+                    break;
+                case UNIT_TYPE.FIU:
+                    FIULayout(u);
+                    break;
+            }
+
             this.scene.add(u);
         })
 
-        // sph.kinships.forEach(ks => {
-        //     this.scene.add(ks);
-        // })
-        // sph2.kinships.forEach(ks => {
-        //     this.scene.add(ks);
-        // })
-        // sph3.kinships.forEach(ks => {
-        //     this.scene.add(ks);
-        // })
-        // sph4.kinships.forEach(ks => {
-        //     this.scene.add(ks);
-        // })
+        // 随机挑选父母，生成孩子
+        let kinnum = 6;
+        var allKinships = new Array<Kinship>();
+        for(let i = 0; i < kinnum; i++){
+            // 挑选一个成年雄性
+            let father = null;
+            let mother = null;
+            while( !father){
+                let nth = Math.ceil( Math.random() * (units.length - 1) );
+                let picked = units[nth];
+                if( picked.unitType == UNIT_TYPE.OMU){
+                    father = picked.mainMale;
+                }else if( picked.unitType == UNIT_TYPE.AMU){
+                    let num = picked.currentMembers.length;
+                    father = picked.currentMembers[ randomInt(0, num-1) ];
+                }else {
+                    let males = picked.currentMembers.filter( e => e.genda == GENDA.MALE);
+                    if( males.length == 0)  continue;
+                    father = males[ randomInt(0, males.length-1) ];
+                }
+            }
 
+            while( !mother){
+                let nth = Math.ceil( Math.random() * (units.length - 1) );
+                let picked = units[nth];
+                if( picked.unitType == UNIT_TYPE.OMU){
+                    mother = picked.adultLayer[ randomInt(1, picked.adultLayer.length-1 ) ];
+                }else if( picked.unitType == UNIT_TYPE.AMU){
+                }else {
+                    let females = picked.currentMembers.filter( e => e.genda == GENDA.FEMALE);
+                    if( females.length == 0)  continue;
+                    mother = females[randomInt(0, females.length) ];
+                }
+            }
 
+            let kidnum = randomInt(1, 5);
+            let kids = new Set<Monkey>();
+            while( kids.size < kidnum){
+                let nth = Math.ceil( Math.random() * (units.length - 1) );
+                let picked = units[nth];
+                let kid;
+                if( picked.unitType == UNIT_TYPE.OMU){
+                    kid = picked.juvenileLayer[ randomInt(0, picked.juvenileLayer.length-1 )];
+                }else{
+                    let num = picked.currentMembers.length;
+                    kid = picked.currentMembers[ randomInt(0, num-1) ];
+                }
+                kids.add( kid);
+                kid.father = father;
+                kid.mother = mother;
+            }
+            
+            let _kids = new Array<Monkey>();
+            kids.forEach( k =>{
+                _kids.push(k);
+            })
+            let ks = new Kinship(father, mother, _kids);
+            allKinships.push(ks);
+        }
+
+        console.log("allKinships: ", allKinships);
         
     }
 
