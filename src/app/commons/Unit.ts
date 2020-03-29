@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE }from './basis';
+import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt }from './basis';
 import { Monkey, Male, Female } from './monkey';
 import { Kinship} from './Kinship';
 import { MeshNormalMaterial } from '../threelibs/three';
@@ -119,9 +119,9 @@ export class OMU extends Unit {
         // this.addLayer_5(1 + Math.floor( Math.random() * 3 ), AGE_LEVEL.JMonkey);
         // this.addLayer_5(1 + Math.floor( Math.random() * 3 ), AGE_LEVEL.IMonkey);
 
-        this.addLayer_3(1 + Math.floor( Math.random() * 7 ), AGE_LEVEL.ADULT);
-        this.addLayer_3(1 + Math.floor( Math.random() * 2 ), AGE_LEVEL.YOUNG);
-        this.addLayer_3(1 + Math.floor( Math.random() * 4 ), AGE_LEVEL.JUVENILE);
+        this.addLayer_3( randomInt(2, 5), AGE_LEVEL.ADULT);
+        this.addLayer_3( randomInt(2, 4), AGE_LEVEL.YOUNG);
+        this.addLayer_3( randomInt(3, 5), AGE_LEVEL.JUVENILE);
 
     }
 

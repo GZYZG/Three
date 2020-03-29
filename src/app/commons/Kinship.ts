@@ -116,10 +116,10 @@ export class Kinship extends THREE.Group {
     public addKid( kid : Monkey ){
         // 当父母子均在同一单元时会重新计算孩子的位置
         this.kids.push( kid );
-        this.kinshipNode.kids.push(kid);
+        this.kinshipNode.addKid(kid);
         let pos = calcKidPos(this.kinshipNode, kid);
         kid.position.set(pos.x, pos.y, pos.z);
-        this.kinshipNode.addKid(kid);
+        
         
     }
 

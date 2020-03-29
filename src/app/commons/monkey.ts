@@ -1,13 +1,19 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA } from './basis';
+import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA, MALE_GEMOMETRY, FEMALE_GEOMETRY } from './basis';
 import { Unit} from './Unit';
 import { Kinship } from './Kinship';
 import { KidKinshipNodeLink } from './LineFactory';
 
-export abstract class Monkey extends THREE.Mesh{
+export interface Selectable {
+    selected: () => void;
+    unselected : () => void;
+}
+
+export abstract class Monkey extends THREE.Mesh implements Selectable{
     readonly _ID : number;
     public _name : string;
     private _genda: GENDA;
+    readonly isMonkey : boolean;
     //private social_level: string;
     readonly _birthDate : Date;
     public ageLevel : AGE_LEVEL;
@@ -16,11 +22,15 @@ export abstract class Monkey extends THREE.Mesh{
     private _kids : Set<Monkey>;
     public kinship : Array<Kinship>;
     public kidKinshipLink : KidKinshipNodeLink;
-
+    public mirror : Set<Monkey>;
     private _unit : Unit;
+
+    public unselectedMat : THREE.Material | THREE.Material[];
+    public selectedMat : THREE.Material | THREE.Material[];
 
     constructor( genda:GENDA, id:number, name:string, unit: Unit, father?: Male, mother?: Female, birthDate ?: Date ){
         super();
+        this.isMonkey = true;
         this.genda = genda;
         this.name = name;
         // this.unit = unit;
@@ -39,6 +49,8 @@ export abstract class Monkey extends THREE.Mesh{
         this.unit = unit;
         this.kinship = new Array<Kinship>();
         this.kidKinshipLink = null;
+        this.mirror = new Set<Monkey>();
+        this.selectedMat = this.unselectedMat = null;
     }
 
     public changePosition(pos : THREE.Vector3){
@@ -114,30 +126,19 @@ export abstract class Monkey extends THREE.Mesh{
         return this._birthDate;
     }
 
-
-    public abstract selected() : void;
-
-    public abstract unselected() : void;
-
-    
-}
-
-
-export class Male extends Monkey {
-    private unselectedMat : THREE.Material;
-    private selectedMat : THREE.Material;
-    constructor (id:number, name:string,  unit:Unit, birthDate?: Date, /*, social_level:string*/ ) {
-        super(GENDA.MALE, id, name, unit/*, social_level*/);
-        this.geometry = new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);
-        this.material = new THREE.MeshBasicMaterial( { color: 0x000,  vertexColors: true,  side: THREE.DoubleSide} );
-        this.unselectedMat = this.material;
-        this.selectedMat = null;
+    public deepCopy(){
+        let ret = this.clone();
+        ret.unit = this.unit;
+        ret.name += "-cloned";
+        ret.material = new THREE.MeshBasicMaterial( { color : 0x333333})
+        return ret;
     }
 
     public selected() {
         if( this.selectedMat == null){
-            var material = new THREE.MeshBasicMaterial( { color: 0x00ff00,  side: THREE.DoubleSide} );
+            var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
             this.selectedMat = material;
+            this.unselectedMat = this.material;
         }
         
         this.material = this.selectedMat;
@@ -146,30 +147,24 @@ export class Male extends Monkey {
     public unselected () {
         this.material = this.unselectedMat;
     }
+    
+}
+
+
+export class Male extends Monkey {
+    constructor (id:number, name:string,  unit:Unit, birthDate?: Date, /*, social_level:string*/ ) {
+        super(GENDA.MALE, id, name, unit/*, social_level*/);
+        this.geometry = MALE_GEMOMETRY//new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);//;
+        this.material =  new THREE.MeshBasicMaterial( { color: 0x000,  vertexColors: true } );
+    }
+
+    
 }
 
 export class Female extends Monkey {
-    private unselectedMat : THREE.Material;
-    private selectedMat : THREE.Material;
     constructor (id:number, name:string, unit:Unit, birthDate?: Date/*, social_level:string */) {
         super( GENDA.FEMALE, id, name, unit/*, social_level*/);
-        //this.geometry = new THREE.SphereGeometry(2,30,30);
-        this.geometry = new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 30, 30);
-        this.material = new THREE.MeshLambertMaterial( { color: 0x000, side: THREE.DoubleSide } );
-        this.unselectedMat = this.material;
-        this.selectedMat = null;
+        this.geometry = FEMALE_GEOMETRY;//new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 30, 30);// 
+        this.material = new THREE.MeshLambertMaterial( { color: 0x000  } );
     }
-
-    public selected() {
-        if( this.selectedMat == null){
-            var material = new THREE.MeshBasicMaterial( { color: 0x00ff00,  side: THREE.DoubleSide} );
-            this.selectedMat = material;
-        }
-        this.material = this.selectedMat;
-    }
-
-    public unselected () {
-        this.material = this.unselectedMat;
-    }
-
 }

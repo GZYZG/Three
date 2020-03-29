@@ -49,6 +49,9 @@ export const KID_SHIP_NODE_LINK_WIDTH = 2.2;
 
 export const LAYER_COLOR = 0xaaaaaa;
 
+export var MALE_GEMOMETRY = new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);
+export var FEMALE_GEOMETRY = new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 10, 10);
+
 // 关于单元在社区内布局的参数，所有单元的球心均位于同一平面
 // 单元分布在一条条环带上
 export const STARTRADIUS = 15;      // 起始的不放置单元的环带的周长
@@ -101,7 +104,7 @@ export function calcKinshipNodePos(parentsNode : ParentsNode, type:string="curve
     let mPos = calcMonkeyCommunityPos( parentsNode.mother );
 
     let delta = 8;  // 在xz平面上，kinshipnode 沿着father、mother方向行走的距离
-    let yDelta = parentsNode.father.unit == parentsNode.mother.unit ? 10 : 4;    // kinshipnode在y方向上的上升高度
+    let yDelta = parentsNode.father.unit == parentsNode.mother.unit ? 10 : 6;    // kinshipnode在y方向上相对parentsNode的上升高度
     let zSign = mPos.z >= pPos.z ? 1 : -1;
     let xSign = mPos.x >= pPos.x ? 1 : -1;
     switch( type ){
@@ -135,17 +138,17 @@ ParentsLink、ParentsNode、KinshipNode、KPNodeLink，其中KinshipNode通过ad
 
 */
 export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, type:string="xz") : THREE.Vector3{
-    if(  kid.father.unit != kid.mother.unit || kid.unit != kid.father.unit ){
-        // 父母不在同一个单元或者父母在同一个单元，但是孩子不与父母在同一个单元
-        return kid.position;
-    }
+    // if(  kid.father.unit != kid.mother.unit || kid.unit != kid.father.unit ){
+    //     // 父母不在同一个单元或者父母在同一个单元，但是孩子不与父母在同一个单元
+    //     return kid.position;
+    // }
     // 父母子均在同一单元
     var ret = new THREE.Vector3();
     // N_SEG 表示 父母子均在同一个单元时的KinshipNode上连的孩子结点数量
-    let N_SEG = 6;
+    let N_SEG = 5;
     var pos =  kinshipNode.position.clone();
     let theta = Math.PI * 2 / N_SEG;
-    let i = 0; //kinshipNode.kids.length;
+    let i = kinshipNode.kids.indexOf(kid);
     kinshipNode.kids.forEach( k => {
         if(kid.unit == k.unit){
             i++;

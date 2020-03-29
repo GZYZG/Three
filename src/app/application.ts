@@ -50,7 +50,7 @@ export class Application{
 
     constructor() {
         renderer = this.renderer = new THREE.WebGLRenderer( { antialias: true , alpha: true } );
-        camera = this.camera = new THREE.PerspectiveCamera(60, renderer.domElement.width / renderer.domElement.height, 1, 2000);
+        camera = this.camera = new THREE.PerspectiveCamera(60, renderer.domElement.width / renderer.domElement.height, 1, 5000);
         scene = this.scene = new THREE.Scene();
         this.camera.position.set(100, 100, 100);
         this.camera.lookAt(0, 0, 0);
@@ -89,7 +89,7 @@ export class Application{
         var units = new Array<Unit>();
         var unit:Unit;
         // 先创建一定数量的单元，但是先不设置坐标
-        for(let i = 0; i < 16; i++){
+        for(let i = 0; i < 12; i++){
             let t = Math.random();
             if( t < 0.8){
                 unit = new OMU(15);
@@ -124,7 +124,7 @@ export class Application{
         })
 
         // 随机挑选父母，生成孩子
-        let kinnum = randomInt(10,25);
+        let kinnum = randomInt(5,12);
         let allkids = new Set<Monkey>();
         var allKinships = new Array<Kinship>();
         for(let i = 0; i < kinnum; i++){
@@ -164,7 +164,7 @@ export class Application{
             while( kids.size < kidnum){
                 let nth = Math.ceil( Math.random() * (units.length - 1) );
                 let picked = units[nth];
-                let kid;
+                let kid : Monkey;
                 if( picked.unitType == UNIT_TYPE.OMU){
                     kid = picked.juvenileLayer[ randomInt(0, picked.juvenileLayer.length-1 )];
                 }else{
@@ -172,6 +172,7 @@ export class Application{
                     kid = picked.currentMembers[ randomInt(0, num-1) ];
                 }
                 if( allkids.has(kid) ) continue;
+                kid = kid.deepCopy();
                 kids.add( kid);
                 allkids.add( kid);
                 kid.father = father;
@@ -181,6 +182,9 @@ export class Application{
             let _kids = new Array<Monkey>();
             kids.forEach( k =>{
                 _kids.push(k);
+                //this.scene.add(k);
+                k.unit.add(k);
+                console.log("cloned: ", k);
             })
             let ks = new Kinship(father, mother, _kids);
             allKinships.push(ks);
@@ -402,17 +406,17 @@ export class Application{
         //raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
         raycaster.setFromCamera({x: mouse_X, y: mouse_Y} , camera);
         //射线和模型求交，选中一系列直线
-        var intersects = raycaster.intersectObjects(monkeys);
+        var intersects = raycaster.intersectObjects(scene.children, true);
     
-        if (intersects.length > 0) {
-            //选中第一个射线相交的物体
-            //SELECTED = intersects[0].object;
+        if (intersects.length > 0 && intersects[0].object instanceof Monkey) {
             if( selected  ){
                 selected.unselected();
             }
+            console.log("intersected : ", intersects[0].object)
             selected = intersects[0].object;
+            
             selected.selected();
-            console.log(intersects[0].object)
+           
         }else if(selected){
             selected.unselected();
         }
