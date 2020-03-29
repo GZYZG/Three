@@ -71,7 +71,7 @@ export const UNITNUM_ON_RING = [UNIT_RING.filter(e => e == 0).length,
                             ];
 
 export  function calcMonkeyCommunityPos (monkey : Monkey) : THREE.Vector3{
-    let unitPos = monkey.getUnit().position.clone();
+    let unitPos = monkey.unit.position.clone();
     var ret = monkey.position.clone();
     ret.add( unitPos );
     return ret;
@@ -86,7 +86,9 @@ export function calcParentsNodePos(father : Male, mother : Female, type:string="
             ret = dadComPos.clone().add(momComPos ).divideScalar(2);
             break;
         case "curve":
-
+            ret = dadComPos.clone().add(momComPos ).divideScalar(2);
+            ret.setY(ret.y * 4 / 3 + 5 );
+            // ret = dadComPos.clone().add(momComPos ).divideScalar(2);
             break;
     }
 
@@ -99,7 +101,7 @@ export function calcKinshipNodePos(parentsNode : ParentsNode, type:string="curve
     let mPos = calcMonkeyCommunityPos( parentsNode.mother );
 
     let delta = 8;  // 在xz平面上，kinshipnode 沿着father、mother方向行走的距离
-    let yDelta = 10;    // kinshipnode在y方向上的上升高度
+    let yDelta = parentsNode.father.unit == parentsNode.mother.unit ? 10 : 4;    // kinshipnode在y方向上的上升高度
     let zSign = mPos.z >= pPos.z ? 1 : -1;
     let xSign = mPos.x >= pPos.x ? 1 : -1;
     switch( type ){
@@ -116,7 +118,7 @@ export function calcKinshipNodePos(parentsNode : ParentsNode, type:string="curve
             }
             
             ret.y += yDelta;
-            console.log("parentsNode pos:", parentsNode.position, "kinshipNode pos:", ret, "mPos: ", mPos);
+            //console.log("parentsNode pos:", parentsNode.position, "kinshipNode pos:", ret, "mPos: ", mPos);
             break;
     }
 
@@ -132,11 +134,10 @@ ParentsLink、ParentsNode、KinshipNode、KPNodeLink，其中KinshipNode通过ad
 
 
 */
-
 export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, type:string="xz") : THREE.Vector3{
-    if( kid.father.unit != kid.mother.unit || kid.unit != kid.father.unit){
+    if(  kid.father.unit != kid.mother.unit || kid.unit != kid.father.unit ){
         // 父母不在同一个单元或者父母在同一个单元，但是孩子不与父母在同一个单元
-        return calcMonkeyCommunityPos(kid);
+        return kid.position;
     }
     // 父母子均在同一单元
     var ret = new THREE.Vector3();
@@ -172,5 +173,5 @@ export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, 
 }
 
 export function randomInt(minNum: number, maxNum: number){
-    return Math.ceil(Math.random()*(maxNum-minNum)+minNum ); 
+    return Math.floor(Math.random()*(maxNum - minNum + 1)+minNum ); 
 }

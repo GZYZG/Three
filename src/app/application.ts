@@ -89,7 +89,7 @@ export class Application{
         var units = new Array<Unit>();
         var unit:Unit;
         // 先创建一定数量的单元，但是先不设置坐标
-        for(let i = 0; i < 12; i++){
+        for(let i = 0; i < 16; i++){
             let t = Math.random();
             if( t < 0.8){
                 unit = new OMU(15);
@@ -124,7 +124,8 @@ export class Application{
         })
 
         // 随机挑选父母，生成孩子
-        let kinnum = 6;
+        let kinnum = randomInt(10,25);
+        let allkids = new Set<Monkey>();
         var allKinships = new Array<Kinship>();
         for(let i = 0; i < kinnum; i++){
             // 挑选一个成年雄性
@@ -158,7 +159,7 @@ export class Application{
                 }
             }
 
-            let kidnum = randomInt(1, 5);
+            let kidnum = randomInt(1, 3);
             let kids = new Set<Monkey>();
             while( kids.size < kidnum){
                 let nth = Math.ceil( Math.random() * (units.length - 1) );
@@ -170,7 +171,9 @@ export class Application{
                     let num = picked.currentMembers.length;
                     kid = picked.currentMembers[ randomInt(0, num-1) ];
                 }
+                if( allkids.has(kid) ) continue;
                 kids.add( kid);
+                allkids.add( kid);
                 kid.father = father;
                 kid.mother = mother;
             }
@@ -181,6 +184,7 @@ export class Application{
             })
             let ks = new Kinship(father, mother, _kids);
             allKinships.push(ks);
+            this.scene.add(ks);
         }
 
         console.log("allKinships: ", allKinships);
@@ -318,7 +322,7 @@ export class Application{
         //document.body.appendChild( container );
         
 
-        this.axisHelper = new THREE.AxesHelper(15);
+        this.axisHelper = new THREE.AxesHelper(5);
         this.scene.add(this.axisHelper);
 
         // var plane = new THREE.Plane( new THREE.Vector3( 0, 1, 0 ), -30 );
@@ -326,9 +330,12 @@ export class Application{
         // this.scene.add( phelper );
 
         var origin = new THREE.Vector3( 0, 0, 0 );
-        var xarrowHelper = new THREE.ArrowHelper( new THREE.Vector3(1, 0, 0), origin, 29, 0xff0000, 8, 6 );
-        var yarrowHelper = new THREE.ArrowHelper( new THREE.Vector3(0, 1, 0), origin, 29, 0x00ff00, 8, 6  );
-        var zarrowHelper = new THREE.ArrowHelper( new THREE.Vector3(0, 0, 1), origin, 29, 0x0000ff, 8, 6  );
+        let headLen = 5;
+        let len = 10;
+        let headWidth = 2;
+        var xarrowHelper = new THREE.ArrowHelper( new THREE.Vector3(1, 0, 0), origin, len, 0xff0000, headLen, headWidth );
+        var yarrowHelper = new THREE.ArrowHelper( new THREE.Vector3(0, 1, 0), origin, len, 0x00ff00, headLen, headWidth );
+        var zarrowHelper = new THREE.ArrowHelper( new THREE.Vector3(0, 0, 1), origin, len, 0x0000ff, headLen, headWidth );
         this.scene.add( xarrowHelper );
         this.scene.add( yarrowHelper );
         this.scene.add( zarrowHelper );
@@ -367,44 +374,6 @@ export class Application{
         //this.trackballControl.update();
         states.update();
     }
-
-    public createFatLineGeometry () {
-        /*
-        reference: https://dustinpfister.github.io/2018/11/07/threejs-line-fat-width/
-        */ 
-        
-        // Position and Color Data
-        var positions = [], colors = [], geo;
-
-        // return geo
-        positions = [0,0,0,30,0,0];
-        colors = [0,0,0,0,0,0];
-        geo = new LineGeometry();
-        geo.setPositions(positions);
-        geo.setColors(colors);
-        return geo;
-     
-    }
-
-    public createFatLine  () {
-        // LINE MATERIAL
-        var matLine = new LineMaterial({
-                linewidth: 2, // in pixels
-                vertexColors: true
-            });
-        matLine.resolution.set(window.innerWidth, window.innerHeight);
-        var geo = this.createFatLineGeometry();
-        var line = new Line2(geo, matLine);
-        var geometry = new THREE.SphereBufferGeometry(.5,30,30);
-        var material = new THREE.MeshLambertMaterial( { color: 0xff0000, side: THREE.DoubleSide } );
-        var node = new THREE.Mesh(geometry, material );
-        node.position.set(15, 0, 0);
-        line.add( node );
-
-        return line;
-     
-    }
-
 
     public initGui() {
 

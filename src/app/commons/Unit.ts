@@ -105,7 +105,7 @@ export class OMU extends Unit {
         this.youngLayer = new Array<Monkey>();
         this.juvenileLayer = new Array<Monkey>();
         
-        this._mainMale = new Male(0, "主雄", this);
+        this._mainMale = new Male(0, this.name+'.'+'主雄', this);
         this._mainMale.ageLevel = AGE_LEVEL.ADULT;
         this.adultLayer.push( this._mainMale );
         this.mainMale.position.set( this.position.x, this.position.y, this.position.z );

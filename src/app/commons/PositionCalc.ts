@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { Unit, OMU, AMU, FIU } from "./Unit";
 import { Monkey, Male, Female } from './monkey';
 import { UNIT_RING, UNITNUM_ON_RING, STARTRADIUS, RINGWIDTH, AGE_LEVEL, LAYER_COLOR } from "./basis";
+import { Kinship } from './Kinship';
 
 export function unitsLayout(units : Array<Unit>){
     // 按照环带对 Unit 进行布局
@@ -72,7 +73,7 @@ export function FIULayout( unit : Unit ) {
 
 // 对 Unit 的每一层的成员进行布局， 并添加层
 function layerLayout(layerMembers : Array<Monkey>,  layerType? : AGE_LEVEL){
-    console.log("Layer: ", layerType, " members: ", layerMembers);
+    //console.log("Layer: ", layerType, " members: ", layerMembers);
     let n = layerMembers.length;
     if( n <= 0) return;
     var x = 0;
@@ -123,8 +124,12 @@ function layerLayout(layerMembers : Array<Monkey>,  layerType? : AGE_LEVEL){
         var _x = Math.cos( i * seg * t ) * rk;
         var _z = Math.sin( i * seg * t ) * rk;
         layerMembers[i].position.set( x + _x, y + _y, z + _z);
-        console.log(layerMembers[i]," monkey position: ", layerMembers[i].position);
+        //console.log(layerMembers[i]," monkey position: ", layerMembers[i].position);
     }
+    
+}
+
+function kinshipLayout( kinship : Kinship ){
     
 }
 

@@ -24,6 +24,7 @@ export class ParentsLink extends Line2 {
                 geo = this.lineTypeGeometry();
                 break;
             case "curve":
+                console.log("curve parentslink");
                 geo = this.curveTypeGeometry();
                 break;
             default:
@@ -44,19 +45,19 @@ export class ParentsLink extends Line2 {
 
     public lineTypeGeometry() {
         var geo = new LineGeometry();
-        const fp = this.father.position;
-        const mp = this.mother.position;
+        const fp = calcMonkeyCommunityPos( this.father );
+        const mp = calcMonkeyCommunityPos( this.mother );
         geo.setPositions(new Array(fp.x, fp.y, fp.z, mp.x, mp.y, mp.z ) );
-        geo.setColors( new Array(  0, 0, 0, 1, 2, 3  ) );
+        geo.setColors( new Array(  0, 0, 1, 0, 0, 1  ) );
         return geo;
     }
 
     public curveTypeGeometry() {
         var geo = new LineGeometry();
-        let pos1 = this.father.position;
-        let pos2 = this.mother.position;
+        let pos1 = calcMonkeyCommunityPos( this.father );
+        let pos2 = calcMonkeyCommunityPos( this.mother );
         var mid = pos1.clone().add( pos2) .divideScalar(2);
-        mid.setY(mid.y * 4 / 3);
+        mid.setY(mid.y * 4 / 3 + 5);
         var curve = new THREE.CatmullRomCurve3([
             pos1, mid, pos2
         ]);
@@ -72,6 +73,7 @@ export class ParentsLink extends Line2 {
         var geo = new LineGeometry();
         geo.setPositions(positions);
         geo.setColors( colors);
+        
         
         return geo;
     }

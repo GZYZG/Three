@@ -11,7 +11,6 @@ import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos } 
 
 export class KinshipNode extends THREE.Mesh {
     public kpNodeLink : KPNodeLink;
-    //private _kids : Array<Monkey>;
     private _kids : Array<Monkey>;
     constructor () {
         super();
@@ -67,7 +66,6 @@ export class Kinship extends THREE.Group {
 
         this.addKPNodeLink();
         kids.forEach( kid => {
-            this.kids.push(kid);
             this.addKid(kid);
         });
         this.addKidsKinshipLink();
@@ -77,24 +75,28 @@ export class Kinship extends THREE.Group {
 
     public addParentsLink() {
         let link : ParentsLink;
-        if( this.father.unit == this.mother.unit){
+        if( this.father.unit != this.mother.unit){
             link = new ParentsLink(this.father, this.mother, "curve" );
         }else{
-            link = new ParentsLink(this.father, this.mother );
+            link = new ParentsLink(this.father, this.mother, "line" );
         }
         
         this.parentsLink = link;
-        //console.log("parentsLink:", this.parentsLink );
+        console.log("parentsLink:", this.parentsLink );
         this.attach( this.parentsLink );
     }
 
     public addParentsNode() {
-        
-        this.parentsNode = new ParentsNode(this.father, this.mother);
-        var pos =  calcParentsNodePos(this.father, this.mother) ;
+        this.parentsNode = new ParentsNode(this.father, this.mother );
+        let pos;
+        if( this.father.unit != this.mother.unit){
+            pos =  calcParentsNodePos(this.father, this.mother, "curve") ;
+        }else{
+            pos =  calcParentsNodePos(this.father, this.mother, "line") ;
+        }
         this.parentsNode.position.set( pos.x, pos.y, pos.z);
         this.attach(this.parentsNode);
-        //console.log("parentsNode:", this.parentsNode );
+        console.log("parentsNode:", this.parentsNode );
     }
 
     public addKinshipNode() {
@@ -122,30 +124,7 @@ export class Kinship extends THREE.Group {
     }
 
     public addKidsKinshipLink(type="xz") {
-        /*
-            这里会涉及到孩子的位置的计算，孩子的位置是会受到其父母的单元归属及孩子的单元归属的影响的，情况分类如下：
-            1、父母在同一个单元：
-               1）子与父母在同一个单元
-               2）子与父母不在同一个单元
-            2、父母不在同一个单元：
-                1）子与父在同一单元
-                2）子与母在同一单元
-                3）子在父、母之外的单元 
-        */
         if( this.kids.length == 0) return;
-        // 以下代码为计算孩子的位置
-        // var R = 5;
-        // var pos =  this.kinshipNode.position.clone();
-        // let theta = Math.PI * 2 / this.kids.length;
-        // let i = 0;
-        // let x = 0, y = 0, z = 0;
-        // this.kids.forEach(kid => {
-        //     let pos = calcKidPos(this.kinshipNode, kid);
-        //     //console.log("kid:", kid, " kid pos:", pos);
-        //     kid.position.set(pos.x, pos.y, pos.z);
-        //     this.kinshipNode.addKid(kid);
-        // })
-        
         // 创建孩子Monkey 与 KinshipNode的连接线
         this.kids.forEach(kid =>{
             let link = new KidKinshipNodeLink(this.kinshipNode, kid);
@@ -153,9 +132,6 @@ export class Kinship extends THREE.Group {
             kid.kidKinshipLink = link;
             
         })
-        // links.forEach(e => {
-        //     this.kinshipNode.add(e);
-        // });
         
     }
 
