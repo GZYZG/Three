@@ -92,11 +92,11 @@ export class Application{
         for(let i = 0; i < 12; i++){
             let t = Math.random();
             if( t < 0.8){
-                unit = new OMU(15);
+                unit = new OMU(10);
             }else if( t < 0.93 ){
-                unit = new AMU(15);
+                unit = new AMU(8);
             }else{
-                unit = new FIU(10);
+                unit = new FIU(8);
             }
             units.push(unit);
             unit.allMembers.forEach( m =>{
@@ -129,8 +129,8 @@ export class Application{
         var allKinships = new Array<Kinship>();
         for(let i = 0; i < kinnum; i++){
             // 挑选一个成年雄性
-            let father = null;
-            let mother = null;
+            let father : Monkey = null;
+            let mother : Monkey = null;
             while( !father){
                 let nth = Math.ceil( Math.random() * (units.length - 1) );
                 let picked = units[nth];
@@ -172,11 +172,13 @@ export class Application{
                     kid = picked.currentMembers[ randomInt(0, num-1) ];
                 }
                 if( allkids.has(kid) ) continue;
-                kid = kid.deepCopy();
-                kids.add( kid);
                 allkids.add( kid);
+                father.addKid(kid);
+                mother.addKid(kid);
                 kid.father = father;
                 kid.mother = mother;
+                kid = kid.deepCopy();
+                kids.add( kid);
             }
             
             let _kids = new Array<Monkey>();

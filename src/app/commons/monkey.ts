@@ -1,8 +1,10 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA, MALE_GEMOMETRY, FEMALE_GEOMETRY } from './basis';
+import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA, MALE_GEMOMETRY, FEMALE_GEOMETRY, MONKEY_GEN_ID } from './basis';
 import { Unit} from './Unit';
 import { Kinship } from './Kinship';
 import { KidKinshipNodeLink } from './LineFactory';
+import { fillBlanks} from "./Dom";
+
 
 export interface Selectable {
     selected: () => void;
@@ -10,7 +12,7 @@ export interface Selectable {
 }
 
 export abstract class Monkey extends THREE.Mesh implements Selectable{
-    readonly _ID : number;
+    private _ID : number;
     public _name : string;
     private _genda: GENDA;
     readonly isMonkey : boolean;
@@ -27,6 +29,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
 
     public unselectedMat : THREE.Material | THREE.Material[];
     public selectedMat : THREE.Material | THREE.Material[];
+    public SELECTED : boolean;
 
     constructor( genda:GENDA, id:number, name:string, unit: Unit, father?: Male, mother?: Female, birthDate ?: Date ){
         super();
@@ -51,6 +54,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.kidKinshipLink = null;
         this.mirror = new Set<Monkey>();
         this.selectedMat = this.unselectedMat = null;
+        this.SELECTED = false;
     }
 
     public changePosition(pos : THREE.Vector3){
@@ -68,6 +72,8 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     public get ID (){
         return this._ID;
     }
+
+
 
     public get name (){
         return this._name;
@@ -128,9 +134,15 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
 
     public deepCopy(){
         let ret = this.clone();
+        ret._ID = this.ID;
         ret.unit = this.unit;
         ret.name += "-cloned";
+        ret.father = this.father;
+        ret.mother = this.mother;
+        ret._kids = this.kids;
         ret.material = new THREE.MeshBasicMaterial( { color : 0x333333})
+        this.mirror.add(ret);
+        ret.mirror.add(this);
         return ret;
     }
 
@@ -142,10 +154,25 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         }
         
         this.material = this.selectedMat;
+        fillBlanks(this);
+        this.SELECTED = true;
+        this.mirror.forEach( m => {
+            if( !m.SELECTED) {
+                m.selected() 
+                m.SELECTED = true;
+            }
+        });
     }
 
     public unselected () {
         this.material = this.unselectedMat;
+        this.SELECTED = false;
+        this.mirror.forEach( m => {
+            if( m.SELECTED) {
+                m.unselected()
+                m.SELECTED = false;
+            }
+        } );
     }
     
 }

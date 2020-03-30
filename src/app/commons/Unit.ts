@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt }from './basis';
+import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt, MONKEY_GEN_ID }from './basis';
 import { Monkey, Male, Female } from './monkey';
 import { Kinship} from './Kinship';
 import { MeshNormalMaterial } from '../threelibs/three';
@@ -281,11 +281,11 @@ export class OMU extends Unit {
             var _z = Math.sin( i * seg * t ) * rk;
             if( Math.random() <= maleRatio){
                 // 生成一个雄性
-                monkey = new Male(i+1, this.name+'.'+layerType+'.'+(i+1).toString(), this )
+                monkey = new Male(MONKEY_GEN_ID(), this.name+'.'+layerType+'.'+(i+1).toString(), this )
                 //console.log( "cube : ", cube.position);
             } else {
                 // 生成一个雌性
-                monkey = new Female(i+1, this.name+'.'+layerType+'.'+(i+1).toString(), this );
+                monkey = new Female(MONKEY_GEN_ID(), this.name+'.'+layerType+'.'+(i+1).toString(), this );
             }
             //monkey.position.set( x + _x, y + _y, z + _z);
             //monkey.changePosition( new THREE.Vector3(x + _x, y + _y, z + _z) );
@@ -308,11 +308,11 @@ export class OMU extends Unit {
         for( var i = 0; i < n; i++) {
             if( Math.random() <= maleRatio){
                 // 生成一个雄性
-                let kid = new Male(i+1, this.name+'.Babe.Boy.'+(i+1).toString(), this );
+                let kid = new Male(MONKEY_GEN_ID(), this.name+'.Babe.Boy.'+(i+1).toString(), this );
                 kids.push(kid);
             } else {
                 // 生成一个雌性
-                let kid = new Female(i+1, this.name+'.Babe.Girl.'+(i+1).toString(), this );
+                let kid = new Female(MONKEY_GEN_ID(), this.name+'.Babe.Girl.'+(i+1).toString(), this );
                 kids.push(kid);
             }
             
@@ -361,10 +361,10 @@ export class AMU extends Unit {
             var _z = Math.sin( i * seg * t ) * rk;
             if( Math.random() <= maleRatio){
                 // 生成一个雄性
-                monkey = new Male(i+1, this.name+'.Male.'+(i+1), this );
+                monkey = new Male(MONKEY_GEN_ID(), this.name+'.Male.'+(i+1), this );
             } else {
                 // 生成一个雌性
-                monkey = new Female(i+1, this.name+'.Female.'+(i+1), this );
+                monkey = new Female(MONKEY_GEN_ID(), this.name+'.Female.'+(i+1), this );
             }
             //monkey.position.set( x + _x, y + _y, z + _z);
             this.add(monkey);

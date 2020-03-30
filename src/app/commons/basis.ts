@@ -2,6 +2,19 @@ import { Monkey, Male, Female } from "./monkey";
 import { ParentsNode, KinshipNode} from './Kinship';
 import * as THREE from 'three'
 
+// 用于产生猴子的ID
+function GEN_ID(){
+    var ID = 0;
+    return function(){
+        let t = ID++;
+        return t;
+    }
+    
+}
+
+
+export var MONKEY_GEN_ID = GEN_ID();
+
 export const enum UNIT_TYPE {
     OMU="OMU",
     AMU="AMU",
