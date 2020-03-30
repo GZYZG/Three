@@ -35,6 +35,15 @@ Object3D的position属性时相对坐标，指相对于父对象的坐标。若�
 ### 5. bugs
 1.Uncaught TypeError: Cannot read property 'boundingSphere' of undefined
 > 问题出在renderer调用render函数时，scene的物体没有geometry。
+
+2.This module is declared with using 'export =', and can only be used with a default import when using the 'esModuleInterop' flag.
+>在导入jquery时出错，出错的导入方式是：
+```typescript 
+import $ from "jquery"
+//正确的导入方式为：
+import $ require("jquery")
+```
+
 参考：[Cannot read property 'boundingSphere' of undefined](https://stackoverflow.com/questions/51057266/cannot-read-property-boundingsphere-of-undefined)  
 
 
