@@ -2,10 +2,11 @@ import { Unit} from './Unit';
 import { Monkey } from './monkey';
 
 export class Frame {
-    public id : number;
+    public ID : number;
     public moment : Date;   // Frame 所属的时刻
     public nextFrame : Frame;
     public prevFrame : Frame;
+    
     public newUnits : Array<object>;  // 新增单元
     public vanishUnits : Array<Unit>;   // 消失或者解散的单元
     public newMonkeys : Array<object>;  // 新进入社群的猴子，包括新出生的猴子，都需要进入某个单元

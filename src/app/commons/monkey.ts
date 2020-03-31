@@ -92,7 +92,13 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     }
 
     public addKid( kid : Monkey ){
+        if( this._kids.has(kid)) return;
         this._kids.add(kid);
+        if(this.genda == GENDA.MALE){
+            kid.father = this;
+        } else{
+            kid.mother = this;
+        }
     }
     
     public get kids(){

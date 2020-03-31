@@ -2,7 +2,7 @@ import { Monkey, Male, Female } from "./monkey";
 import { ParentsNode, KinshipNode} from './Kinship';
 import * as THREE from 'three'
 
-// 用于产生猴子的ID
+// 用于产生的ID
 function GEN_ID(){
     var ID = 0;
     return function(){
@@ -12,8 +12,11 @@ function GEN_ID(){
     
 }
 
-
+// 用于产生单元的ID
+export var UNIT_GEN_ID = GEN_ID();
+// 用于产生猴子的ID
 export var MONKEY_GEN_ID = GEN_ID();
+
 
 export const enum UNIT_TYPE {
     OMU="OMU",
@@ -23,17 +26,17 @@ export const enum UNIT_TYPE {
 
 export const enum AGE_LEVEL {
     // 将单元分为五层：成年雌性层、成年雄性层（无）、亚成年雄性层、亚成年雌性层（无）、青年猴层、少年猴层、婴幼猴层
-    AF="AF",
-    AM="AM",
-    SAM="SAM",
-    SAF="SAF",
-    YMonkey="YMonkey",
-    JMonkey="JMonkey",
-    IMonkey="IMonkey",
+    AF="AF",    // Adult Female
+    AM="AM",    // Adult Male
+    SAM="SAM",  // Sub Adult Male
+    SAF="SAF",  // Sub Adult Female
+    YMonkey="YMonkey",  // Young Monkey
+    JMonkey="JMonkey",  // Juvenile Monkey
+    IMonkey="IMonkey",  // Infant Monkey
     // 将单元分为3层：成年层、青年层、少年层
-    ADULT="ADULT",
-    YOUNG="YOUNG",
-    JUVENILE="JUVENILE"
+    ADULT="ADU", // ADULT
+    YOUNG="YOU", // YOUNG
+    JUVENILE="JUV" // JUVENILE
 };
 
 export const enum GENDA {
@@ -171,8 +174,9 @@ export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, 
         case 'xz': 
             ret.z = Math.sin( i * theta ) * R;
             ret.x = Math.cos( i * theta ) * R;
-            ret.add(kinshipNode.position.clone().add( kid.getUnit().position.clone().negate() ) );
-            ret.y = pos.y;
+            // 将kid以作为kinshipnode的子节点时不需要一下两行代码
+            // ret.add(kinshipNode.position.clone().add( kid.getUnit().position.clone().negate() ) );
+            // ret.y = pos.y;
             break;
         case 'xy':
             ret.x = Math.sin( i * theta ) * R;

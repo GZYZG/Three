@@ -25,6 +25,7 @@ export class KinshipNode extends THREE.Mesh {
 
     public addKid( kid : Monkey ){
         this._kids.push( kid );
+        this.attach(kid);
     }
 }
 
@@ -52,25 +53,25 @@ export class Kinship extends THREE.Group {
     public KPNodeLink : KPNodeLink;
     public kidLinks : Array<object>;
 
-    constructor (father : Male, mother : Female, kids : Array<Monkey>, unitRadius : number = 30) {
+    constructor (father : Male, mother : Female, kids : Array<Monkey>) {
         super();
         
         this.father = father;
         this.mother = mother;
-        this.kids = new Array<Monkey>();
+        this.kids = kids;
         
         
+        
+    }
+    
+    public layout(){
         this.addParentsLink();
         this.addParentsNode();
         this.addKinshipNode();
 
         this.addKPNodeLink();
-        kids.forEach( kid => {
-            this.addKid(kid);
-        });
         this.addKidsKinshipLink();
     }
-    
     
 
     public addParentsLink() {
@@ -114,17 +115,16 @@ export class Kinship extends THREE.Group {
     }
 
     public addKid( kid : Monkey ){
-        // 当父母子均在同一单元时会重新计算孩子的位置
         this.kids.push( kid );
-        this.kinshipNode.addKid(kid);
-        let pos = calcKidPos(this.kinshipNode, kid);
-        kid.position.set(pos.x, pos.y, pos.z);
-        
-        
     }
 
     public addKidsKinshipLink(type="xz") {
         if( this.kids.length == 0) return;
+        this.kids.forEach( kid =>{
+            this.kinshipNode.addKid(kid);
+            let pos = calcKidPos(this.kinshipNode, kid);
+            kid.position.set(pos.x, pos.y, pos.z);
+        });
         // 创建孩子Monkey 与 KinshipNode的连接线
         this.kids.forEach(kid =>{
             let link = new KidKinshipNodeLink(this.kinshipNode, kid);

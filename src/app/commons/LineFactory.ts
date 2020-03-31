@@ -160,8 +160,11 @@ export class KidKinshipNodeLink extends Line2{
         this.material = mat;
         this.kinshipNode = kinshipNode;
         var geo = new LineGeometry();
-        let kn = calcMonkeyCommunityPos(kid);
-        kn.add( this.kinshipNode.position.clone().negate() );
+        // 将kid的不作为kinshipnode的子节点，所以要计算孩子的社群位置
+        // let kn = calcMonkeyCommunityPos(kid);
+        // kn.add( this.kinshipNode.position.clone().negate() );
+        // 将孩子的分身以add的方法作为kinshipnode的子节点， 所以直接使用孩子的相对位置，即position
+        let kn = kid.position;
 
         //console.log(pn, kn);
         //geo.setPositions(new Array(pn.x, pn.y, pn.z, kn.x, kn.y, kn.z ) );
