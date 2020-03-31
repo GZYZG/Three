@@ -13,6 +13,7 @@ import { GUI } from './threelibs/dat.gui.module';
 import { UNIT_RING, UNITNUM_ON_RING, STARTRADIUS, RINGWIDTH, UNIT_TYPE, GENDA, randomInt } from './commons/basis';
 import { unitsLayout, OMULayout, AMULayout, FIULayout } from './commons/PositionCalc';
 import { Kinship } from './commons/Kinship';
+import { Community } from './debug/TestData';
 
 var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
@@ -70,7 +71,9 @@ export class Application{
         console.log( info );
 
         this.initHelpers();
-        this.addUnits();
+        var commu = new Community(12);
+        this.scene.add(commu);
+        commu.layout();
 
         var orbitControl = new OrbitControls(this.camera, this.renderer.domElement);
         // 添加惯性
@@ -83,118 +86,6 @@ export class Application{
         rendererContainer.addEventListener('resize', () => this.onWindowResize() );
         self = this;
         this.animate();
-    }
-
-    public addUnits() {
-        var units = new Array<Unit>();
-        var unit:Unit;
-        // 先创建一定数量的单元，但是先不设置坐标
-        for(let i = 0; i < 12; i++){
-            let t = Math.random();
-            if( t < 0.8){
-                unit = new OMU(10);
-            }else if( t < 0.93 ){
-                unit = new AMU(8);
-            }else{
-                unit = new FIU(8);
-            }
-            units.push(unit);
-            unit.allMembers.forEach( m =>{
-                monkeys.push(m);
-            })
-        }
-        console.log("units:", units);
-        // 对 单元的位置进行布局
-        unitsLayout(units);
-  
-        units.forEach( u =>{
-            switch( u.unitType ){
-                case UNIT_TYPE.OMU:
-                    OMULayout( u);
-                    break;
-                case UNIT_TYPE.AMU:
-                    AMULayout(u);
-                    break;
-                case UNIT_TYPE.FIU:
-                    FIULayout(u);
-                    break;
-            }
-
-            this.scene.add(u);
-        })
-
-        // 随机挑选父母，生成孩子
-        let kinnum = randomInt(5,12);
-        let allkids = new Set<Monkey>();
-        var allKinships = new Array<Kinship>();
-        for(let i = 0; i < kinnum; i++){
-            // 挑选一个成年雄性
-            let father : Monkey = null;
-            let mother : Monkey = null;
-            while( !father){
-                let nth = Math.ceil( Math.random() * (units.length - 1) );
-                let picked = units[nth];
-                if( picked.unitType == UNIT_TYPE.OMU){
-                    father = picked.mainMale;
-                }else if( picked.unitType == UNIT_TYPE.AMU){
-                    let num = picked.currentMembers.length;
-                    father = picked.currentMembers[ randomInt(0, num-1) ];
-                }else {
-                    let males = picked.currentMembers.filter( e => e.genda == GENDA.MALE);
-                    if( males.length == 0)  continue;
-                    father = males[ randomInt(0, males.length-1) ];
-                }
-            }
-
-            while( !mother){
-                let nth = Math.ceil( Math.random() * (units.length - 1) );
-                let picked = units[nth];
-                if( picked.unitType == UNIT_TYPE.OMU){
-                    mother = picked.adultLayer[ randomInt(1, picked.adultLayer.length-1 ) ];
-                }else if( picked.unitType == UNIT_TYPE.AMU){
-                }else {
-                    let females = picked.currentMembers.filter( e => e.genda == GENDA.FEMALE);
-                    if( females.length == 0)  continue;
-                    mother = females[randomInt(0, females.length) ];
-                }
-            }
-
-            let kidnum = randomInt(1, 3);
-            let kids = new Set<Monkey>();
-            while( kids.size < kidnum){
-                let nth = Math.ceil( Math.random() * (units.length - 1) );
-                let picked = units[nth];
-                let kid : Monkey;
-                if( picked.unitType == UNIT_TYPE.OMU){
-                    kid = picked.juvenileLayer[ randomInt(0, picked.juvenileLayer.length-1 )];
-                }else{
-                    let num = picked.currentMembers.length;
-                    kid = picked.currentMembers[ randomInt(0, num-1) ];
-                }
-                if( allkids.has(kid) ) continue;
-                allkids.add( kid);
-                father.addKid(kid);
-                mother.addKid(kid);
-                kid.father = father;
-                kid.mother = mother;
-                kid = kid.deepCopy();
-                kids.add( kid);
-            }
-            
-            let _kids = new Array<Monkey>();
-            kids.forEach( k =>{
-                _kids.push(k);
-                //this.scene.add(k);
-                k.unit.add(k);
-                console.log("cloned: ", k);
-            })
-            let ks = new Kinship(father, mother, _kids);
-            allKinships.push(ks);
-            this.scene.add(ks);
-        }
-
-        console.log("allKinships: ", allKinships);
-        
     }
 
     private initDragControl( objs : Array<object>) {
@@ -424,9 +315,5 @@ export class Application{
         }
     }
     
-
-}
-
-var addRandomUnit = function(){
 
 }
