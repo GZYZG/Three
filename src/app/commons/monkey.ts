@@ -24,8 +24,13 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     private _kids : Set<Monkey>;
     public kinship : Array<Kinship>;
     public kidKinshipLink : KidKinshipNodeLink;
+
+    public isMirror : boolean;
     public mirror : Set<Monkey>;
     private _unit : Unit;
+    public inCommu : boolean;
+    public isAlive : boolean;
+    public isMainMale : boolean;
 
     public unselectedMat : THREE.Material | THREE.Material[];
     public selectedMat : THREE.Material | THREE.Material[];
@@ -52,9 +57,17 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.unit = unit;
         this.kinship = new Array<Kinship>();
         this.kidKinshipLink = null;
-        this.mirror = new Set<Monkey>();
+        
         this.selectedMat = this.unselectedMat = null;
         this.SELECTED = false;
+        this.inCommu = true;
+        this.isAlive = true;
+        this.isMainMale = false;
+
+        this.ageLevel = AGE_LEVEL.JUVENILE;
+
+        this.mirror = new Set<Monkey>();
+        this.isMirror = false;
     }
 
     public changePosition(pos : THREE.Vector3){
@@ -67,7 +80,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
        
     }
 
-    public getUnit():Unit { return this.unit; }
+    //public getUnit():Unit { return this.unit; }
     
     public get ID (){
         return this._ID;
@@ -148,7 +161,8 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         ret._kids = this.kids;
         ret.material = new THREE.MeshBasicMaterial( { color : 0x333333})
         this.mirror.add(ret);
-        ret.mirror.add(this);
+        ret.mirror = this.mirror;
+        ret.isMirror = true;
         return ret;
     }
 
@@ -179,6 +193,41 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
                 m.SELECTED = false;
             }
         } );
+    }
+
+    public leaveUnit(){
+        if( this.unit == null) return;
+        this.isMirror = true;
+    }
+
+    public enterUnit( unit : Unit){
+        let temp = unit.allMembers.filter( m => m.ID == this.ID );
+        let mirror;
+        if( temp.length != 0){
+            // 将进入的单元中包含了这个猴子的分身，则只改变分身的属性
+            mirror = temp[0];
+            mirror.isMirror = false;
+            //mirror.unit = unit;
+        } else {
+            // 将进入的单元中无这个猴子的分身，则创建一个mirror加入到该单元
+            if( this.mirror.size == 0){
+                this.mirror.add(this);
+                this.isMirror = false;
+                this.unit = unit;
+                unit.allMembers.push(this);
+                unit.add(this);
+            } else{
+                mirror = this.deepCopy();
+                mirror.isMirror = false;
+                mirror.unit = unit;
+                unit.allMembers.push(mirror);
+                unit.add( mirror);
+            }
+            
+        }
+        
+        
+        
     }
     
 }
