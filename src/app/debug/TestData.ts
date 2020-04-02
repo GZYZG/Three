@@ -12,9 +12,9 @@
 //  5        gsz         MALE        1961/12/30       -1           -1        1
 //  6        sjm         FEMALE      1974/1/1         -1           -1        1
 import { Unit, OMU, AMU, FIU } from "../commons/Unit";
-import { GENDA, UNIT_TYPE, randomInt } from "../commons/basis";
+import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL } from "../commons/basis";
 import { Kinship } from "../commons/Kinship";
-import { Monkey, Male, Female } from "../commons/monkey";
+import { Monkey, Male, Female } from "../commons/Monkey";
 import { unitsLayout, OMULayout, AMULayout, FIULayout } from "../commons/PositionCalc";
 import * as THREE from "three";
 
@@ -133,6 +133,7 @@ export class Community extends THREE.Object3D{
     public allunits : Array<Unit>;
     public allkinships : Array<Kinship>;
     public allmonkeys : Array<Monkey>;
+    public vanishedmonkeys : Array<Monkey>;
 
     constructor(baseUnitNum: number = 12){
         super();
@@ -230,6 +231,21 @@ function genParents(units : Array<Unit>){
     }
 }
 
+function genMonkey(){
+    let monkey;
+    if(Math.random() < .5){
+        monkey = new Male(MONKEY_GEN_ID(), "", null);
+    } else {
+        monkey = new Female(MONKEY_GEN_ID(), "", null);
+    }
+    let rate = Math.random();
+    if(rate < .33)  monkey.ageLevel = AGE_LEVEL.JUVENILE;
+    else if(rate < .67) monkey.ageLevel = AGE_LEVEL.YOUNG;
+    else    monkey.ageLevel = AGE_LEVEL.ADULT;
+
+    return monkey;
+
+}
 
 function baseCommunity(unitNum : number){
     var units = new Array<Unit>();
@@ -245,6 +261,7 @@ function baseCommunity(unitNum : number){
         }else{
             unit = new FIU(8);
         }
+        unit.addMonkeys();
         units.push(unit);
         unit.allMembers.forEach( m =>{
             monkeys.push(m);
@@ -277,18 +294,13 @@ function baseCommunity(unitNum : number){
             allkids.add( kid);
             father.addKid(kid);
             mother.addKid(kid);
-            // if(mother.unit != kid.unit || father.unit != kid.unit){
-            //     // 跨单元的亲缘关系，则为该孩子生成一个分身
-            //     kid = kid.deepCopy();
-            //     console.log("cloned: ", kid);
-            // }
             // 所有的孩子都用分身表示
             kid = kid.deepCopy();
             kids.push( kid);
         }
 
         // 如果father、mother已经有孩子了，直接将孩子添加到已有的kinship里
-        let t = allKinships.filter(k => k.father == father && k.mother == mother)
+        let t = allKinships.filter(k => k.father.ID == father.ID && k.mother.ID == mother.ID)
         if( t.length == 0){
             let ks = new Kinship(father, mother, kids);
             allKinships.push(ks);
@@ -310,10 +322,91 @@ function baseCommunity(unitNum : number){
 }
 
 
-function genFrame(commu : Community){
+export function genFrame(commu : Community){
     let allmonkeys = commu.allmonkeys;
     let allunits = commu.allunits;
     let allkinships = commu.allkinships;
+
+    // 从社群中消失的猴子的数量
+    let vainshNum  = randomInt(0, 5);
+    for(let i = 0; i < vainshNum; i++){
+        let monkey;
+        let temp = allmonkeys.filter( m => m.inCommu && m.isAlive);
+        monkey = temp[randomInt(0, temp.length-1) ];
+        monkey.inCommu = false;
+        if(Math.random() < .2){
+            // monkey 死亡
+            monkey.isAlive = false;
+        } else{
+            // monkey 离开社群
+            monkey.leaveUnit();
+            
+        }
+    }
+
+    // 进入社群的monkey
+    let vansihed = allmonkeys.filter( m => !m.inCommu && m.isAlive);
+    // 以前消失的猴嘴重回社群
+    let reenterNum = randomInt(0, vansihed.length);
+    let enterMonkeys = new Array<Monkey>();
+    for(let i = 0; i < reenterNum; i++){
+        enterMonkeys.push( vansihed[i]);
+
+    }
+    // 未知的猴子进入社群
+    for(let i = randomInt(0, 4); i > 0; i--){
+        let monkey  = genMonkey();
+        if(Math.random() < .1){
+            let parents = genParents(allunits);
+            parents.dad.addKid(monkey);
+            parents.mom.addKid(monkey);
+            
+            let kid = monkey.deepCopy();
+            let t = allkinships.filter(k => k.father == parents.dad && k.mother == parents.mom)
+            if( t.length == 0){
+                let ks = new Kinship(parents.dad, parents.mom, new Array<Monkey>(kid));
+                allkinships.push(ks);
+            }else{
+                let ks = t[0];
+                ks.addKid(kid);
+            }
+        } 
+        enterMonkeys.push(monkey);
+    }
+    // 为进入社群的猴子分配单元
+    enterMonkeys.forEach(m =>{
+        allmonkeys.push(m);
+        if(Math.random() < .4){
+            let fiu = new FIU(8);
+            m.enterUnit(fiu);
+        } else{
+            let picked = allunits[ randomInt(0, allunits.length-1) ];
+            m.enterUnit( picked );
+            if(picked.unitType == UNIT_TYPE.OMU && m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.MALE && Math.random() < .2){
+                // m 挑战主雄成功
+                picked.mainMale = m;
+                m.isMainMale = true;
+            } 
+        }
+    })
+
+    // 成年雌、雄性的迁移
+    let migrateMaleNum = randomInt(0, 3);
+    let migrateFemaleNum = randomInt(0, 4);
+    for(let i = 0; i < migrateMaleNum; i++){
+        let temp = allmonkeys.filter(m => m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.MALE && !m.isMainMale)
+        let picked = temp[ randomInt(0, temp.length-1) ];
+        let toUnits = allunits.filter( u => u != picked.unit );
+        picked.leaveUnit();
+        picked.enterUnit( toUnits[randomInt(0, toUnits.length-1) ] );
+    }
+    for(let i = 0; i < migrateFemaleNum; i++){
+        let temp = allmonkeys.filter(m => m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.FEMALE)
+        let picked = temp[ randomInt(0, temp.length-1) ];
+        let toUnits = allunits.filter( u => u != picked.unit );
+        picked.leaveUnit();
+        picked.enterUnit( toUnits[randomInt(0, toUnits.length-1) ] );
+    }
 
     // 生成的孩子的数目
     let babeNum : number;
@@ -325,7 +418,36 @@ function genFrame(commu : Community){
         babeNum = randomInt(16, 20);
     }
 
-    
+    // 挑选 babeNum 对parents
+    let parentsArr = new Array<object>();
+    let kids = new Array<Monkey>();
+    for(let i = 0; i < babeNum; i++){
+        let parents = genParents(allunits);
+        let kid : Monkey;
+        let unit = parents.mom.unit;
+        if( Math.random() < .5){
+            kid = new Female(MONKEY_GEN_ID(), unit.name+'.'+AGE_LEVEL.JUVENILE+'.'+unit.juvenileLayer.length.toString(), unit);
+        } else {
+            kid = new Male(MONKEY_GEN_ID(), unit.name+'.'+AGE_LEVEL.JUVENILE+'.'+unit.juvenileLayer.length.toString(), unit );
+        }
+        kids.push(kid);
+        parents.mom.addKid(kid);
+        parents.dad.addKid(kid);
+        kid = kid.deepCopy();
+        let t = allkinships.filter(k => k.father == parents.dad && k.mother == parents.mom)
+        if( t.length == 0){
+            let ks = new Kinship(parents.dad, parents.mom, new Array<Monkey>(kid));
+            allkinships.push(ks);
+        }else{
+            let ks = t[0];
+            ks.addKid(kid);
+        }
+
+    }
+
+    commu.layout();
+
+
 
 }
 
