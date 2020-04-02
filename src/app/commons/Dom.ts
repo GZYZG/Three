@@ -1,9 +1,8 @@
-import {Monkey} from "./monkey";
+import {Monkey} from "./Monkey";
+import { genFrame} from "../debug/TestData";
 import $ = require("jquery");
 
 export function fillBlanks(monkey : Monkey){
-    
-    //console.log("\n\n", $('.center'),"\n\n\n");
     let blanks = document.getElementById("monkey_info").children;
     let info = new Array();
     
@@ -34,3 +33,4 @@ export function fillBlanks(monkey : Monkey){
     }
 
 }
+

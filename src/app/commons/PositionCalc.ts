@@ -4,7 +4,7 @@
 // 单元的位置也需要单独计算
 import * as THREE from 'three';
 import { Unit, OMU, AMU, FIU } from "./Unit";
-import { Monkey, Male, Female } from './monkey';
+import { Monkey, Male, Female } from './Monkey';
 import { UNIT_RING, UNITNUM_ON_RING, STARTRADIUS, RINGWIDTH, AGE_LEVEL, LAYER_COLOR } from "./basis";
 import { Kinship } from './Kinship';
 
@@ -38,7 +38,7 @@ export function OMULayout( unit : OMU){
     let young = new Array<Monkey>();
     let juvenile = new Array<Monkey>();
 
-    unit.currentMembers.forEach(m => {
+    unit.allMembers.forEach(m => {
         switch(m.ageLevel) {
             case AGE_LEVEL.ADULT:
                 adult.push(m);

@@ -2,7 +2,7 @@ import { LineGeometry} from '../threelibs/LineGeometry';
 import { LineMaterial} from '../threelibs/LineMaterial';
 import { Line2 } from '../threelibs/Line2';
 import * as THREE from 'three';
-import { Male, Female, Monkey } from './monkey';
+import { Male, Female, Monkey } from './Monkey';
 import { ParentsNode, KinshipNode} from './Kinship';
 import { Line } from '../threelibs/three';
 import { LineSegments } from '../threelibs/three.module';

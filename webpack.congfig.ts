@@ -8,7 +8,7 @@ module.exports = {
   //webpack的打包模式，可以为 production / development
   mode: 'development',
   entry: './src/Main.ts',
-  //entry: './src/app/application.ts',
+  //entry: './src/assets/js/test.ts',
   module: {
     rules: [
       {

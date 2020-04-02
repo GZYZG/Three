@@ -1,4 +1,4 @@
-import { Monkey, Male, Female} from './monkey';
+import { Monkey, Male, Female} from './Monkey';
 import { ParentsLink, KPNodeLink, KidKinshipNodeLink } from './LineFactory';
 import * as THREE from 'three';
 import { Colors } from 'three';
@@ -6,8 +6,6 @@ import { LineGeometry } from '../threelibs/LineGeometry';
 import { LineMaterial } from '../threelibs/LineMaterial';
 import { Line2 } from '../threelibs/Line2';
 import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos } from './basis';
-
-
 
 export class KinshipNode extends THREE.Mesh {
     public kpNodeLink : KPNodeLink;
@@ -41,7 +39,6 @@ export class ParentsNode extends THREE.Mesh {
     }
 }
 
-
 export class Kinship extends THREE.Group {
     // 一个Kinship对象代表一对夫妇及其所生的所有孩子
     public father : Male;
@@ -73,7 +70,6 @@ export class Kinship extends THREE.Group {
         this.addKidsKinshipLink();
     }
     
-
     public addParentsLink() {
         let link : ParentsLink;
         if( this.father.unit != this.mother.unit){
@@ -115,6 +111,7 @@ export class Kinship extends THREE.Group {
     }
 
     public addKid( kid : Monkey ){
+        
         this.kids.push( kid );
     }
 

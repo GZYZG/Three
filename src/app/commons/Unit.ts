@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt, MONKEY_GEN_ID, UNIT_GEN_ID }from './basis';
-import { Monkey, Male, Female } from './monkey';
+import { Monkey, Male, Female } from './Monkey';
 import { Kinship} from './Kinship';
 import { MeshNormalMaterial } from '../threelibs/three';
 import { MOUSE } from 'three';
@@ -20,13 +20,12 @@ export abstract class Unit extends THREE.Group {
     public youngLayer : Array<Monkey>;
     public juvenileLayer : Array<Monkey>;
 
-    public currentMembers : Array<Monkey>;  // 单元当前的成员
     public allMembers : Array<Monkey>;      // 曾属于单元的所有成员
     constructor( radius : number, unitType : UNIT_TYPE, createdDate? : Date ) {
         super();
         this.radius = radius;
         // this.name = name;
-        this.currentMembers = new Array<Monkey>();
+        //this.currentMembers = new Array<Monkey>();
         this.allMembers = new Array<Monkey>();
         if( !createdDate){
             this.createdDate = createdDate;
@@ -79,21 +78,11 @@ export abstract class Unit extends THREE.Group {
         return this._currentMoment;
     }
 
-    public pushMonkey( monkey : Monkey){
-        if( this.currentMembers.includes( monkey )){
-            return;
-        }
-        this.currentMembers.push( monkey );
-        monkey.unit = this;
+    public get currentMembers(){
+        return this.allMembers.filter( m => !m.isMirror && m.inCommu && m.isAlive);
     }
 
-    public popMonkey( monkey : Monkey ){
-        if( ! this.currentMembers.includes( monkey)){
-            return;
-        }
-        this.currentMembers.push(monkey);
-        monkey.unit = null;
-    }
+    public abstract addMonkeys():void;
 }
 
 export class OMU extends Unit {
@@ -110,16 +99,21 @@ export class OMU extends Unit {
         
         this._mainMale = new Male(MONKEY_GEN_ID(), this.name+'.'+'主雄', this);
         this._mainMale.ageLevel = AGE_LEVEL.ADULT;
+        this._mainMale.isMainMale = true;
         this.adultLayer.push( this._mainMale );
         this.mainMale.position.set( this.position.x, this.position.y, this.position.z );
         this.add(this.mainMale);
         this.currentMembers.push( this.mainMale );
         this.allMembers.push( this.mainMale);
 
+        
+
+    }
+
+    public addMonkeys(){
         this.addLayer_3( randomInt(2, 5), AGE_LEVEL.ADULT);
         this.addLayer_3( randomInt(2, 4), AGE_LEVEL.YOUNG);
         this.addLayer_3( randomInt(3, 5), AGE_LEVEL.JUVENILE);
-
     }
 
     public get mainMale(){
@@ -130,22 +124,22 @@ export class OMU extends Unit {
         this._mainMale = mainMale;
     }
 
-    public pushMonkey(monkey : Monkey ){
-        super.pushMonkey(monkey);
-        // 判断猴子的年龄，并进入相应的层
-        let timedelta = this.currentMoment.getTime() - monkey.birthDate.getTime();
-        let age = timedelta / 1000 / 60 / 60 / 24 / 365;
-        if( age <  JUVENILE_AGE){
-            this.juvenileLayer.push( monkey );
-        } else if( (monkey.genda == GENDA.MALE && age <= MALE_YOUNG_AGE)  || 
-                   (monkey.genda == GENDA.FEMALE && age <= FEMALE_YOUNG_AGE ) ) {
-            this.youngLayer.push(monkey);
-        } else {
-            this.adultLayer.push(monkey );
-        }
+    // public pushMonkey(monkey : Monkey ){
+    //     super.pushMonkey(monkey);
+    //     // 判断猴子的年龄，并进入相应的层
+    //     let timedelta = this.currentMoment.getTime() - monkey.birthDate.getTime();
+    //     let age = timedelta / 1000 / 60 / 60 / 24 / 365;
+    //     if( age <  JUVENILE_AGE){
+    //         this.juvenileLayer.push( monkey );
+    //     } else if( (monkey.genda == GENDA.MALE && age <= MALE_YOUNG_AGE)  || 
+    //                (monkey.genda == GENDA.FEMALE && age <= FEMALE_YOUNG_AGE ) ) {
+    //         this.youngLayer.push(monkey);
+    //     } else {
+    //         this.adultLayer.push(monkey );
+    //     }
 
         
-    }
+    // }
 
     public addLayer_3(n: number, layerType: AGE_LEVEL) {
         // 为每层随机生成Monkey， 但是不对其进行布局
@@ -207,9 +201,9 @@ export class OMU extends Unit {
             }
             monkey.ageLevel = layerType;
             tempLayer.push(monkey);
-            this.add(monkey);
-            this.allMembers.push(monkey);
-            this.currentMembers.push(monkey);
+            monkey.enterUnit( this);
+            // this.add(monkey);
+            // this.allMembers.push(monkey);
         }
     }
 
@@ -224,6 +218,10 @@ export class AMU extends Unit {
     constructor(radius : number) {
         //let name = 'AMU-'+Math.random().toPrecision(4).toString();
         super(radius, UNIT_TYPE.AMU);
+        
+    }
+
+    public addMonkeys(){
         this.addLayer( 1 + Math.floor( Math.random() * 7 ));
     }
 
@@ -258,10 +256,9 @@ export class AMU extends Unit {
                 // 生成一个雌性
                 monkey = new Female(MONKEY_GEN_ID(), this.name+'.F.'+(i+1), this );
             }
-            //monkey.position.set( x + _x, y + _y, z + _z);
-            this.add(monkey);
-            this.currentMembers.push( monkey );
-            this.allMembers.push( monkey);
+            // this.add(monkey);
+            // this.allMembers.push( monkey);
+            monkey.enterUnit( this);
             monkey.ageLevel = AGE_LEVEL.ADULT;
         }
     }
@@ -271,6 +268,10 @@ export class FIU extends Unit {
     constructor(radius : number) {
         //let name = 'FIU-'+Math.random().toPrecision(4).toString();
         super(radius, UNIT_TYPE.FIU);
+        
+    }
+
+    public addMonkeys(){
         this.addLayer( 1 + Math.floor( Math.random() * 7 ));
     }
 
@@ -305,10 +306,9 @@ export class FIU extends Unit {
                 // 生成一个雌性
                 monkey = new Female(MONKEY_GEN_ID(), this.name+'.F.'+(i+1), this );
             }
-            //monkey.position.set( x + _x, y + _y, z + _z);
-            this.add(monkey);
-            this.currentMembers.push( monkey );
-            this.allMembers.push(monkey);
+            // this.add(monkey);
+            // this.allMembers.push(monkey);
+            monkey.enterUnit( this );
             monkey.ageLevel = AGE_LEVEL.ADULT;
         }
     }

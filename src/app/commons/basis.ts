@@ -1,6 +1,7 @@
-import { Monkey, Male, Female } from "./monkey";
+import { Monkey, Male, Female } from "./Monkey";
 import { ParentsNode, KinshipNode} from './Kinship';
 import * as THREE from 'three'
+import { Community } from "../debug/TestData";
 
 // 用于产生的ID
 function GEN_ID(){
@@ -26,13 +27,13 @@ export const enum UNIT_TYPE {
 
 export const enum AGE_LEVEL {
     // 将单元分为五层：成年雌性层、成年雄性层（无）、亚成年雄性层、亚成年雌性层（无）、青年猴层、少年猴层、婴幼猴层
-    AF="AF",    // Adult Female
-    AM="AM",    // Adult Male
-    SAM="SAM",  // Sub Adult Male
-    SAF="SAF",  // Sub Adult Female
-    YMonkey="YMonkey",  // Young Monkey
-    JMonkey="JMonkey",  // Juvenile Monkey
-    IMonkey="IMonkey",  // Infant Monkey
+    // AF="AF",    // Adult Female
+    // AM="AM",    // Adult Male
+    // SAM="SAM",  // Sub Adult Male
+    // SAF="SAF",  // Sub Adult Female
+    // YMonkey="YMonkey",  // Young Monkey
+    // JMonkey="JMonkey",  // Juvenile Monkey
+    // IMonkey="IMonkey",  // Infant Monkey
     // 将单元分为3层：成年层、青年层、少年层
     ADULT="ADU", // ADULT
     YOUNG="YOU", // YOUNG
@@ -88,6 +89,8 @@ export const UNITNUM_ON_RING = [UNIT_RING.filter(e => e == 0).length,
                                 UNIT_RING.filter(e => e == 4).length,
                                 UNIT_RING.filter(e => e == 6).length
                             ];
+
+//export var COMMUNITY = new Community();
 
 export  function calcMonkeyCommunityPos (monkey : Monkey) : THREE.Vector3{
     let unitPos = monkey.unit.position.clone();
@@ -193,5 +196,7 @@ export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, 
 }
 
 export function randomInt(minNum: number, maxNum: number){
+    if( maxNum <= minNum)
+        return minNum;
     return Math.floor(Math.random()*(maxNum - minNum + 1)+minNum ); 
 }

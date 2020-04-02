@@ -1,5 +1,5 @@
 import { Unit} from './Unit';
-import { Monkey } from './monkey';
+import { Monkey } from './Monkey';
 
 export class Frame {
     public ID : number;

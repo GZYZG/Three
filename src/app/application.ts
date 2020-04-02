@@ -5,15 +5,14 @@ import { TransformControls } from './controls/TransformControls';
 import { TrackballControls } from './controls/TrackballControls';
 import { Stats } from './debug/stats.module';
 import { OMU, AMU, FIU, Unit } from './commons/Unit';
-import { Monkey } from './commons/monkey';
+import { Monkey } from './commons/Monkey';
 import { LineGeometry} from './threelibs/LineGeometry'
 import { LineMaterial} from './threelibs/LineMaterial';
 import { Line2} from './threelibs/Line2';
 import { GUI } from './threelibs/dat.gui.module';
-import { UNIT_RING, UNITNUM_ON_RING, STARTRADIUS, RINGWIDTH, UNIT_TYPE, GENDA, randomInt } from './commons/basis';
 import { unitsLayout, OMULayout, AMULayout, FIULayout } from './commons/PositionCalc';
 import { Kinship } from './commons/Kinship';
-import { Community } from './debug/TestData';
+import { Community, genFrame } from './debug/TestData';
 
 var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
@@ -71,9 +70,18 @@ export class Application{
         console.log( info );
 
         this.initHelpers();
-        var commu = new Community(12);
+        var commu = new Community();
         this.scene.add(commu);
         commu.layout();
+        var btn = $("#next")[0];
+        btn.onclick = function(){
+            try {
+                genFrame(commu);
+            } catch (error) {
+                console.log("\n\n", error,"\n\n");
+            }
+            
+        }
 
         var orbitControl = new OrbitControls(this.camera, this.renderer.domElement);
         // 添加惯性
