@@ -13,6 +13,7 @@ import { GUI } from './threelibs/dat.gui.module';
 import { unitsLayout, OMULayout, AMULayout, FIULayout } from './commons/PositionCalc';
 import { Kinship } from './commons/Kinship';
 import { Community, genFrame } from './debug/TestData';
+import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
 
 var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
@@ -27,7 +28,9 @@ var matLineUnDashed = new LineMaterial({
 });
 var self : any;
 var rendererContainer : any;
+var COMMUNITY : Community = new Community(5);
 
+bindEvents();
 
 export class Application{
     private scene: THREE.Scene;
@@ -46,7 +49,7 @@ export class Application{
     private dragControl : any;
     private transformControl : any ;
     private orbitControl : any;
-    
+    private labelRenderer : any;
 
     constructor() {
         renderer = this.renderer = new THREE.WebGLRenderer( { antialias: true , alpha: true } );
@@ -62,38 +65,41 @@ export class Application{
         // this.createTrackballControl();
         
         rendererContainer = document.getElementsByClassName('center')[0];
-        console.log("rendererContainer:"+rendererContainer.offsetWidth);
+        //console.log("rendererContainer:"+rendererContainer.offsetWidth);
         this.renderer.setSize(rendererContainer.offsetWidth, rendererContainer.offsetHeight);
         rendererContainer.appendChild( this.renderer.domElement );
-
-		var info =	' "W" translate | "E" rotate | "R" scale | "+" increase size | "-" decrease size "Q" toggle world/local space |  Hold "Shift" down to snap to grid "X" toggle X | "Y" toggle Y | "Z" toggle Z | "Spacebar" toggle enabled ';
-        console.log( info );
-
-        this.initHelpers();
-        var commu = new Community();
-        this.scene.add(commu);
-        commu.layout();
-        var btn = $("#next")[0];
-        btn.onclick = function(){
-            try {
-                genFrame(commu);
-            } catch (error) {
-                console.log("\n\n", error,"\n\n");
-            }
-            
-        }
-
-        var orbitControl = new OrbitControls(this.camera, this.renderer.domElement);
+        this.initLabelRenderer();
+    
+        var orbitControl = new OrbitControls(this.camera, this.labelRenderer.domElement);
         // 添加惯性
         orbitControl.enableDamping = true;
         this.orbitControl = orbitControl;
-        //orbitControl.addEventListener( 'change', this.animate );
+
+		//var info =	' "W" translate | "E" rotate | "R" scale | "+" increase size | "-" decrease size "Q" toggle world/local space |  Hold "Shift" down to snap to grid "X" toggle X | "Y" toggle Y | "Z" toggle Z | "Spacebar" toggle enabled ';
+        //console.log( info );
+
+        this.initHelpers();
+        var commu = COMMUNITY ;
+        this.scene.add(commu);
+        commu.layout();
         
-        this.renderer.domElement.addEventListener( 'mousemove', this.pickObject);
+
+        
+        this.labelRenderer.domElement.addEventListener( 'mousemove', this.pickObject);
+        
         window.addEventListener('resize', () => this.onWindowResize() );
         rendererContainer.addEventListener('resize', () => this.onWindowResize() );
         self = this;
+
         this.animate();
+    }
+
+    private initLabelRenderer() {
+        this.labelRenderer = new CSS2DRenderer(); //新建CSS2DRenderer 
+        this.labelRenderer.setSize( rendererContainer.offsetWidth, rendererContainer.offsetHeight);
+        this.labelRenderer.domElement.style.position = 'fixed';
+        this.labelRenderer.domElement.style.top = "0px";
+        rendererContainer.appendChild(this.labelRenderer.domElement);
     }
 
     private initDragControl( objs : Array<object>) {
@@ -264,6 +270,7 @@ export class Application{
         // this.renderer.setSize(window.innerWidth, window.innerHeight);
         // this.camera.aspect = window.innerWidth / window.innerHeight;
         this.renderer.setSize( w, h);
+        this.labelRenderer.setSize(w, h);
         this.camera.aspect = w / h;
         this.camera.updateProjectionMatrix();
         //this.trackballControl.handleResize();
@@ -272,6 +279,7 @@ export class Application{
     private animate() {
 
         renderer.render( scene, camera );
+        this.labelRenderer.render( scene, camera );//渲染
         window.requestAnimationFrame( () => self.animate() );
         this.camera.updateMatrixWorld();
         //this.renderer.render(this.scene, this.camera);
@@ -324,4 +332,11 @@ export class Application{
     }
     
 
+}
+
+function bindEvents(){
+    var btn = $("#next")[0];
+    btn.onclick = function(){
+        genFrame(COMMUNITY);
+    }
 }

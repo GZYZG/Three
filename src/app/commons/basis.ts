@@ -164,7 +164,7 @@ export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, 
     // 父母子均在同一单元
     var ret = new THREE.Vector3();
     // N_SEG 表示 父母子均在同一个单元时的KinshipNode上连的孩子结点数量
-    let N_SEG = 5;
+    let N_SEG = 6;
     var pos =  kinshipNode.position.clone();
     let theta = Math.PI * 2 / N_SEG;
     let i = kinshipNode.kids.indexOf(kid);
@@ -199,4 +199,11 @@ export function randomInt(minNum: number, maxNum: number){
     if( maxNum <= minNum)
         return minNum;
     return Math.floor(Math.random()*(maxNum - minNum + 1)+minNum ); 
+}
+
+export function cleanCache( obj : any ){
+    //if( !( obj instanceof THREE.Object3D ) )    return;
+    if(!obj) return;
+    obj.geometry.dispose();
+    obj.material.dispose();
 }

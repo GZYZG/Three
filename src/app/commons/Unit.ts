@@ -4,6 +4,8 @@ import { Monkey, Male, Female } from './Monkey';
 import { Kinship} from './Kinship';
 import { MeshNormalMaterial } from '../threelibs/three';
 import { MOUSE } from 'three';
+import { CSS2DObject, CSS2DRenderer } from '../threelibs/CSS2DRenderer';
+
 
 
 export abstract class Unit extends THREE.Group {
@@ -16,9 +18,7 @@ export abstract class Unit extends THREE.Group {
     public vanishDate : Date;
     private _currentMoment : Date;
 
-    public adultLayer : Array<Monkey>;
-    public youngLayer : Array<Monkey>;
-    public juvenileLayer : Array<Monkey>;
+    public label : CSS2DObject;
 
     public allMembers : Array<Monkey>;      // 曾属于单元的所有成员
     constructor( radius : number, unitType : UNIT_TYPE, createdDate? : Date ) {
@@ -34,6 +34,22 @@ export abstract class Unit extends THREE.Group {
         }
         this._unitType = unitType;
         this.ID = UNIT_GEN_ID();
+        let container = document.getElementsByClassName('center')[0];
+
+        let laberDiv = document.createElement('div');//创建div容器
+        laberDiv.className = 'label';
+        laberDiv.textContent = this.name;
+        laberDiv.style.marginTop = '-1em';
+        laberDiv.style.display = "block";
+        let label = new CSS2DObject(laberDiv);  
+        label.position.set(0, this.position.y, 0); 
+        this.label = label;
+        this.add(label);
+        
+
+    
+        
+    
     }
 
     public set ID( id : number){
@@ -46,6 +62,18 @@ export abstract class Unit extends THREE.Group {
 
     public get unitType (){
         return this._unitType
+    }
+
+    public get adultLayer() {
+        return this.allMembers.filter( m => m.ageLevel == AGE_LEVEL.ADULT);
+    }
+
+    public get youngLayer() {
+        return this.allMembers.filter( m => m.ageLevel == AGE_LEVEL.YOUNG );
+    }
+
+    public get juvenileLayer() {
+        return this.allMembers.filter( m => m.ageLevel == AGE_LEVEL.JUVENILE );
     }
 
     public get name(){
@@ -93,14 +121,14 @@ export class OMU extends Unit {
     constructor (radius : number) {
         //var name = Math.random().toPrecision(4).toString();
         super( radius, UNIT_TYPE.OMU);
-        this.adultLayer = new Array<Monkey>();
-        this.youngLayer = new Array<Monkey>();
-        this.juvenileLayer = new Array<Monkey>();
+        // this.adultLayer = new Array<Monkey>();
+        // this.youngLayer = new Array<Monkey>();
+        // this.juvenileLayer = new Array<Monkey>();
         
         this._mainMale = new Male(MONKEY_GEN_ID(), this.name+'.'+'主雄', this);
         this._mainMale.ageLevel = AGE_LEVEL.ADULT;
         this._mainMale.isMainMale = true;
-        this.adultLayer.push( this._mainMale );
+        //this.adultLayer.push( this._mainMale );
         this.mainMale.position.set( this.position.x, this.position.y, this.position.z );
         this.add(this.mainMale);
         this.currentMembers.push( this.mainMale );
@@ -155,20 +183,20 @@ export class OMU extends Unit {
             case AGE_LEVEL.ADULT:
                 rk = this.radius;
                 _y = y;
-                maleRatio = -1;
-                tempLayer = this.adultLayer;
+                maleRatio = .1;
+                //tempLayer = this.adultLayer;
                 break;
             case AGE_LEVEL.YOUNG:
                 rk = this.radius * Math.sqrt(8) / 3;
                 _y = -.33 * this.radius;
                 maleRatio = .4;
-                tempLayer = this.youngLayer;
+                //tempLayer = this.youngLayer;
                 break;
             case AGE_LEVEL.JUVENILE:
                 rk = this.radius * Math.sqrt(5) / 3;
                 _y = -.67 * this.radius;
                 maleRatio = .5;
-                tempLayer = this.juvenileLayer;
+                //tempLayer = this.juvenileLayer;
                 break;
             default:
                 break;
@@ -200,7 +228,7 @@ export class OMU extends Unit {
                 monkey = new Female(MONKEY_GEN_ID(), this.name+'.'+layerType+'.'+(i+1).toString(), this );
             }
             monkey.ageLevel = layerType;
-            tempLayer.push(monkey);
+            //tempLayer.push(monkey);
             monkey.enterUnit( this);
             // this.add(monkey);
             // this.allMembers.push(monkey);
@@ -312,4 +340,6 @@ export class FIU extends Unit {
             monkey.ageLevel = AGE_LEVEL.ADULT;
         }
     }
+
+
 }

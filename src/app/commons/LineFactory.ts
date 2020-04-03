@@ -24,7 +24,7 @@ export class ParentsLink extends Line2 {
                 geo = this.lineTypeGeometry();
                 break;
             case "curve":
-                console.log("curve parentslink");
+                //console.log("curve parentslink");
                 geo = this.curveTypeGeometry();
                 break;
             default:

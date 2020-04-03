@@ -32,8 +32,8 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     public isAlive : boolean;
     public isMainMale : boolean;
 
-    public unselectedMat : THREE.Material | THREE.Material[];
-    public selectedMat : THREE.Material | THREE.Material[];
+    public unselectedColor : number;
+    public selectedColor : number;
     public SELECTED : boolean;
 
     constructor( genda:GENDA, id:number, name:string, unit: Unit, father?: Male, mother?: Female, birthDate ?: Date ){
@@ -58,7 +58,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.kinship = new Array<Kinship>();
         this.kidKinshipLink = null;
         
-        this.selectedMat = this.unselectedMat = null;
+        this.selectedColor = this.unselectedColor = null;
         this.SELECTED = false;
         this.inCommu = true;
         this.isAlive = true;
@@ -105,7 +105,6 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     }
 
     public addKid( kid : Monkey ){
-        if( this._kids.has(kid)) return;
         this._kids.add(kid);
         if(this.genda == GENDA.MALE){
             kid.father = this;
@@ -152,6 +151,14 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     }
 
     public deepCopy(){
+        // 每一个Monkey共享的信息有：
+        // 1) ID;
+        // 2) father、mother;
+        // 3) kids;
+        // 4) mirror;
+        // 不共享的信息：
+        // 1) 每个分身所在的单元；
+        // 2) isMirror 属性，mirror里只能有一个分身的isMirror为false；
         let ret = this.clone();
         ret._ID = this.ID;
         ret.unit = this.unit;
@@ -159,7 +166,8 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         ret.father = this.father;
         ret.mother = this.mother;
         ret._kids = this.kids;
-        ret.material = new THREE.MeshBasicMaterial( { color : 0x333333})
+        ret.material = new THREE.MeshLambertMaterial( { color : 0x333333})
+        ret.material.emissive.setHex(0x333333);
         this.mirror.add(ret);
         ret.mirror = this.mirror;
         ret.isMirror = true;
@@ -167,13 +175,12 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     }
 
     public selected() {
-        if( this.selectedMat == null){
-            var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-            this.selectedMat = material;
-            this.unselectedMat = this.material;
+        if( this.selectedColor == null){
+            this.selectedColor = 0xff0000;
+            this.unselectedColor = this.material.emissive.getHex();
         }
         
-        this.material = this.selectedMat;
+        this.material.emissive.setHex( this.selectedColor);
         fillBlanks(this);
         this.SELECTED = true;
         this.mirror.forEach( m => {
@@ -185,7 +192,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     }
 
     public unselected () {
-        this.material = this.unselectedMat;
+        this.material.emissive.setHex( this.unselectedColor ); 
         this.SELECTED = false;
         this.mirror.forEach( m => {
             if( m.SELECTED) {
@@ -198,6 +205,9 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     public leaveUnit(){
         if( this.unit == null) return;
         this.isMirror = true;
+        this.mirror.forEach( m => {
+            m.inCommu = false;
+        })
     }
 
     public enterUnit( unit : Unit){
@@ -225,9 +235,20 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
             }
             
         }
+
+        this.mirror.forEach( m => {
+            m.inCommu = true;
+        })
         
         
         
+    }
+
+    public die(){
+        this.mirror.forEach( m => {
+            m.isAlive = false;
+            m.inCommu = false;
+        })
     }
     
 }
@@ -236,8 +257,8 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
 export class Male extends Monkey {
     constructor (id:number, name:string,  unit:Unit, birthDate?: Date, /*, social_level:string*/ ) {
         super(GENDA.MALE, id, name, unit/*, social_level*/);
-        this.geometry = MALE_GEMOMETRY//new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);//;
-        this.material =  new THREE.MeshBasicMaterial( { color: 0x000,  vertexColors: true } );
+        this.geometry = MALE_GEMOMETRY;//new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);//;
+        this.material =  new THREE.MeshLambertMaterial( { color: 0x000,  vertexColors: true } );
     }
 
     
@@ -246,7 +267,7 @@ export class Male extends Monkey {
 export class Female extends Monkey {
     constructor (id:number, name:string, unit:Unit, birthDate?: Date/*, social_level:string */) {
         super( GENDA.FEMALE, id, name, unit/*, social_level*/);
-        this.geometry = FEMALE_GEOMETRY;//new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 30, 30);// 
+        this.geometry = FEMALE_GEOMETRY;
         this.material = new THREE.MeshLambertMaterial( { color: 0x000  } );
     }
 }

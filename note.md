@@ -35,14 +35,24 @@ Object3D的position属性时相对坐标，指相对于父对象的坐标。若�
 ### 5. bugs
 1.Uncaught TypeError: Cannot read property 'boundingSphere' of undefined
 > 问题出在renderer调用render函数时，scene的物体没有geometry。
-
+---
 2.This module is declared with using 'export =', and can only be used with a default import when using the 'esModuleInterop' flag.
->在导入jquery时出错，出错的导入方式是：
+
 ```typescript 
+//在导入jquery时出错，出错的导入方式是：
 import $ from "jquery"
 //正确的导入方式为：
 import $ require("jquery")
+```  
+---
+3.使用CSS2DObject、CSS2DRenderer 设置标签时，按照 threejs官网的[例子](https://github.com/mrdoob/three.js/blob/master/examples/css2d_label.html) 一直不能正确显示label。
+>在官网的例子中，.label的样式为：
+```typescript
+labelRenderer.domElement.style.position = 'absolute';
+//按照官网的方法，包含所有label的div一直不能正常显示，
+//通过在浏览器中设置包含label的div的position为fixed即可正常显示
 ```
+>解决label的显示问题后，会涉及到OrbitControl的问题，因为创建OrbitControl对象时需要传入一个renderer（渲染其他对象的主renderer或者labelRenderer）的domElement。这时需要将labelRenderer的domElement传入，否则无法使用OrbitControl，<b>绑定在主renderer上的事件也需要进行调整，否则无法监听到事件<b>！！！
 
 参考：[Cannot read property 'boundingSphere' of undefined](https://stackoverflow.com/questions/51057266/cannot-read-property-boundingsphere-of-undefined)  
 

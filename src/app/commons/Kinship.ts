@@ -5,7 +5,7 @@ import { Colors } from 'three';
 import { LineGeometry } from '../threelibs/LineGeometry';
 import { LineMaterial } from '../threelibs/LineMaterial';
 import { Line2 } from '../threelibs/Line2';
-import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos } from './basis';
+import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos, cleanCache } from './basis';
 
 export class KinshipNode extends THREE.Mesh {
     public kpNodeLink : KPNodeLink;
@@ -57,11 +57,37 @@ export class Kinship extends THREE.Group {
         this.mother = mother;
         this.kids = kids;
         
-        
+        this.parentsLink = null;
+        this.parentsNode = null;
+        this.kinshipNode = null;
+        this.KPNodeLink = null;
+        this.kidLinks = null;
         
     }
     
     public layout(){
+        if(this.parentsLink != null){
+            cleanCache( this.parentsLink);
+            this.remove( this.parentsLink );
+        }
+        if( this.parentsNode != null){
+            cleanCache( this.parentsNode );
+            this.remove( this.parentsNode );
+        }
+        if( this.kinshipNode != null){
+            cleanCache( this.kinshipNode );
+            this.remove( this.kinshipNode );
+        }
+        if( this.KPNodeLink != null){
+            cleanCache( this.KPNodeLink );
+            this.remove( this.KPNodeLink );
+        }
+        if( this.kidLinks != null){
+            this.kidLinks.forEach( link => {
+                cleanCache(link);
+                this.remove(link);
+            });
+        }
         this.addParentsLink();
         this.addParentsNode();
         this.addKinshipNode();
@@ -79,7 +105,7 @@ export class Kinship extends THREE.Group {
         }
         
         this.parentsLink = link;
-        console.log("parentsLink:", this.parentsLink );
+        //console.log("parentsLink:", this.parentsLink );
         this.attach( this.parentsLink );
     }
 
@@ -93,7 +119,7 @@ export class Kinship extends THREE.Group {
         }
         this.parentsNode.position.set( pos.x, pos.y, pos.z);
         this.attach(this.parentsNode);
-        console.log("parentsNode:", this.parentsNode );
+        //console.log("parentsNode:", this.parentsNode );
     }
 
     public addKinshipNode() {
@@ -107,11 +133,11 @@ export class Kinship extends THREE.Group {
         this.KPNodeLink = new KPNodeLink(this.parentsNode, this.kinshipNode );
         this.attach(this.KPNodeLink);
         this.kinshipNode.kpNodeLink = this.KPNodeLink;
-        console.log("KPNodeLink:", this.KPNodeLink);
+        //console.log("KPNodeLink:", this.KPNodeLink);
     }
 
     public addKid( kid : Monkey ){
-        
+        if(this.kids.filter( k => k.ID == kid.ID ).length > 0 ) return;
         this.kids.push( kid );
     }
 
