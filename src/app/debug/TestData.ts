@@ -134,18 +134,18 @@ exports.unitsData = unitsData;
 export class Community extends THREE.Object3D{
     public allunits : Array<Unit>;
     public allkinships : Array<Kinship>;
-    public allmonkeys : Array<Monkey>;
+    //public allmonkeys : Array<Monkey>;
     public vanishedmonkeys : Array<Monkey>;
 
     constructor(baseUnitNum: number = 12){
         super();
 
         this.allunits = new Array<Unit>();
-        this.allmonkeys = new Array<Monkey>();
+        //this.allmonkeys = new Array<Monkey>();
         this.allkinships = new Array<Kinship>();
         let base = baseCommunity(baseUnitNum);
         this.allunits = base.baseUnits;
-        this.allmonkeys = base.baseMonkeys;
+        //this.allmonkeys = base.baseMonkeys;
         this.allkinships = base.baseKinships;
         this.allunits.forEach( unit =>{
             this.add(unit);
@@ -155,6 +155,90 @@ export class Community extends THREE.Object3D{
         });
     
         
+    }
+
+    public get allmonkeys(){
+        let tmp = new Array<Monkey>();
+        this.allunits.forEach( u => {
+            u.allMembers.forEach( m => {
+                tmp.push(m);
+            })
+        })
+
+        return tmp;
+    }
+
+    public addUnit(unit : Unit){
+        if(this.allunits.includes(unit))    return;
+        this.add(unit);
+        this.allunits.push(unit);
+    }
+
+    public aliveMonkeys(){
+        let tmp = this.allmonkeys.filter( m => m.isAlive );
+        let s = new Set();
+        tmp.forEach( t => s.add(t.ID));
+        let ret = new Array<number>();
+        s.forEach(e => ret.push(e));
+        return ret;
+    }
+
+    public commuAliveMonkeys() : Monkey[]{
+        // 返回社群中还活着的monkey的ID
+        let tmp = this.allmonkeys.filter( m => !m.isMirror && m.isAlive && m.inCommu);
+        // let s = new Set<number>();
+        // tmp.forEach( t => s.add(t.ID));
+        // let ret = new Array<number>();
+        // s.forEach(e => ret.push(e));
+        return tmp;
+    }
+
+    // public adultCommuAliveMonkeys(){
+    //     let tmp = this.commuAliveMonkeys();
+    //     let ret = new Array();
+
+
+    // }
+
+    public vanishedMonkeys(){
+        return this.allmonkeys.filter( m => !m.inCommu );
+    }
+
+    public deadMonkeys(){
+        return this.allmonkeys.filter( m => !m.isAlive );
+    }
+
+    
+
+    public findMonkeyByID(id : number){
+        // 找到社群中所有符合id的monkey，包括分身
+        return this.allmonkeys.filter( m => m.ID == id )
+    }
+
+    public findRealMonkeyByID(id : number){
+        // 找到社群中符合id的monkey的真身，如果已经vanished则返回null
+        let tmp = this.findMonkeyByID(id).filter(m => !m.isMirror);
+        if( tmp.length == 0)    return null;
+        return tmp[0];
+
+    }
+
+    public findKinshipByFather( father : Male){
+        let tmp = this.allkinships.filter( m => m.father.ID == father.ID);
+        if( tmp.length == 0)    return null;
+        return tmp;
+    }
+
+    public findKinshipByMother( mother : Female){
+        let tmp = this.allkinships.filter( m => m.mother.ID == mother.ID);
+        if( tmp.length == 0)    return null;
+        return tmp;
+    }
+
+    public findKinshipByParents( father : Male, mother : Female){
+        let tmp = this.allkinships.filter( m => m.father.ID == father.ID && m.mother.ID == mother.ID);
+        if( tmp.length == 0)    return null;
+        return tmp[0];
     }
 
     public layout() {
@@ -233,17 +317,21 @@ function genParents(units : Array<Unit>){
     }
 }
 
-function genMonkey(name?:string, unit?: Unit){
+function genMonkey(name?:string, unit?: Unit, ageLevel?: AGE_LEVEL){
     let monkey;
     if(Math.random() < .5){
         monkey = new Male(MONKEY_GEN_ID(), name+"-Tick-"+tick? name : "next"+"-Tick-"+tick, unit? unit:null);
     } else {
         monkey = new Female(MONKEY_GEN_ID(), name+"-Tick-"+tick ? name : "next"+"-Tick-"+tick, unit? unit:null);
     }
-    let rate = Math.random();
-    if(rate < .33)  monkey.ageLevel = AGE_LEVEL.JUVENILE;
-    else if(rate < .67) monkey.ageLevel = AGE_LEVEL.YOUNG;
-    else    monkey.ageLevel = AGE_LEVEL.ADULT;
+    if(!ageLevel){
+        let rate = Math.random();
+        if(rate < .33)  ageLevel = AGE_LEVEL.JUVENILE;
+        else if(rate < .67) ageLevel = AGE_LEVEL.YOUNG;
+        else   ageLevel = AGE_LEVEL.ADULT;
+    } 
+
+    monkey.ageLevel = ageLevel;
 
     return monkey;
 
@@ -325,66 +413,70 @@ function baseCommunity(unitNum : number){
 
 
 export function genFrame(commu : Community){
-    let allmonkeys = commu.allmonkeys;
-    let allunits = commu.allunits;
-    let allkinships = commu.allkinships;
+    // let allmonkeys = commu.allmonkeys;
+    // let allunits = commu.allunits;
+    // let allkinships = commu.allkinships;
 
     // 从社群中消失的猴子的数量
-    let vainshNum  = randomInt(0, 5);
+    let vainshNum  = randomInt(0, 4);
+    let vanished = new Array<Monkey>();
     for(let i = 0; i < vainshNum; i++){
         let monkey;
-        let temp = allmonkeys.filter( m => m.inCommu && m.isAlive);
+        let temp = commu.commuAliveMonkeys();//allmonkeys.filter( m => m.inCommu && m.isAlive);
         monkey = temp[randomInt(0, temp.length-1) ];
-        monkey.inCommu = false;
         if(Math.random() < .2){
             // monkey 死亡
+            console.log("死亡的Monkey：", monkey, "在", monkey.realunit.name , " 死亡！");
             monkey.die();
+            
         } else{
             // monkey 离开单元并且不进入任一单元，则表示离开社群
+            console.log("离群的Monkey：", monkey, "从", monkey.realunit.name , " 离群！");
             monkey.leaveUnit();
         }
+        vanished.push(monkey);
     }
+    
 
     // 进入社群的monkey
-    let vansihed = allmonkeys.filter( m => !m.inCommu && m.isAlive);
+    let vansihed = commu.vanishedMonkeys().filter(m => m.isAlive);
     // 以前消失的猴子重回社群
     let reenterNum = randomInt(0, vansihed.length);
     let enterMonkeys = new Array<Monkey>();
     for(let i = 0; i < reenterNum; i++){
         enterMonkeys.push( vansihed[i]);
-
     }
     // 未知的猴子进入社群
-    for(let i = randomInt(0, 4); i > 0; i--){
+    for(let i = randomInt(0, 3); i > 0; i--){
         let monkey  = genMonkey("unknown"+i);
         if(Math.random() < .1){
             // 未知的猴子的父母在社群中
-            let parents = genParents(allunits);
+            let parents = genParents(commu.allunits);
             parents.dad.addKid(monkey);
             parents.mom.addKid(monkey);
-            
+            console.log("进入社群的Monkey", monkey, "找到父母：", parents);
             let kid = monkey.deepCopy();
-            let t = allkinships.filter(k => k.father == parents.dad && k.mother == parents.mom)
-            if( t.length == 0){
+            let t = commu.findKinshipByParents(parents.dad, parents.mom);
+            if( t == null){
                 let ks = new Kinship(parents.dad, parents.mom, new Array<Monkey>(kid));
-                allkinships.push(ks);
+                commu.allkinships.push(ks);
             }else{
-                let ks = t[0];
-                ks.addKid(kid);
+                t.addKid(kid);
             }
         } 
         enterMonkeys.push(monkey);
     }
     // 为进入社群的猴子分配单元
     enterMonkeys.forEach(m =>{
-        allmonkeys.push(m);
         if(Math.random() < .4){
             let fiu = new FIU(8);
             m.enterUnit(fiu);
-            allunits.push(fiu);
+            commu.addUnit(fiu);
+            console.log("进入社群的Monkey：", m, " 建立新FIU并进入", fiu.name);
         } else{
-            let picked = allunits[ randomInt(0, allunits.length-1) ];
+            let picked = commu.allunits[ randomInt(0, commu.allunits.length-1) ];
             m.enterUnit( picked );
+            console.log("进入社群的Monkey：", m, " 进入单元", picked.name);
             if(picked.unitType == UNIT_TYPE.OMU && m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.MALE && Math.random() < .2){
                 // m 挑战主雄成功
                 picked.mainMale.isMainMale = false;
@@ -394,66 +486,76 @@ export function genFrame(commu : Community){
             } 
         }
     })
+    
+
 
     // 成年雌、雄性的迁移
     let migrateMaleNum = randomInt(0, 3);
     let migrateFemaleNum = randomInt(0, 4);
     let migrates = new Array<Monkey>();
-    console.log("allMonkeys:", allmonkeys);
     for(let i = 0; i < migrateMaleNum; i++){
-        let temp = allmonkeys.filter(m => m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.MALE && !m.isMainMale && !migrates.includes(m) );
+        let temp = commu.commuAliveMonkeys().filter(e => e.ageLevel == AGE_LEVEL.ADULT && e.genda == GENDA.MALE && !e.isMainMale && !migrates.includes(e) );
         console.log("\n\n可挑选迁移的成年雄性:", temp, "\n\n");
         if(temp.length == 0) break;
         let picked = temp[ randomInt(0, temp.length-1) ];
         migrates.push(picked);
-        let toUnits = allunits.filter( u => u != picked.unit );
+        let toUnits = commu.allunits.filter( u => u != picked.unit );
+        let tarUnit = toUnits[randomInt(0, toUnits.length-1) ];
+        console.log("发生了迁移的雄性Monkey：", picked, "  ", picked.realunit.name, " => ", tarUnit.name);
         picked.leaveUnit();
-        picked.enterUnit( toUnits[randomInt(0, toUnits.length-1) ] );
-        
+        picked.enterUnit( tarUnit );
     }
     for(let i = 0; i < migrateFemaleNum; i++){
-        let temp = allmonkeys.filter(m => m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.FEMALE && !migrates.includes(m));
+        let temp = commu.commuAliveMonkeys().filter(e => e.ageLevel == AGE_LEVEL.ADULT && e.genda == GENDA.FEMALE && !migrates.includes(e) );
         console.log("\n\n可挑选迁移的成年雌性:", temp, "\n\n");
         if(temp.length == 0) break;
         let picked = temp[ randomInt(0, temp.length-1) ];
-        let toUnits = allunits.filter( u => u != picked.unit );
+        let toUnits = commu.allunits.filter( u => u != picked.unit );
+        let tarUnit = toUnits[randomInt(0, toUnits.length-1) ];
+        console.log("发生了迁移的雌性Monkey：", picked, "  ", picked.realunit.name, " => ", tarUnit.name);
         picked.leaveUnit();
-        picked.enterUnit( toUnits[randomInt(0, toUnits.length-1) ] );
+        picked.enterUnit( tarUnit );
     }
-    console.log("发生了迁移的Monkey：", migrates);
+    //console.log("发生了迁移的Monkey：", migrates);
 
     // 生成的孩子的数目
     let babeNum : number;
-    if(Math.random() < 0.9){
-        babeNum = randomInt(4, 8);
-    } else if ( Math.random() < .95){
-        babeNum = randomInt(9, 15);
+    if(Math.random() < 0.95){
+        babeNum = randomInt(1,3);//randomInt(4, 8);
+    } else if ( Math.random() < .99){
+        babeNum = randomInt(4, 5);//randomInt(9, 15);
     } else{
-        babeNum = randomInt(16, 20);
+        babeNum = randomInt(6,7);//randomInt(16, 20);
     }
 
     // 挑选 babeNum 对parents
+    let kids = new Array<Monkey>();
     for(let i = 0; i < babeNum; i++){
-        let parents = genParents(allunits);
+        let parents = genParents(commu.allunits);
         let kid : Monkey;
         let unit = parents.mom.unit;
-        kid = genMonkey(unit.name+'.'+AGE_LEVEL.JUVENILE+'.'+unit.juvenileLayer.length.toString()+"-new", unit);
+        kid = genMonkey(unit.name+'.'+AGE_LEVEL.JUVENILE+'.'+unit.juvenileLayer.length.toString()+"-new", unit, AGE_LEVEL.JUVENILE);
         kid.enterUnit(unit);
+        kids.push(kid);
         parents.mom.addKid(kid);
         parents.dad.addKid(kid);
+        console.log("新生的Monkey：", kid, "并进入单元：", unit.name, " parents: ", parents);
         kid = kid.deepCopy();
-        let t = allkinships.filter(k => k.father == parents.dad && k.mother == parents.mom)
+        let t = commu.allkinships.filter(k => k.father == parents.dad && k.mother == parents.mom)
         if( t.length == 0){
             let ks = new Kinship(parents.dad, parents.mom, new Array<Monkey>(kid));
-            allkinships.push(ks);
+            commu.allkinships.push(ks);
         }else{
             let ks = t[0];
             ks.addKid(kid);
         }
 
     }
+    //console.log("新生的Monkey：", kids)
+
     tick++;
     commu.layout();
+    console.log("Tick 之后的Community：", commu);
 
 }
 
