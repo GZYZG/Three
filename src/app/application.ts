@@ -14,6 +14,7 @@ import { unitsLayout, OMULayout, AMULayout, FIULayout } from './commons/Position
 import { Kinship } from './commons/Kinship';
 import { Community, genFrame } from './debug/TestData';
 import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
+import { fillBlanks } from './commons/Dom';
 
 var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
@@ -85,7 +86,7 @@ export class Application{
         
 
         
-        this.labelRenderer.domElement.addEventListener( 'mousemove', this.pickObject);
+        this.labelRenderer.domElement.addEventListener( 'mouseup', this.pickObject);
         
         window.addEventListener('resize', () => this.onWindowResize() );
         rendererContainer.addEventListener('resize', () => this.onWindowResize() );
@@ -325,10 +326,11 @@ export class Application{
             selected = intersects[0].object;
             
             selected.selected();
+            fillBlanks(selected);
            
-        }else if(selected){
-            selected.unselected();
-        }
+         }//else if(selected){
+        //     selected.unselected();
+        // }
     }
     
 

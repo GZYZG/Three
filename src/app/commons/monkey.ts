@@ -11,6 +11,35 @@ export interface Selectable {
     unselected : () => void;
 }
 
+// class MonkeyInfo{
+//     public ID : number;
+//     public name : string;
+//     public genda : GENDA;
+//     public father : MonkeyInfo;
+//     public mother : MonkeyInfo;
+//     public kids : Array<MonkeyInfo>;
+//     public mirror : Array<Monkey>;
+//     public birthDate : Date;
+
+//     constructor(id : number, name : string, genda : GENDA, birthDate?:Date){
+//         this.ID = id;
+//         this.name = name;
+//         this.genda = genda;
+//         this.father = null;
+//         this.mother = null;
+//         this.kids = new Array<MonkeyInfo>();
+//         this.mirror = new Array<Monkey>();
+
+//         if(birthDate)   this.birthDate = birthDate;
+//         else    this.birthDate = new Date();
+//     }
+
+//     public addKid(kid : MonkeyInfo){
+//         if(this.kids.includes(kid) )    return;
+//         this.kids.push(kid);
+//     }
+// }
+
 export abstract class Monkey extends THREE.Mesh implements Selectable{
     private _ID : number;
     public _name : string;
@@ -36,8 +65,11 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     public selectedColor : number;
     public SELECTED : boolean;
 
+    //public monkey : MonkeyInfo;
+
     constructor( genda:GENDA, id:number, name:string, unit: Unit, father?: Male, mother?: Female, birthDate ?: Date ){
         super();
+        //this.monkey = new MonkeyInfo(id, name, genda, birthDate);
         this.isMonkey = true;
         this.genda = genda;
         this.name = name;
@@ -67,7 +99,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.ageLevel = AGE_LEVEL.JUVENILE;
 
         this.mirror = new Set<Monkey>();
-        this.isMirror = false;
+        this.isMirror = true;
     }
 
     public changePosition(pos : THREE.Vector3){
@@ -75,9 +107,6 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         console.log(" 你在改变 ", this, " 的位置, ", this.position, " ===> ", pos);
         // 调用原生的 .position.set方法完成位置的改变
         var ret = this.position.set(pos.x, pos.y, pos.z);
-
-        
-       
     }
     
     public get ID (){
@@ -198,36 +227,27 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     }
 
     public selected() {
-        if( this.selectedColor == null){
-            this.selectedColor = 0xff0000;
-            this.unselectedColor = this.material.emissive.getHex();
-        }
-        
-        this.material.emissive.setHex( this.selectedColor);
-        fillBlanks(this);
-        this.SELECTED = true;
         this.mirror.forEach( m => {
-            if( !m.SELECTED) {
-                m.selected() 
-                m.SELECTED = true;
+            if( m.selectedColor == null){
+                m.selectedColor = 0xff0000;
+                m.unselectedColor = m.material.emissive.getHex();
             }
+            m.material.emissive.setHex( m.selectedColor);
+            m.SELECTED = true;
         });
     }
 
     public unselected () {
-        this.material.emissive.setHex( this.unselectedColor ); 
-        this.SELECTED = false;
         this.mirror.forEach( m => {
-            if( m.SELECTED) {
-                m.unselected()
-                m.SELECTED = false;
-            }
+            m.material.emissive.setHex( m.unselectedColor ); 
+            m.SELECTED = false;
         } );
     }
 
     public leaveUnit(){
         if( this.unit == null) return;
         this.isMirror = true;
+        this.inCommu = false;
         this.material.emissive.setHex(0x333333);
         this.mirror.forEach( m => {
             if(m.inCommu) m.inCommu = false;
