@@ -98,7 +98,7 @@ export class Kinship extends THREE.Group {
     
     public addParentsLink() {
         let link : ParentsLink;
-        if( this.father.unit != this.mother.unit){
+        if( this.father.unit != this.mother.unit || !this.father.isMainMale){
             link = new ParentsLink(this.father, this.mother, "curve" );
         }else{
             link = new ParentsLink(this.father, this.mother, "line" );
