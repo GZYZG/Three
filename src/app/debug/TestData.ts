@@ -141,7 +141,6 @@ export class Community extends THREE.Object3D{
         super();
 
         this.allunits = new Array<Unit>();
-        //this.allmonkeys = new Array<Monkey>();
         this.allkinships = new Array<Kinship>();
         let base = baseCommunity(baseUnitNum);
         this.allunits = base.baseUnits;
@@ -172,6 +171,12 @@ export class Community extends THREE.Object3D{
         if(this.allunits.includes(unit))    return;
         this.add(unit);
         this.allunits.push(unit);
+    }
+    
+    public addKinship(kinship : Kinship){
+        if( this.allkinships.includes( kinship))    return;
+        this.add(kinship);
+        this.allkinships.push(kinship);
     }
 
     public aliveMonkeys(){
@@ -359,7 +364,7 @@ function baseCommunity(unitNum : number){
     }
 
     // 随机挑选父母，生成孩子
-    let kinnum = randomInt(5,12);
+    let kinnum = randomInt(3,6);
     let allkids = new Set<Monkey>();
     var allKinships = new Array<Kinship>();
     for(let i = 0; i < kinnum; i++){
@@ -385,7 +390,9 @@ function baseCommunity(unitNum : number){
             father.addKid(kid);
             mother.addKid(kid);
             // 所有的孩子都用分身表示
+            //console.log("before deepcopy: ",kid.isMirror, kid);
             kid = kid.deepCopy();
+            //console.log("after deepcopy: ",kid.isMirror, kid);
             kids.push( kid);
         }
 
@@ -544,7 +551,7 @@ export function genFrame(commu : Community){
         let t = commu.allkinships.filter(k => k.father == parents.dad && k.mother == parents.mom)
         if( t.length == 0){
             let ks = new Kinship(parents.dad, parents.mom, new Array<Monkey>(kid));
-            commu.allkinships.push(ks);
+            commu.addKinship(ks);
         }else{
             let ks = t[0];
             ks.addKid(kid);
