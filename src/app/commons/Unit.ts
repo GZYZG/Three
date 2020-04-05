@@ -128,6 +128,7 @@ export class OMU extends Unit {
         this._mainMale = new Male(MONKEY_GEN_ID(), this.name+'.'+'主雄', this);
         this._mainMale.ageLevel = AGE_LEVEL.ADULT;
         this._mainMale.isMainMale = true;
+        this._mainMale.enterUnit( this);
         //this.adultLayer.push( this._mainMale );
         this.mainMale.position.set( this.position.x, this.position.y, this.position.z );
         this.add(this.mainMale);
@@ -139,9 +140,9 @@ export class OMU extends Unit {
     }
 
     public addMonkeys(){
-        this.addLayer_3( randomInt(2, 5), AGE_LEVEL.ADULT);
-        this.addLayer_3( randomInt(2, 4), AGE_LEVEL.YOUNG);
-        this.addLayer_3( randomInt(3, 5), AGE_LEVEL.JUVENILE);
+        this.addLayer_3( randomInt(2, 4), AGE_LEVEL.ADULT);
+        this.addLayer_3( randomInt(2, 3), AGE_LEVEL.YOUNG);
+        this.addLayer_3( randomInt(2, 4), AGE_LEVEL.JUVENILE);
     }
 
     public get mainMale(){
@@ -250,7 +251,7 @@ export class AMU extends Unit {
     }
 
     public addMonkeys(){
-        this.addLayer( 1 + Math.floor( Math.random() * 7 ));
+        this.addLayer( randomInt(3, 5) ));
     }
 
     public addLayer( n : number){
@@ -300,7 +301,7 @@ export class FIU extends Unit {
     }
 
     public addMonkeys(){
-        this.addLayer( 1 + Math.floor( Math.random() * 7 ));
+        this.addLayer( randomInt(2, 4));
     }
 
     public addLayer( n : number){
