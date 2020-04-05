@@ -13,10 +13,37 @@ function GEN_ID(){
     
 }
 
+function GEN_TICK(){
+    var tick = 0;
+    var GET_TICK = function(){
+        return tick;
+    }
+
+    var TICK_NEXT = function() {
+        tick++;
+    }
+
+    var TICK_PREV = function() {
+        tick--;
+    }
+
+    return {
+        getTick : GET_TICK,
+        tickNext : TICK_NEXT,
+        tickPrev : TICK_PREV,
+    }
+}
+
+var TICK_OBJ = GEN_TICK();
+export var GET_TICK = TICK_OBJ.getTick;
+export var TICK_NEXT = TICK_OBJ.tickNext;
+export var TICK_PREV = TICK_OBJ.tickPrev;
+
 // 用于产生单元的ID
 export var UNIT_GEN_ID = GEN_ID();
 // 用于产生猴子的ID
 export var MONKEY_GEN_ID = GEN_ID();
+
 
 
 export const enum UNIT_TYPE {
