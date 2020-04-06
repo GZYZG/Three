@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA, MALE_GEMOMETRY, FEMALE_GEOMETRY, MONKEY_GEN_ID } from './basis';
-import { Unit} from './Unit';
+import { Unit, OMU} from './Unit';
 import { Kinship } from './Kinship';
 import { KidKinshipNodeLink } from './LineFactory';
 import { fillBlanks} from "./Dom";
@@ -217,7 +217,8 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         ret.unit = this.unit;
         ret.father = this.father;
         ret.mother = this.mother;
-        ret._kids = this.kids;
+        ret._kids = this._kids;
+        ret.ageLevel = this.ageLevel;
         ret.material = new THREE.MeshLambertMaterial( { color : 0x333333})
         ret.material.emissive.setHex(0x333333);
         this.mirror.add(ret);
@@ -250,7 +251,11 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.inCommu = false;
         this.material.emissive.setHex(0x333333);
         this.mirror.forEach( m => {
-            if(m.inCommu) m.inCommu = false;
+            m.inCommu = false;
+            if(m.isMainMale && m.unit instanceof OMU){
+                m.isMainMale = false;
+                m.unit.mainMale = null;
+            }
         })
     }
 
@@ -293,8 +298,14 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
 
     public die(){
         this.mirror.forEach( m => {
-            if( m.isAlive) m.isAlive = false;
-            m.leaveUnit();
+            m.isAlive = false;
+            m.inCommu = false;
+            m.isMirror = true;
+            m.material.emissive.setHex(0x333333);
+            if(m.isMainMale && m.unit instanceof OMU){
+                m.isMainMale = false;
+                m.unit.mainMale = null;
+            }
         })
     }
     
