@@ -56,12 +56,16 @@ export function OMULayout( unit : OMU){
     layerLayout(adult, AGE_LEVEL.ADULT);
     layerLayout(young, AGE_LEVEL.YOUNG);
     layerLayout(juvenile, AGE_LEVEL.JUVENILE);
-    unit.mainMale.position.set(0, 0, 0);
+    if(unit.mainMale){
+        // 有可能主雄没了
+        unit.mainMale.position.set(0, 0, 0);
+    }
+        
 }
 
 export function AMULayout( unit : Unit ){
     let members = new Array<Monkey>();
-    unit.currentMembers.forEach( m => {
+    unit.allMembers.forEach( m => {
         members.push( m );
     })
     layerLayout( members, AGE_LEVEL.ADULT);
