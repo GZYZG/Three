@@ -150,25 +150,14 @@ export class OMU extends Unit {
     }
 
     public set mainMale( mainMale : Male ){
+        if(this._mainMale){
+            this._mainMale.isMainMale = false;
+            this._mainMale = null;
+        }
         this._mainMale = mainMale;
+        if(mainMale)
+            mainMale.isMainMale = true;
     }
-
-    // public pushMonkey(monkey : Monkey ){
-    //     super.pushMonkey(monkey);
-    //     // 判断猴子的年龄，并进入相应的层
-    //     let timedelta = this.currentMoment.getTime() - monkey.birthDate.getTime();
-    //     let age = timedelta / 1000 / 60 / 60 / 24 / 365;
-    //     if( age <  JUVENILE_AGE){
-    //         this.juvenileLayer.push( monkey );
-    //     } else if( (monkey.genda == GENDA.MALE && age <= MALE_YOUNG_AGE)  || 
-    //                (monkey.genda == GENDA.FEMALE && age <= FEMALE_YOUNG_AGE ) ) {
-    //         this.youngLayer.push(monkey);
-    //     } else {
-    //         this.adultLayer.push(monkey );
-    //     }
-
-        
-    // }
 
     public addLayer_3(n: number, layerType: AGE_LEVEL) {
         // 为每层随机生成Monkey， 但是不对其进行布局
@@ -251,7 +240,7 @@ export class AMU extends Unit {
     }
 
     public addMonkeys(){
-        this.addLayer( randomInt(3, 5) ));
+        this.addLayer( randomInt(3, 5) );
     }
 
     public addLayer( n : number){
