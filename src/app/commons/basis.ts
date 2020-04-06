@@ -211,7 +211,7 @@ export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, 
         case 'xy':
             ret.x = Math.sin( i * theta ) * R;
             ret.y = Math.cos( i * theta ) * R;
-            ret.add(kinshipNode.position.clone().add( kid.getUnit().position.clone().negate() ) );
+            ret.add(kinshipNode.position.clone().add( kid.unit.position.clone().negate() ) );
             ret.z = pos.z;
             break;
     }

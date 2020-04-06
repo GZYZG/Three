@@ -18,6 +18,11 @@ import { Monkey, Male, Female } from "../commons/Monkey";
 import { unitsLayout, OMULayout, AMULayout, FIULayout } from "../commons/PositionCalc";
 import * as THREE from "three";
 import { TextGeometry } from "../threelibs/three";
+import G6 from "@antv/g6";
+import {Graph} from "@antv/g6";
+import FruchtermanLayout from  "@antv/g6/lib/layout/fruchterman";
+import DagreLayout from "@antv/g6/lib/layout/dagre";
+import  ForceLayout from "@antv/g6/lib/layout/force";
 
 // 单元的信息示例如下：
 // ID       name        createdDate         vanishDate
@@ -206,14 +211,16 @@ export class Community extends THREE.Object3D{
     // }
 
     public vanishedMonkeys(){
-        return this.allmonkeys.filter( m => !m.inCommu );
+        return this.allmonkeys.filter( m => !m.inCommu  );
+    }
+
+    public outCommuMonkeys(){
+        return this.vanishedMonkeys().filter( m => m.isAlive );
     }
 
     public deadMonkeys(){
         return this.allmonkeys.filter( m => !m.isAlive );
     }
-
-    
 
     public findMonkeyByID(id : number){
         // 找到社群中所有符合id的monkey，包括分身
@@ -263,12 +270,200 @@ export class Community extends THREE.Object3D{
                     break;
             }
         });
+        this.G6Layout("force");
 
         // 再对亲缘关系进行布局
         this.allkinships.forEach(k => {
             k.layout();
         })
-       
+
+        
+    }
+
+    // 使用G6的图布局算法计算单元坐标
+    public G6Layout(type:string = "dagre"){
+        let scene = document.getElementsByClassName('center')[0];
+        //let w = scene.offsetWidth, h = scene.offsetHeight;
+        let w = window.innerWidth, h = window.innerHeight;
+        var layoutCfg = {
+            force:{
+              type: 'force', // 设置布局算法为 force， 可选 random mds force fruchterman circular radial dagre concentric grid 
+              preventOverlap: true, // 设置防止重叠
+              center: [ window.innerWidth/2, window.innerHeight/2 ],     // 可选，默认为图的中心，采用屏幕坐标系，即左上角为原点
+              linkDistance: 150,         // 可选，边长
+              nodeStrength: -60,         // 可选
+              nodeSize: 30,
+              nodeSpacing: 10,
+              edgeStrength: .1,        // 可选
+              collideStrength: 1,     // 可选
+              alpha: 0.3,               // 可选
+              alphaDecay: 0.028,        // 可选
+              alphaMin: 0.01,           // 可选
+              forceSimulation: null,    // 可选
+            },
+            darge:{
+              type: 'dagre', // 设置布局算法为 force， 可选 random mds force fruchterman circular radial dagre concentric grid 
+              preventOverlap: true, // 设置防止重叠
+              linkDistance: 100,         // 可选，边长
+              nodeSize: 30,
+              rankdir: 'LR',
+              nodesep: 20,
+              ranksep: 30,
+              controlPoints: false,
+            },
+            fruchterman:{
+              type: 'fruchterman',
+              center: [ 0, 0 ],     // 可选，默认为图的中心
+              gravity: 50,              // 可选
+              speed: 2,                 // 可选
+              clustering: false,         // 可选
+              //clusterGravity: 50,       // 可选
+              maxIteration: 2000,       // 可选，迭代次数
+              workerEnabled: true       // 可选，开启 web-worker  }
+            },
+            radial:{
+              type: 'radial',
+              center: [ window.innerWidth/2, window.innerHeight/2 ],     // 可选，默认为图的中心
+              linkDistance: 150,         // 可选，边长
+              maxIteration: 1000,       // 可选
+              //focusNode: 'node11',      // 可选
+              unitRadius: 60,          // 可选
+              preventOverlap: true,     // 可选，必须配合 nodeSize
+              nodeSize: 160,             // 可选
+              nodeSpacing: 60,
+              strictRadial: true,       // 可选
+              sortBy: 'degree',
+              sortStrength: 0,
+              workerEnabled: true       // 可选，开启 web-worker
+            },
+            concentric:{
+              type: 'concentric',
+              center:  [ window.innerWidth/3, window.innerHeight/3 ],     // 可选，
+              linkDistance: 150,         // 可选，边长
+              preventOverlap: true,     // 可选，必须配合 nodeSize
+              nodeSize: 30,             // 可选
+              sweep: 10,                // 可选
+              equidistant: false,       // 可选
+              startAngle: 0,            // 可选
+              clockwise: false,         // 可选
+              maxLevelDiff: 100,         // 可选
+              //sortBy: 'degree',          // 可选
+              workerEnabled: true       // 可选，开启 web-worker
+            },
+            dendrogram:{
+                type: 'dendrogram',
+                direction: 'LR', // H / V / LR / RL / TB / BT
+                radial: true,
+                nodeSep: 30,
+                rankSep: 100,
+           },
+          }
+
+        switch(type){
+            case "dagre":
+                this.dagreLayout();break;
+            case "fruchterman":
+                this.fruchtermanLayout(); break;
+            case "force":
+                this.forceLayout(); break;
+            default:
+                this.dagreLayout(); break;
+        }
+        
+    }
+
+    public fruchtermanLayout(){
+        let scene = document.getElementsByClassName('center')[0];
+        let w = scene.offsetWidth, h = scene.offsetHeight;
+        let myData = this.getJsonData();
+        let pos = new Array();
+        let fruc = new FruchtermanLayout();
+        fruc.width = w;
+        fruc.height = h;
+        fruc.gravity = 30;
+        fruc.maxIteration = 2000;
+        fruc.nodes = myData.nodes;
+        fruc.edges = myData.edges;
+        fruc.execute();
+        console.log("Fruc: ", fruc);
+        fruc.nodes.forEach( e =>{
+            pos.push({id:e.id, x:e.x, y:e.y})})
+        console.log("pos: ", pos);
+        for(let i = 0; i < pos.length; i++){
+            this.allunits[i].position.set( pos[i].x, 0,  pos[i].y);
+            console.log(this.allunits[i].name," : ", this.allunits[i].position);
+        }
+    }
+
+    public dagreLayout(){
+        let scene = document.getElementsByClassName('center')[0];
+        let w = scene.offsetWidth, h = scene.offsetHeight;
+        let myData = this.getJsonData();
+        let pos = new Array();
+        let dagre = new DagreLayout();
+        dagre.nodeSize = 30;
+        dagre.nodesep = 40;
+        dagre.nodes = myData.nodes;
+        dagre.edges = myData.edges;
+        dagre.execute();
+        console.log("DagreLayout: ", dagre);
+        dagre.nodes.forEach( e =>{
+            pos.push({id:e.id, x:e.x, y:e.y})})
+        console.log("pos: ", pos);
+        for(let i = 0; i < pos.length; i++){
+            this.allunits[i].position.set( pos[i].x, 0,  pos[i].y);
+            console.log(this.allunits[i].name," : ", this.allunits[i].position);
+        }
+    }
+
+    public forceLayout(){
+        let myData = this.getJsonData();
+        let pos = new Array();
+        let force = new ForceLayout();
+        force.preventOverlap = true;
+        force.nodeSize = 50;
+        // force.nodeSpacing = function(){return 1500};
+        // force.nodeStrength = -60;
+        force.collideStrength = 1;
+        force.edgeStrength = .1;
+        force.alpha = 1;
+        force.alphaDecay = .028;
+        force.alphaMin = .01;
+        force.linkDistance = 150;
+        force.nodes = myData.nodes;
+        force.edges = myData.edges;
+        force.execute();
+        console.log("ForceLayout: ", force);
+        force.nodes.forEach( e =>{
+            pos.push({id:e.id, x:e.x, y:e.y})})
+        console.log("pos: ", pos);
+        for(let i = 0; i < pos.length; i++){
+            this.allunits[i].position.set( pos[i].x, 0,  pos[i].y);
+            console.log(this.allunits[i].name," : ", this.allunits[i].position);
+        }
+    }
+
+    public getJsonData(){
+        let _nodes = new Array();
+        let _edges = new Array();
+
+        this.allunits.forEach( e => {
+            _nodes.push( {id: e.name, label: e.name});
+        })
+
+        this.allkinships.forEach( e => {
+            if( e.father.unit != e.mother.unit){
+                _edges.push({
+                    source: e.father.unit.name,
+                    target: e.mother.unit.name,
+                })
+            }
+        })
+
+        return {
+            nodes: _nodes,
+            edges: _edges,
+        };
 
     }
 
@@ -283,20 +478,20 @@ function genParents(units : Array<Unit>){
     while( !father){
         let nth = randomInt(0, units.length-1);
         dadUnit = units[nth];
-        if( dadUnit.unitType == UNIT_TYPE.OMU){
+        if( dadUnit instanceof OMU && dadUnit.mainMale){
             father = dadUnit.mainMale;
         }else if( dadUnit.unitType == UNIT_TYPE.AMU){
             let num = dadUnit.currentMembers.length;
             father = dadUnit.currentMembers[ randomInt(0, num-1) ];
         }else {
-            let males = dadUnit.currentMembers.filter( e => e.genda == GENDA.MALE);
+            let males = dadUnit.currentMembers.filter( e => e.genda == GENDA.MALE && !e.isMirror);
             if( males.length == 0)  continue;
             father = males[ randomInt(0, males.length-1) ];
         }
     }
     if( dadUnit.unitType == UNIT_TYPE.OMU && Math.random() < .6){
-        // 从父亲所在的单元挑选母亲
-        let females = dadUnit.adultLayer.filter( e => e.genda == GENDA.FEMALE );
+        // 从父亲所在的单元挑选母亲，要注意当前时刻母亲应该在该单元内
+        let females = dadUnit.adultLayer.filter( e => e.genda == GENDA.FEMALE && !e.isMirror);
         while(females.length != 0 && !mother){
             let nth = randomInt(0, females.length-1);
             mother = females[nth];
@@ -307,10 +502,12 @@ function genParents(units : Array<Unit>){
         let nth = randomInt(0, units.length-1);
         momUnit = units[nth];
         if( momUnit.unitType == UNIT_TYPE.OMU){
-            mother = momUnit.adultLayer[ randomInt(1, momUnit.adultLayer.length-1 ) ];
+            // 注意，在家庭单元中也有可能有成年雄性，而且要从当前时刻在该单元的雌性中挑选
+            let females = momUnit.adultLayer.filter(e => e.genda == GENDA.FEMALE && !e.isMirror);
+            mother = females[ randomInt(1, females.length-1 ) ];
         }else if( momUnit.unitType == UNIT_TYPE.AMU){
         }else {
-            let females = momUnit.currentMembers.filter( e => e.genda == GENDA.FEMALE);
+            let females = momUnit.currentMembers.filter( e => e.genda == GENDA.FEMALE && !e.isMirror);
             if( females.length == 0)  continue;
             mother = females[randomInt(0, females.length) ];
         }
@@ -446,7 +643,7 @@ export function genFrame(commu : Community){
     
 
     // 进入社群的monkey
-    let vansihed = commu.vanishedMonkeys().filter(m => m.isAlive);
+    let vansihed = commu.outCommuMonkeys();
     // 以前消失的猴子重回社群
     let reenterNum = randomInt(0, vansihed.length);
     let enterMonkeys = new Array<Monkey>();
@@ -484,11 +681,9 @@ export function genFrame(commu : Community){
             let picked = commu.allunits[ randomInt(0, commu.allunits.length-1) ];
             m.enterUnit( picked );
             console.log("进入社群的Monkey：", m, " 进入单元", picked.name);
-            if(picked.unitType == UNIT_TYPE.OMU && m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.MALE && Math.random() < .2){
+            if(picked.unitType == UNIT_TYPE.OMU && m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.MALE && picked instanceof OMU && Math.random() < .2){
                 // m 挑战主雄成功
-                picked.mainMale.isMainMale = false;
                 picked.mainMale = m;
-                m.isMainMale = true;
                 console.log("\n\nchallenge success!\n\n");
             } 
         }
@@ -562,6 +757,7 @@ export function genFrame(commu : Community){
 
     tick++;
     commu.layout();
+    //window.graph = commu.getJsonData();
     console.log("Tick 之后的Community：", commu);
 
 }
