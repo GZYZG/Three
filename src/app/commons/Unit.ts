@@ -42,7 +42,7 @@ export abstract class Unit extends THREE.Group {
         laberDiv.style.marginTop = '-1em';
         laberDiv.style.display = "block";
         let label = new CSS2DObject(laberDiv);  
-        label.position.set(0, this.position.y, 0); 
+        label.position.set(this.radius+5, this.position.y-5, 0); 
         this.label = label;
         this.add(label);
         
@@ -121,22 +121,12 @@ export class OMU extends Unit {
     constructor (radius : number) {
         //var name = Math.random().toPrecision(4).toString();
         super( radius, UNIT_TYPE.OMU);
-        // this.adultLayer = new Array<Monkey>();
-        // this.youngLayer = new Array<Monkey>();
-        // this.juvenileLayer = new Array<Monkey>();
-        
         this._mainMale = new Male(MONKEY_GEN_ID(), this.name+'.'+'主雄', this);
         this._mainMale.ageLevel = AGE_LEVEL.ADULT;
         this._mainMale.isMainMale = true;
         this._mainMale.enterUnit( this);
-        //this.adultLayer.push( this._mainMale );
         this.mainMale.position.set( this.position.x, this.position.y, this.position.z );
         this.add(this.mainMale);
-        this.currentMembers.push( this.mainMale );
-        this.allMembers.push( this.mainMale);
-
-        
-
     }
 
     public addMonkeys(){

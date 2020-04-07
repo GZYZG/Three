@@ -1,24 +1,41 @@
-import { Unit} from './Unit';
+import { Unit, OMU} from './Unit';
 import { Monkey } from './Monkey';
+import { GET_TICK } from './basis';
 
 export class Frame {
     public ID : number;
-    public moment : Date;   // Frame 所属的时刻
+    public tick : number;   // Frame 所属的时刻
     public nextFrame : Frame;
     public prevFrame : Frame;
     
-    public newUnits : Array<object>;  // 新增单元
-    public vanishUnits : Array<Unit>;   // 消失或者解散的单元
-    public newMonkeys : Array<object>;  // 新进入社群的猴子，包括新出生的猴子，都需要进入某个单元
-    public vanishMonkeys : Array<Monkey>;   // 从社群中消失的猴子，包括死亡的猴子，死亡或消失的猴子需要离开其所在单元
-    public leaveUnit : Array<object>;   // 离开原来单元的猴子
-    public enterUnit : Array<object>;   // 进入其他单元的猴子
-    public inStage : Array<object>;     // 登上主雄位置的记录
-    public step : Array<object>;        // 退下主雄位置的记录
-    // public bornMonkeys : Array<Monkey>; // 新出生的猴子
-    // public deadMonkeys : Array<Monkey>; // 死亡的猴子
+    public vanished: {dead:Array<Monkey>, outCommu: Array<Monkey>};     //消失的猴子，包括进入死亡的和离开社群的猴子
+    public newUnits : Array<Unit>;    // 新增单元
+    public enterCommu: Array<{monkey:Monkey, unit:Unit}>;   // 进入社群的，包括第一次进入社群的猴子（非婴猴）、重返社群的猴子、新出生的猴子（婴猴）
+    public challengeMainMale: Array<{unit:OMU, winner: Monkey, loser: Monkey}>;   // 挑战主雄成功
+    public migrates: Array<{monkey: Monkey, originUnit: Unit, targetUnit: Unit}>;     // 在单元之间迁移的猴子
+    public newKinships: Array<{kid: Monkey, parents:{dad:Monkey, mom:Monkey} }>;  // 新增的亲缘关系，包括婴猴的、首次入群找到父母的
     
-    constructor() {
-        
+    
+    constructor(parameters:any) {
+        let vanished = parameters.vanished || {dead:new Array<Monkey>(), outCommu: new Array<Monkey>()}
+        let newUnits = parameters.newUnits || new Array<Unit>();
+        let enterCommu = parameters.enterCommu ||  new Array<{monkey:Monkey, unit:Unit}>();
+        let challengeMainMale = parameters.challengeMainMale || new Array<{unit:OMU, winner: Monkey, loser: Monkey}>();
+        let migrates = parameters.migrates || new Array<{monkey: Monkey, originUnit: Unit, targetUnit: Unit}>();
+        let newKinships = parameters.newKinships || new Array<{kid: Monkey, parents:{dad:Monkey, mom:Monkey} }>();
+        let preFrame = parameters.preFrame || null;
+        let tick = parameters.tick || GET_TICK();
+
+        this.tick = tick;
+        this.vanished = vanished;
+        this.newUnits = newUnits;
+        this.enterCommu = enterCommu;
+        this.challengeMainMale = challengeMainMale;
+        this.migrates = migrates;
+        this.newKinships = newKinships;
+        this.prevFrame = preFrame;
+    
     }
+
+
 }

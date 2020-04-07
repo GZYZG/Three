@@ -14,7 +14,8 @@ import { unitsLayout, OMULayout, AMULayout, FIULayout } from './commons/Position
 import { Kinship } from './commons/Kinship';
 import { Community, genFrame } from './debug/TestData';
 import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
-import { fillBlanks } from './commons/Dom';
+import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown } from './commons/Dom';
+import { isNumber, calcMonkeyCommunityPos } from './commons/basis';
 
 var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
@@ -83,7 +84,8 @@ export class Application{
         var commu = COMMUNITY ;
         this.scene.add(commu);
         commu.layout();
-        
+        //addId2Dropdown( commu );
+        addGroupIds2Dropdown(commu);
 
         
         this.labelRenderer.domElement.addEventListener( 'mouseup', this.pickObject);
@@ -99,7 +101,7 @@ export class Application{
         this.labelRenderer = new CSS2DRenderer(); //新建CSS2DRenderer 
         this.labelRenderer.setSize( rendererContainer.offsetWidth, rendererContainer.offsetHeight);
         this.labelRenderer.domElement.style.position = 'fixed';
-        this.labelRenderer.domElement.style.top = "0px";
+        this.labelRenderer.domElement.style.top = "9%";
         rendererContainer.appendChild(this.labelRenderer.domElement);
     }
 
@@ -341,4 +343,27 @@ function bindEvents(){
     btn.onclick = function(){
         genFrame(COMMUNITY);
     }
+    // 为ID选择下拉列表增加事件
+    $("#idDropdown").on('hidden.bs.dropdown',function(e){
+        let id = +e.clickEvent.target.textContent;
+        if( !isNumber(id))  return;
+        let monkey = COMMUNITY.findMonkeyByID(id)[0];
+        if(!monkey)     return;
+        if( selected  ){
+            selected.unselected();
+        }
+        console.log("intersected : ", monkey)
+        selected = monkey;
+        // 看向选中的Monkey，首先计算相机的位置，然后设置相机看向的位置
+        let pos = calcMonkeyCommunityPos(monkey);
+        let dist = pos.distanceTo(new THREE.Vector3(0, 0, 0));
+        let cosAlpha = dist !=0 ? pos.x / dist : 1;
+        // let cosBeta = dist !=0 ? pos.y / dist : 1;   // 为了保持相机在被观察物体的上方，所以不再y 方向上乘以步长
+        let cosTheta = dist !=0 ? pos.z / dist : 1;
+        camera.position.set(pos.x + cosAlpha * 60, pos.y +  60, pos.z + cosTheta * 60);
+        camera.lookAt( pos);
+        selected.selected();
+        fillBlanks(selected);
+        e.relatedTarget.textContent=e.clickEvent.target.textContent; //你点击的那个选项值：Value1或Value2
+    });
 }

@@ -112,7 +112,7 @@ export class Kinship extends THREE.Group {
     public addParentsNode() {
         this.parentsNode = new ParentsNode(this.father, this.mother );
         let pos;
-        if( this.father.unit != this.mother.unit){
+        if( this.father.unit != this.mother.unit || !this.father.isMainMale){
             pos =  calcParentsNodePos(this.father, this.mother, "curve") ;
         }else{
             pos =  calcParentsNodePos(this.father, this.mother, "line") ;

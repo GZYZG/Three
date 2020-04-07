@@ -21,10 +21,12 @@ function GEN_TICK(){
 
     var TICK_NEXT = function() {
         tick++;
+        return tick;
     }
 
     var TICK_PREV = function() {
         tick--;
+        return tick;
     }
 
     return {
@@ -118,6 +120,10 @@ export const UNITNUM_ON_RING = [UNIT_RING.filter(e => e == 0).length,
                             ];
 
 //export var COMMUNITY = new Community();
+
+export function isNumber(obj: any) {
+    return obj === +obj
+}
 
 export  function calcMonkeyCommunityPos (monkey : Monkey) : THREE.Vector3{
     let unitPos = monkey.unit.position.clone();
