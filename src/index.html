@@ -21,10 +21,17 @@
     <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
     <script type="text/javascript" src="./assets/js/popper.min.js"></script>
     <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
-    <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.0/build/g6.js"></script>
+    <!--script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.0/build/g6.js"></script-->
    <div class="box">
     <div id="mountNode" style="display: none;"></div>
     <div class="header">
+        <div class="dropdown" id="idDropdown" style="align-self: center; left: 40%; ">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  根据ID选择Monkey
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow-y: auto; height:500px;">
+                </div>
+        </div>
     </div>
     <div class="main">
         <div class="left">left</div>
@@ -44,27 +51,31 @@
                     <li class="list-group-item list-group-item-success" value="年龄段">年龄段: </li>
                     <li class="list-group-item list-group-item-success" value="分身所属单元">分身所属单元: </li>
                     <li class="list-group-item list-group-item-success" value="当前所属单元">当前所属单元: </li>
-                    <li class="list-group-item list-group-item-success" value="孩子">孩子: </li>
-                    <li class="list-group-item list-group-item-success" value="母亲">母亲: </li>
-                    <li class="list-group-item list-group-item-success" value="父亲">父亲: </li>
-                    <li class="list-group-item list-group-item-success" value="isAlive">isAlive: </li>
-                    <li class="list-group-item list-group-item-success" value="inCommu">inCommu: </li>
-                    <li class="list-group-item list-group-item-success" value="isMirror">isMirror: </li>
+                    <li class="list-group-item list-group-item-success" value="孩子" data-toggle="tooltip" data-placement="top" title="孩子的ID">孩子: </li>
+                    <li class="list-group-item list-group-item-success" value="母亲" data-toggle="tooltip" data-placement="top" title="母亲的名字及ID">母亲: </li>
+                    <li class="list-group-item list-group-item-success" value="父亲" data-toggle="tooltip" data-placement="top" title="父亲的名字及ID">父亲: </li>
+                    <li class="list-group-item list-group-item-success" value="isAlive" data-toggle="tooltip" data-placement="top" title="是否存活">isAlive: </li>
+                    <li class="list-group-item list-group-item-success" value="inCommu" data-toggle="tooltip" data-placement="top" title="是否在社群中">inCommu: </li>
+                    <li class="list-group-item list-group-item-success" value="isMirror" data-toggle="tooltip" data-placement="top" title="是否是分身">isMirror: </li>
 
-                    
+                    <button type="button" class="btn btn-danger" id="next"  style="width: 50%; align-self: center;margin-top: .2em;" data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">TICK-TOCK</button>
                 </ul>
                 
             </div>
             
-            <br>
+
             
-            <div class="btn-group btn-group-sm"   style="overflow-x: auto; margin-left: 5px;">
-                <button type="button" class="btn btn-secondary" id="next">NEXT</button>
-                <button type="button" class="btn btn-secondary">Tick1</button>
-                <button type="button" class="btn btn-secondary">Tick2</button>
-                <button type="button" class="btn btn-secondary">Tick3</button>
-                
-            </div>
+            
+            <!--div class="dropdown" id="tickDropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  选择时间
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                  <button class="dropdown-item" type="button">Tick1</button>
+                  <button class="dropdown-item" type="button">Tick2</button>
+                  <button class="dropdown-item" type="button">Tick3</button>
+                </div>
+              </div-->
             
         </div>
     </div>
