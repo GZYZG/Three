@@ -205,13 +205,14 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         // 3) kids;
         // 4) mirror;
         // 5) name;
-        // 6) isAlive、inCommu、isMainMale;
+        // 6) isAlive、inCommu、;
         // 7) selectedColor、unselectedColor、SELECTED;
 
         // 不共享的信息：
         // 1) 每个分身所在的单元；
         // 2) isMirror 属性，mirror里只能有一个分身的isMirror为false；
         // 3) ageLevel，表示分身最后一次离开单元时的ageLevel
+        // 4) isMainMale，表示该分身在分身单元内是否为主雄
         let ret = this.clone();
         ret._ID = this.ID;
         ret.unit = this.unit;
@@ -224,15 +225,15 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.mirror.add(ret);
         ret.mirror = this.mirror;
         ret.isMirror = true;
+        ret.isMainMale = false;
         return ret;
     }
 
     public selected() {
         this.mirror.forEach( m => {
-            if( m.selectedColor == null){
-                m.selectedColor = 0xff0000;
-                m.unselectedColor = m.material.emissive.getHex();
-            }
+            m.selectedColor = 0xff0000;
+            m.unselectedColor = m.material.emissive.getHex();
+            
             m.material.emissive.setHex( m.selectedColor);
             m.SELECTED = true;
         });
@@ -246,16 +247,19 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     }
 
     public leaveUnit(){
+        // 在任一时刻，只有真身才会调用 leaveUnit 方法
         if( this.unit == null) return;
         this.isMirror = true;
         this.inCommu = false;
+        if( this.isMainMale && this.unit instanceof OMU){
+            this.isMainMale = false;
+            this.unit.mainMale = null;
+        }
+        
         this.material.emissive.setHex(0x333333);
+        
         this.mirror.forEach( m => {
             m.inCommu = false;
-            if(m.isMainMale && m.unit instanceof OMU){
-                m.isMainMale = false;
-                m.unit.mainMale = null;
-            }
         })
     }
 
@@ -267,11 +271,12 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
             // 将进入的单元中包含了这个猴子的分身，则只改变分身的属性
             mirror = temp[0];
             mirror.isMirror = false;
-            mirror.material.emissive.setHex( this.unselectedColor);
+            mirror.material.emissive.setHex( 0x000);
         } else {
             // 将进入的单元中无这个猴子的分身，则创建一个mirror加入到该单元
             if( this.mirror.size == 0){
                 // 该ID的Monkey第一次进入一个unit，则无需创建mirror，将其本身作为mirror即可
+                // 因为第一次进入单元，所以肯定是unselectedColor = 0x000
                 this.mirror.add(this);
                 this.isMirror = false;
                 this.unit = unit;
@@ -279,7 +284,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
                 unit.add(this);
             } else{
                 mirror = this.deepCopy();
-                mirror.material.emissive.setHex( this.unselectedColor );
+                mirror.material.emissive.setHex( 0x000 );
                 mirror.isMirror = false;
                 mirror.unit = unit;
                 unit.allMembers.push(mirror);
@@ -289,7 +294,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         }
 
         this.mirror.forEach( m => {
-            if( !m.inCommu) m.inCommu = true;
+            m.inCommu = true;
         })
         
         
