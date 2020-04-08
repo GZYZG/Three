@@ -432,10 +432,10 @@ export class Community extends THREE.Object3D{
         console.log("DagreLayout: ", dagre);
         dagre.nodes.forEach( e =>{
             pos.push({id:e.id, x:e.x, y:e.y})})
-        console.log("pos: ", pos);
+        //console.log("pos: ", pos);
         for(let i = 0; i < pos.length; i++){
             this.allunits[i].position.set( pos[i].x - dagre.width/2 , 0,  pos[i].y - dagre.height/2);
-            console.log(this.allunits[i].name," : ", this.allunits[i].position);
+            //console.log(this.allunits[i].name," : ", this.allunits[i].position);
         }
     }
 
@@ -510,7 +510,9 @@ export class Community extends THREE.Object3D{
         })
 
         frame.challengeMainMale.forEach( e => {
-            e.unit.mainMale = e.winner;
+            //e.winner.enterUnit( e.unit);
+            // 在设置主雄之前，主雄应该已经是单元的成员
+            e.unit.mainMale = e.unit.allMembers.filter( ee => ee.ID == e.winner.ID)[0];
         })
 
         frame.migrates.forEach( e => {
@@ -724,9 +726,9 @@ export function genFrame(commu : Community){
     let tmp = commu.outCommuMonkeys();
     // 以前消失的猴子重回社群
     let reenterNum = randomInt(0, tmp.length);
-    let enterMonkeys = new Array<Monkey>();
+    let enterMonkeys = new Set<Monkey>();
     for(let i = 0; i < reenterNum; i++){
-        enterMonkeys.push( tmp[i]);
+        enterMonkeys.add( tmp[i]);
     }
     // 未知的猴子进入社群
     for(let i = randomInt(0, 3); i > 0; i--){
@@ -750,7 +752,7 @@ export function genFrame(commu : Community){
             // 通过frame来完成
             newKinships.push({kid: monkey, parents: parents});
         } 
-        enterMonkeys.push(monkey);
+        enterMonkeys.add(monkey);
     }
     // 为进入社群的猴子分配单元
     enterMonkeys.forEach(m =>{
@@ -774,6 +776,7 @@ export function genFrame(commu : Community){
                 // m 挑战主雄成功
                 // 通过frame来完成
                 challengeMainMale.push({unit: picked, winner: m, loser: picked.mainMale });
+                console.log("挑战成功！"," unit:", picked.name, "  winner:", m)
                 //picked.mainMale = m;
             } else{
                 console.log("挑战失败！"," unitType:", picked.unitType, " ageLevel:", m.ageLevel, " genda:", m.genda)
