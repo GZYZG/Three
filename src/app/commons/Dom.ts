@@ -43,9 +43,10 @@ export function addGroupIds2Dropdown( commu : Community){
         let realMonkeys = e.allMembers.filter( ee => !ee.isMirror );
         groups.set(e.name, realMonkeys.map(e => e.ID));
     })
+    groups.set("死亡or离群", commu.vanishedMonkeys().map( e => e.ID));
 
     let menu = $("#idDropdown .dropdown-menu").empty()[0];
-    groups.set("死亡or离群", commu.vanishedMonkeys());
+    
     let entries = groups.entries();
     let t;
     while( !(t = entries.next()).done){

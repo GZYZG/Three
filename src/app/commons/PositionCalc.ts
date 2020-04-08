@@ -34,32 +34,22 @@ export function OMULayout( unit : OMU){
     
     //console.log(" 正在给 ", unit, " 布局！")
 
-    let adult = new Array<Monkey>();
-    let young = new Array<Monkey>();
-    let juvenile = new Array<Monkey>();
-
-    unit.allMembers.forEach(m => {
-        switch(m.ageLevel) {
-            case AGE_LEVEL.ADULT:
-                adult.push(m);
-                break;
-            case AGE_LEVEL.YOUNG:
-                young.push(m);
-                break;
-            case AGE_LEVEL.JUVENILE:
-                juvenile.push(m);
-                break;
-        }
-    });
+    let adult = unit.allMembers.filter( e => e.ageLevel == AGE_LEVEL.ADULT);//new Array<Monkey>();
+    let young = unit.allMembers.filter( e => e.ageLevel == AGE_LEVEL.YOUNG);//new Array<Monkey>();
+    let juvenile = unit.allMembers.filter( e => e.ageLevel == AGE_LEVEL.JUVENILE);//new Array<Monkey>();
+    // 有可能没有主雄
+    if(unit.mainMale){
+        console.log("\n", unit.name, "  主雄：", unit.mainMale, "\n");
+        adult.splice( adult.indexOf( unit.mainMale ), 1);
+        unit.mainMale.position.set(0, 0, 0);
+    } else {
+        console.log("\n没有主雄\n");
+    }
     
-    adult.splice( adult.indexOf( unit.mainMale ), 1);
     layerLayout(adult, AGE_LEVEL.ADULT);
     layerLayout(young, AGE_LEVEL.YOUNG);
     layerLayout(juvenile, AGE_LEVEL.JUVENILE);
-    if(unit.mainMale){
-        // 有可能主雄没了
-        unit.mainMale.position.set(0, 0, 0);
-    }
+    
         
 }
 
