@@ -17,6 +17,7 @@
 </head>
 
 <link rel="stylesheet" href="./assets/css/base.css">
+<link rel="stylesheet" href="./assets/css/content.css">
 <body>
     <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
     <script type="text/javascript" src="./assets/js/popper.min.js"></script>
@@ -25,12 +26,34 @@
    <div class="box">
     <div id="mountNode" style="display: none;"></div>
     <div class="header">
-        <div class="dropdown" id="idDropdown" style="align-self: center; left: 40%; ">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  根据ID选择Monkey
+        <div class="dropdown" id="idDropdown" style="align-self: center; margin-left: 10%; white-space: nowrap; display: inline;">
+                <label style="color: white;">根据ID选择Monkey</label>
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  选择Monkey 的 ID
                 </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow-y: auto; height:500px;">
+                <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow-y: auto; max-height:600px;">
                 </div>
+        </div>
+        <div id="mode" style="display: inline;">
+            <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="isolateTick" name="custom" class="custom-control-input">
+                <label class="custom-control-label" for="isolateTick">时间单位内的亲缘关系</label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+                <input type="radio" id="accumulateTick" name="custom" class="custom-control-input" checked>
+                <label class="custom-control-label" for="accumulateTick">累积时间单位亲缘关系</label>
+            </div>
+            
+
+
+            <div class="dropdown" id="tickDropdown" style="align-self: center; white-space: nowrap; display: inline;">
+                <label style="color: white;">当前时间：</label>
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  选择时间
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow-y: auto;min-height: 50px;">
+                </div>
+            </div>
         </div>
     </div>
     <div class="main">
@@ -57,8 +80,11 @@
                     <li class="list-group-item list-group-item-success" value="isAlive" data-toggle="tooltip" data-placement="top" title="是否存活">isAlive: </li>
                     <li class="list-group-item list-group-item-success" value="inCommu" data-toggle="tooltip" data-placement="top" title="是否在社群中">inCommu: </li>
                     <li class="list-group-item list-group-item-success" value="isMirror" data-toggle="tooltip" data-placement="top" title="是否是分身">isMirror: </li>
-
-                    <button type="button" class="btn btn-danger" id="next"  style="width: 50%; align-self: center;margin-top: .2em;" data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">TICK-TOCK</button>
+                    <div>
+                        <button type="button" class="btn btn-danger" id="next"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">TICK-TOCK</button>
+                        <button type="button" class="btn btn-danger" id="prev"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="回退一个时间单位的亲缘关系">TICK-BACK</button>
+                    </div>
+                    
                 </ul>
                 
             </div>

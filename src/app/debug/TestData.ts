@@ -12,7 +12,7 @@
 //  5        gsz         MALE        1961/12/30       -1           -1        1
 //  6        sjm         FEMALE      1974/1/1         -1           -1        1
 import { Unit, OMU, AMU, FIU } from "../commons/Unit";
-import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT } from "../commons/basis";
+import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, GET_TICK_MODE, TICK_MODE } from "../commons/basis";
 import { Kinship } from "../commons/Kinship";
 import { Monkey, Male, Female } from "../commons/Monkey";
 import { unitsLayout, OMULayout, AMULayout, FIULayout } from "../commons/PositionCalc";
@@ -23,7 +23,7 @@ import { TextGeometry } from "../threelibs/three";
 import FruchtermanLayout from  "@antv/g6/lib/layout/fruchterman";
 import DagreLayout from "@antv/g6/lib/layout/dagre";
 import  ForceLayout from "@antv/g6/lib/layout/force";
-import { addId2Dropdown, addGroupIds2Dropdown } from "../commons/Dom";
+import { addId2Dropdown, addGroupIds2Dropdown, addTick2Dropdown } from "../commons/Dom";
 
 // 单元的信息示例如下：
 // ID       name        createdDate         vanishDate
@@ -142,7 +142,7 @@ export class Community extends THREE.Object3D{
     public allkinships : Array<Kinship>;
     //public allmonkeys : Array<Monkey>;
     public frames: Array<Frame>;
-    public tick: number;
+    public tick: number;    // 表示当前的时刻
 
     constructor(baseUnitNum: number = 12){
         super();
@@ -490,7 +490,20 @@ export class Community extends THREE.Object3D{
 
     }
 
-    public forward(step:number=1){
+    public forward(step:number=1){ 
+        let tickMode = GET_TICK_MODE();
+        switch(tickMode){
+            case TICK_MODE.ACCUMULATE:
+                //显示累积的亲缘关系
+                break;
+            case TICK_MODE.ISOLATE:
+                //显示当前年份的亲缘关系
+                break;
+            default:
+                //显示累积的亲缘关系
+                break;
+        }
+
         let frames = this.frames.filter( e => e.tick == this.tick + step);
         if(frames.length == 0)   return;
         let frame = frames[0];
@@ -534,6 +547,36 @@ export class Community extends THREE.Object3D{
         })
 
 
+
+    }
+
+    public back(step:number=1){
+        if( this.tick == 0)     return;
+        if(step <= 0)   return;
+        // 显示回退的亲缘关系
+        // 进行回退或者前进之前，不仅与 选择的TICK_MODE 有关，还和当前的 TICK_MODE 有关，
+        // 1) 如果当前的mode和之前的mode一致，则不需要重新之前的frame
+        // 2) 如果不一致，则需要执行一些操作，
+        let tickMode = GET_TICK_MODE();
+        switch(tickMode){
+            case TICK_MODE.ACCUMULATE:
+                //显示累积的亲缘关系
+                break;
+            case TICK_MODE.ISOLATE:
+                //显示当前年份的亲缘关系
+                break;
+            default:
+                //显示累积的亲缘关系
+                break;
+        }
+        
+        // 当 this.tick == 0时，this.frames 是空的
+        // 所以当执行回退一个tick时，需要把 this.frames[this.tick-1]的frame回退，所以先执行this.tickPrev() 进行this.tick减1
+        this.tickPrev();
+        // 逆向执行 this.frames[this.tick] 的操作
+        if( tickMode == TICK_MODE.ACCUMULATE){
+
+        }
 
     }
 
@@ -677,6 +720,8 @@ function baseCommunity(unitNum : number){
         
     }
 
+    addTick2Dropdown();
+    $('#tickDropdown button').get()[0].textContent =  ""+GET_TICK();
     return {
         baseUnits : units,
         baseMonkeys : monkeys,
@@ -869,6 +914,8 @@ export function genFrame(commu : Community){
     //addId2Dropdown( commu );
     addGroupIds2Dropdown(commu);
     //window.graph = commu.getJsonData();
+    addTick2Dropdown();
+    $('#tickDropdown button').get()[0].textContent = ""+GET_TICK();
     console.log("Tick 之后的Community：", commu);
 
 }

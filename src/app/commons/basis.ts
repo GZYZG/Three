@@ -46,7 +46,20 @@ export var UNIT_GEN_ID = GEN_ID();
 // 用于产生猴子的ID
 export var MONKEY_GEN_ID = GEN_ID();
 
+export const enum TICK_MODE {
+    ACCUMULATE = "accumulate",
+    ISOLATE = "isolate",
+}
 
+export var NOW_TICK_MODE = "ACCUMULATE";
+
+export var SET_TICK_MODE = function(mode:string){
+    NOW_TICK_MODE = mode;
+};
+
+export var GET_TICK_MODE = function(){
+    return NOW_TICK_MODE;
+}
 
 export const enum UNIT_TYPE {
     OMU="OMU",
@@ -196,16 +209,16 @@ export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, 
     // }
     // 父母子均在同一单元
     var ret = new THREE.Vector3();
-    // N_SEG 表示 父母子均在同一个单元时的KinshipNode上连的孩子结点数量
+    // N_SEG 表示 父母子均在同一个单元时的KinshipNode上连的孩子结点数量，这里预设了不会超过六个孩子
     let N_SEG = 6;
     var pos =  kinshipNode.position.clone();
     let theta = Math.PI * 2 / N_SEG;
     let i = kinshipNode.kids.indexOf(kid);
-    kinshipNode.kids.forEach( k => {
-        if(kid.unit == k.unit){
-            i++;
-        }
-    })
+    // kinshipNode.kids.forEach( k => {
+    //     if(kid.unit == k.unit){
+    //         i++;
+    //     }
+    // })
     switch( type){
         case 'xz': 
             ret.z = Math.sin( i * theta ) * R;

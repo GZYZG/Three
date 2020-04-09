@@ -1,6 +1,7 @@
 import {Monkey} from "./Monkey";
 import { genFrame, Community} from "../debug/TestData";
 import $ = require("jquery");
+import { GET_TICK } from "./basis";
 
 export function fillBlanks(monkey : Monkey){
     //console.log("fill blanks for: ", monkey);
@@ -87,4 +88,13 @@ export function addId2Dropdown(commu: Community){
     })
 }
 
+export function addTick2Dropdown(tick?:number){
+    let menu = $("#tickDropdown .dropdown-menu");
+    if( !tick)  tick = GET_TICK();
+    let item = $('<button></button>', {
+        "class": "dropdown-item",
+        type: "button",
+        html: ""+tick,
+    }).appendTo(menu);
 
+}

@@ -15,7 +15,7 @@ import { Kinship } from './commons/Kinship';
 import { Community, genFrame } from './debug/TestData';
 import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
 import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown } from './commons/Dom';
-import { isNumber, calcMonkeyCommunityPos } from './commons/basis';
+import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE } from './commons/basis';
 
 var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
@@ -32,6 +32,7 @@ var self : any;
 var rendererContainer : any;
 var COMMUNITY : Community = new Community(5);
 
+// 为元素绑定事件
 bindEvents();
 
 export class Application{
@@ -343,6 +344,13 @@ function bindEvents(){
     btn.onclick = function(){
         genFrame(COMMUNITY);
     }
+
+    $('#prev').on('click', function(e){
+        console.log("你想回退？想得美！")
+        //回退一个时间单位
+        COMMUNITY.back(1);
+    })
+
     // 为ID选择下拉列表增加事件
     $("#idDropdown").on('hidden.bs.dropdown',function(e){
         let id = +e.clickEvent.target.textContent;
@@ -366,4 +374,27 @@ function bindEvents(){
         fillBlanks(selected);
         e.relatedTarget.textContent=e.clickEvent.target.textContent; //你点击的那个选项值：Value1或Value2
     });
+
+    // 为时间选择列表绑定事件
+    $("#tickDropdown").on('hidden.bs.dropdown',function(e){
+        let tick = +e.clickEvent.target.textContent;
+        if( !isNumber(tick))  return;
+        
+        confirm("当前时间为：Tick-" + tick);
+        e.relatedTarget.textContent=e.clickEvent.target.textContent; //你点击的那个选项值：Value1或Value2
+    });
+
+    // 时间模式单选框，单独/累积
+    $('#mode input[type="radio"]').on('change', function(e){
+        console.log(e.target)
+        switch( e.target.id){
+            case "isolateTick":
+                SET_TICK_MODE(TICK_MODE.ISOLATE);       break;
+            case "accumulateTick":
+                SET_TICK_MODE(TICK_MODE.ACCUMULATE);    break;
+            default:
+                SET_TICK_MODE(TICK_MODE.ACCUMULATE);    break;
+        }
+        
+    })
 }
