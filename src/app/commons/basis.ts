@@ -13,6 +13,7 @@ function GEN_ID(){
     
 }
 
+// TICK 与ID的性质不同，需要设置读取函数和增加函数，因为同一个TICK值可能需要被多次读取。同样性质的还有TICK_MODE
 function GEN_TICK(){
     var tick = 0;
     var GET_TICK = function(){
@@ -46,14 +47,13 @@ export var UNIT_GEN_ID = GEN_ID();
 // 用于产生猴子的ID
 export var MONKEY_GEN_ID = GEN_ID();
 
+// 
 export const enum TICK_MODE {
     ACCUMULATE = "accumulate",
     ISOLATE = "isolate",
 }
-
-export var NOW_TICK_MODE = "ACCUMULATE";
-
-export var SET_TICK_MODE = function(mode:string){
+export var NOW_TICK_MODE = TICK_MODE.ACCUMULATE;
+export var SET_TICK_MODE = function(mode:TICK_MODE){
     NOW_TICK_MODE = mode;
 };
 

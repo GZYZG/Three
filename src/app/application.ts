@@ -15,7 +15,7 @@ import { Kinship } from './commons/Kinship';
 import { Community, genFrame } from './debug/TestData';
 import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
 import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown } from './commons/Dom';
-import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE } from './commons/basis';
+import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE } from './commons/basis';
 
 var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
@@ -378,15 +378,28 @@ function bindEvents(){
     // 为时间选择列表绑定事件
     $("#tickDropdown").on('hidden.bs.dropdown',function(e){
         let tick = +e.clickEvent.target.textContent;
-        if( !isNumber(tick))  return;
+        let prev = +e.relatedTarget.textContent;
+        if( !isNumber(tick) )   return;
+        if( !isNumber(prev) )   return;
         
-        confirm("当前时间为：Tick-" + tick);
-        e.relatedTarget.textContent=e.clickEvent.target.textContent; //你点击的那个选项值：Value1或Value2
+        console.log("从 Tick-" + prev +" => Tick-"+ tick);
+        e.relatedTarget.textContent = e.clickEvent.target.textContent; //你点击的那个选项值：Value1或Value2
+        if( prev >= tick){
+            // 进行回退
+            COMMUNITY.back(prev-tick);
+        } else {
+            // 前进
+            //COMMUNITY.forward(tick-prev);
+        }
+        
     });
 
     // 时间模式单选框，单独/累积
+    // 当时间模式改变时才出发，所以可以根据触发的模式来推断上一个模式
     $('#mode input[type="radio"]').on('change', function(e){
         console.log(e.target)
+        let prevMode = GET_TICK_MODE();
+        
         switch( e.target.id){
             case "isolateTick":
                 SET_TICK_MODE(TICK_MODE.ISOLATE);       break;
@@ -395,6 +408,7 @@ function bindEvents(){
             default:
                 SET_TICK_MODE(TICK_MODE.ACCUMULATE);    break;
         }
-        
+        console.log("从时间模式 " + prevMode + " => " + GET_TICK_MODE() );
+        COMMUNITY.changeTickMode(GET_TICK_MODE() );
     })
 }
