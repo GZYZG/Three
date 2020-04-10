@@ -158,4 +158,46 @@ export class Kinship extends THREE.Group {
         
     }
 
+
+
+
+    public maskKid(kidID: number){
+        let tmp = this.kids.filter( e => e.ID == kidID);
+        if( tmp.length == 0){
+
+        } else{
+            let kid = tmp[0];
+            kid.visible = false;
+            kid.kidKinshipLink.visible = false;
+        }
+        if( this.kids.filter( e => e.visible).length == 0 ){
+            // 该kinship中的所有kid都不可见，则整个亲缘关系都不可见
+            this.visible = false;
+        }
+    }
+
+    public showKid(kidID: number){
+        let tmp = this.kids.filter( e => e.ID == kidID);
+        if( tmp.length == 0){
+            
+        } else {
+            if( !this.visible){
+                this.visible = true;
+            }
+            let kid  = tmp[0];
+            kid.visible = true;
+            kid.kidKinshipLink.visible = true;
+        }
+        
+    }
+
+    public changeKidVisible(kidID: number, visible: boolean){
+        // 如果该亲缘关系中无该孩子则直接返回
+        if(this.kids.filter( e => e.ID == kidID).length == 0){
+            return;
+        }
+        if( visible)    this.showKid(kidID)
+        else    this.maskKid( kidID);
+    }
+
 }
