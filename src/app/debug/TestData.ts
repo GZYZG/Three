@@ -24,6 +24,7 @@ import FruchtermanLayout from  "@antv/g6/lib/layout/fruchterman";
 import DagreLayout from "@antv/g6/lib/layout/dagre";
 import  ForceLayout from "@antv/g6/lib/layout/force";
 import { addId2Dropdown, addGroupIds2Dropdown, addTick2Dropdown } from "../commons/Dom";
+import { KidKinshipNodeLink } from "../commons/LineFactory";
 
 // 单元的信息示例如下：
 // ID       name        createdDate         vanishDate
@@ -143,16 +144,23 @@ export class Community extends THREE.Object3D{
     //public allmonkeys : Array<Monkey>;
     public frames: Array<Frame>;
     public tick: number;    // 表示当前的时刻
+    public basekids: Array<Monkey>;
 
     constructor(baseUnitNum: number = 12){
         super();
 
         this.allunits = new Array<Unit>();
         this.allkinships = new Array<Kinship>();
+        // 获得社群的起点
         let base = baseCommunity(baseUnitNum);
         this.allunits = base.baseUnits;
-        //this.allmonkeys = base.baseMonkeys;
         this.allkinships = base.baseKinships;
+        this.basekids = new Array<Monkey>();
+        base.baseKinships.forEach( e => {
+            e.kids.forEach( ee => {
+                this.basekids.push( ee );
+            })
+        })
         this.allunits.forEach( unit =>{
             this.add(unit);
         });
@@ -491,6 +499,7 @@ export class Community extends THREE.Object3D{
     }
 
     public forward(step:number=1){ 
+        // 向前步进一个时刻，在当前的基础上执行 this.frames[this.tick] 即可到达下一时刻，再更新this.tick
         let tickMode = GET_TICK_MODE();
         switch(tickMode){
             case TICK_MODE.ACCUMULATE:
@@ -504,9 +513,8 @@ export class Community extends THREE.Object3D{
                 break;
         }
 
-        let frames = this.frames.filter( e => e.tick == this.tick + step);
-        if(frames.length == 0)   return;
-        let frame = frames[0];
+        let frame = this.frames[this.tick];
+        if(!frame)   return;
         frame.vanished.dead.forEach( e  =>{
             e.die();
         })
@@ -536,6 +544,7 @@ export class Community extends THREE.Object3D{
         frame.newKinships.forEach( e => {
             e.parents.dad.addKid(e.kid);
             e.parents.mom.addKid(e.kid);
+            // 注意！！！在newKinships中保留的是kid的真身，添加到kinship中前需要先复制
             let kid = e.kid.deepCopy();
             let t = this.findKinshipByParents(e.parents.dad, e.parents.mom);
             if( t == null){
@@ -546,8 +555,8 @@ export class Community extends THREE.Object3D{
             }
         })
 
-
-
+        // this.tick 增加1
+        this.tickNext();
     }
 
     public back(step:number=1){
@@ -557,6 +566,8 @@ export class Community extends THREE.Object3D{
         // 进行回退或者前进之前，不仅与 选择的TICK_MODE 有关，还和当前的 TICK_MODE 有关，
         // 1) 如果当前的mode和之前的mode一致，则不需要重新之前的frame
         // 2) 如果不一致，则需要执行一些操作，
+        // 也可以不管mode，先进行回退后，再统一设置亲缘关系的可见性
+        // 此时，只需要将需要取消的frame的成员变动取消即可
         let tickMode = GET_TICK_MODE();
         switch(tickMode){
             case TICK_MODE.ACCUMULATE:
@@ -571,13 +582,107 @@ export class Community extends THREE.Object3D{
         }
         
         // 当 this.tick == 0时，this.frames 是空的
-        // 所以当执行回退一个tick时，需要把 this.frames[this.tick-1]的frame回退，所以先执行this.tickPrev() 进行this.tick减1
-        this.tickPrev();
+        // 所以当执行回退一个tick时，需要把 this.frames[this.tick-1]的frame回退，所以执行回退后要进行this.tick减1
+        
         // 逆向执行 this.frames[this.tick] 的操作
-        if( tickMode == TICK_MODE.ACCUMULATE){
+        let frame = this.frames[this.tick-1];
+        if(!frame)  return;
+        // 处理 newkinships
+        // 处理 newKinships的方法：
+        // 1) 只设置孩子的可见性，这样forward时需要检测该孩子是否已经添加到了kinship中；
+        // 2) 将孩子从kinship中移除，同时还要移除的由monkey.mirror中的对象，以及kidkinshiplink，进行forward时不需要检查，直接正常添加即可；
+        frame.newKinships.forEach( e => {
+            // 先采用方法1
+            let ks = this.findKinshipByParents(e.parents.dad, e.parents.mom);
+            ks.maskKid( e.kid.ID);
+        })
 
+        // 迁移的需要进行回迁
+        // 回迁后，monkey的targetUnit中的分身可以设置为不可见或者直接移除
+        frame.migrates.forEach( e => {
+            let m = e.monkey;
+            let tmp = m.migrateTable.filter(ee => ee.tick < this.tick && ee.unit.ID == e.targetUnit.ID );
+            if( tmp.length != 0 ){
+                // 如果在 this.tick之前monkey就进入过该targetUnit则不需要设置为不可见
+                // 则只需要执行leaveUnit、enterUnit即可
+                m.leaveUnit();
+                // 不需要修改迁移表
+                m.enterUnit( e.originUnit, tmp[tmp.length-1].tick, false );
+            } else {
+                // 如果this.tick 是monkey第一次进入targetUnit 单元，则将该分身设置为不可见
+                m.visible = false;
+            }
+            
+        })
+
+        // 挑战主雄的也需要交换
+        frame.challengeMainMale.forEach( e => {
+
+        })
+
+        // 进入社群的也需要重新进行处理
+        frame.enterCommu.forEach( e => {
+
+        })
+
+        // 新建的单元需要处理
+        frame.newUnits.forEach( e => {
+
+        })
+
+        // 离开社群的需要重回社群
+        frame.vanished.outCommu.forEach( e => {
+
+        })
+
+        // 死亡的也需要复活
+        frame.vanished.dead.forEach( e => {
+
+        })
+
+        this.tickPrev();
+
+        
+
+    }
+
+    public changeTickMode(tarMode: TICK_MODE) {
+        //根据时间模式改变从起始时刻到this.tick 的亲缘关系的可见性
+        let tick = this.tick;   // 获取当前社群的tick
+        if( tick == 0){
+            // 如果是在起始时刻，两种模式下的亲缘关系是一样的，不需要改变
+            return;
+        }
+        let visible : boolean;
+        // 访问各个frame中的newkinships，找到其中的孩子，设置其在kinship中的可见性，
+        // 而不是设置在单元中的可见性，因为时间模式的切换不影响tick之前的成员变动的可见性
+        if( tarMode == TICK_MODE.ACCUMULATE) {
+            visible = true;
+            // 从isolate => accumulate，则需要把frames[0]~frames[tick-2]的亲缘关系都设置为可见
+            // 需要特别处理的是其实时刻的亲缘关系， 因为其实时刻不是通过frame生成的，但是记录了起始时刻的孩子
+            // 再执行frame中的亲缘的可见性
+            
+        } else {
+            visible = false;
+            // 从accumulate => isolate。则需要把非frames[tick-1]的亲缘关系都设置为不可见 0~tick-2
+            // 类似if 中的情况，需要单独处理起始时刻的kid
         }
 
+        this.basekids.forEach( e => {
+            let ks = this.findKinshipByParents( e.father, e.mother );
+            ks.changeKidVisible( e.ID, visible);
+            console.log("\t在起始时刻的kid: ", e, " 被设置为", visible? "可": "不可", "见！");
+        })
+        for(let i = 0; i < tick-1; i++){
+            let f = this.frames[i];
+            let newKin = f.newKinships;
+            newKin.forEach( e => {
+                let ks = this.findKinshipByParents( e.parents.dad, e.parents.mom );
+                ks.changeKidVisible( e.kid.ID, visible);
+                let tmp = ks.kids.filter( ee => ee.ID == e.kid.ID);
+                console.log("\t在 Tick-"+ tick+ " 在frames["+ i+ "] 中，kid: ", tmp[0], " 被设置为",  visible? "可": "不可", "见！");   
+            })
+        }
     }
 
 }
@@ -909,8 +1014,10 @@ export function genFrame(commu : Community){
     let frame = new Frame(para);
     commu.addFrame(frame);
     commu.forward();
-    commu.tickNext();
+    //commu.tickNext();
     commu.layout();
+    // 因为增加了一个TICK，在这过程中可能会改变TICK_MODE，需要根据当前模式将当前TICK之前的亲缘关系可见性进行设置。
+    commu.changeTickMode(GET_TICK_MODE() );
     //addId2Dropdown( commu );
     addGroupIds2Dropdown(commu);
     //window.graph = commu.getJsonData();
