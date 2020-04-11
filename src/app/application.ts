@@ -387,9 +387,11 @@ function bindEvents(){
         if( prev >= tick){
             // 进行回退
             COMMUNITY.back(prev-tick);
+            COMMUNITY.changeTickMode(GET_TICK_MODE());
         } else {
             // 前进
-            //COMMUNITY.forward(tick-prev);
+            COMMUNITY.forward(tick-prev);
+            COMMUNITY.changeTickMode(GET_TICK_MODE());
         }
         
     });

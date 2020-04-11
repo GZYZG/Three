@@ -437,7 +437,7 @@ export class Community extends THREE.Object3D{
         dagre.edges = myData.edges;
         
         dagre.execute();
-        console.log("DagreLayout: ", dagre);
+        //console.log("DagreLayout: ", dagre);
         dagre.nodes.forEach( e =>{
             pos.push({id:e.id, x:e.x, y:e.y})})
         //console.log("pos: ", pos);
@@ -499,6 +499,7 @@ export class Community extends THREE.Object3D{
     }
 
     public forward(step:number=1){ 
+        console.log("进入forward，community.tick: ", this.tick);
         // 向前步进一个时刻，在当前的基础上执行 this.frames[this.tick] 即可到达下一时刻，再更新this.tick
         let tickMode = GET_TICK_MODE();
         switch(tickMode){
@@ -516,18 +517,26 @@ export class Community extends THREE.Object3D{
         let frame = this.frames[this.tick];
         if(!frame)   return;
         frame.vanished.dead.forEach( e  =>{
-            e.die();
+            e.monkey.die();
         })
         frame.vanished.outCommu.forEach( e => {
-            e.leaveUnit();
+            e.monkey.leaveUnit();
         })
 
         frame.newUnits.forEach( e => {
-            this.addUnit( e);
+            if( this.allunits.filter( ee => ee.ID == e.ID).length == 0){
+                this.addUnit( e);
+            } else {
+                e.visible = true;
+            }
+            
         })
 
         frame.enterCommu.forEach( e => {
             e.monkey.enterUnit( e.unit);
+            let tmp = e.unit.allMembers.filter( ee => ee.ID == e.monkey.ID)[0];
+            if(!tmp.visible)
+                tmp.visible = true;
         })
 
         frame.challengeMainMale.forEach( e => {
@@ -539,6 +548,10 @@ export class Community extends THREE.Object3D{
         frame.migrates.forEach( e => {
             e.monkey.leaveUnit();
             e.monkey.enterUnit( e.targetUnit);
+            // 因为可能存在回退，需要设置分身的可见性
+            let tmp = e.targetUnit.allMembers.filter( ee => ee.ID == e.monkey.ID)[0];
+            if(!tmp.visible)
+                tmp.visible = true;
         })
 
         frame.newKinships.forEach( e => {
@@ -553,13 +566,19 @@ export class Community extends THREE.Object3D{
             }else{
                 t.addKid(kid);
             }
+            // 在回退的时候可能已经被设置为不可见了
+            // 注意！！！在第一次执行frame时，在kinship的layout之前，kidkinshiplink是没有被创建的！！！
+            let ks = this.findKinshipByParents( e.parents.dad, e.parents.mom );
+            ks.changeKidVisible( e.kid.ID, true);
         })
 
         // this.tick 增加1
         this.tickNext();
+        this.forward( step-1);
     }
 
     public back(step:number=1){
+        console.log("进入back!", "community.tick: ", this.tick);
         if( this.tick == 0)     return;
         if(step <= 0)   return;
         // 显示回退的亲缘关系
@@ -602,54 +621,83 @@ export class Community extends THREE.Object3D{
         frame.migrates.forEach( e => {
             let m = e.monkey;
             let tmp = m.migrateTable.filter(ee => ee.tick < this.tick && ee.unit.ID == e.targetUnit.ID );
+            // 找到monkey在targetUnit的分身
+            let mirror = Array.from( m.mirror).filter(ee => ee.unit.ID == e.targetUnit.ID)[0];
             if( tmp.length != 0 ){
                 // 如果在 this.tick之前monkey就进入过该targetUnit则不需要设置为不可见
                 // 则只需要执行leaveUnit、enterUnit即可
-                m.leaveUnit();
-                // 不需要修改迁移表
-                m.enterUnit( e.originUnit, tmp[tmp.length-1].tick, false );
+                // 注意！！！需要找到再targetUnit里那个分身，令其离开targetUnit，但进入originUnit时则不需要，任意一个分身进入都可以
+                mirror.leaveUnit();
             } else {
                 // 如果this.tick 是monkey第一次进入targetUnit 单元，则将该分身设置为不可见
-                m.visible = false;
+                // 应该找到monkey在targetUnit中的那个分身，并令其离开单元，并设置为不可见
+                mirror.leaveUnit();
+                mirror.visible = false;
             }
+            // 再重新进入originUnit，但不需要增加迁记录
+            m.enterUnit( e.originUnit, -1, false );
             
         })
 
         // 挑战主雄的也需要交换
+        // 迁移的过程中不会发生主雄交换的情况
         frame.challengeMainMale.forEach( e => {
-
+            if(!e.loser){
+                e.unit.mainMale = null;
+            } else {
+                e.unit.mainMale = e.unit.allMembers.filter( ee => ee.ID == e.loser.ID)[0];
+            }
+            
         })
 
         // 进入社群的也需要重新进行处理
+        // 如果monkey 是重返社群，且进入的单元为同一个单元，则不需要改变其可见性；如果之前未进入过该单元，则设置为不可见
         frame.enterCommu.forEach( e => {
-
+            let m = e.monkey;
+            let tmp = m.migrateTable.filter(ee => ee.tick < this.tick && ee.unit.ID == e.unit.ID );
+            let mirror = Array.from( m.mirror).filter(ee => ee.unit.ID == e.unit.ID)[0];
+            if( tmp.length == 0){
+                mirror.leaveUnit();
+                mirror.visible = false;
+            } else {
+                mirror.leaveUnit();
+            }
         })
 
         // 新建的单元需要处理
+        // 新增的单元设置为不可见即可
         frame.newUnits.forEach( e => {
-
+            e.visible  = false;
         })
 
         // 离开社群的需要重回社群
+        // 进入该分身所属的单元即可
+        // 注意！！！monkey死亡或者离群时有可能是主雄，所以frame中需要记录！
         frame.vanished.outCommu.forEach( e => {
-
+            e.monkey.enterUnit( e.monkey.unit);
+            if(e.isMainMale && e.monkey.unit instanceof OMU)
+                e.monkey.unit.mainMale = e.monkey.unit.allMembers.filter( ee => ee.ID == e.monkey.ID)[0];
         })
 
         // 死亡的也需要复活
         frame.vanished.dead.forEach( e => {
-
+            e.monkey.revive();
+            e.monkey.enterUnit( e.monkey.unit);
+            if(e.isMainMale && e.monkey.unit instanceof OMU)
+                e.monkey.unit.mainMale = e.monkey.unit.allMembers.filter( ee => ee.ID == e.monkey.ID)[0];
         })
 
         this.tickPrev();
 
-        
+        this.back(step-1);
 
     }
 
     public changeTickMode(tarMode: TICK_MODE) {
         //根据时间模式改变从起始时刻到this.tick 的亲缘关系的可见性
         let tick = this.tick;   // 获取当前社群的tick
-        if( tick == 0){
+        
+        if( tick == 0 && tarMode == TICK_MODE.ISOLATE){
             // 如果是在起始时刻，两种模式下的亲缘关系是一样的，不需要改变
             return;
         }
@@ -779,7 +827,7 @@ function baseCommunity(unitNum : number){
     }
 
     // 随机挑选父母，生成孩子
-    let kinnum = randomInt(3,6);
+    let kinnum = randomInt(2, 2);
     let allkids = new Set<Monkey>();
     var allKinships = new Array<Kinship>();
     for(let i = 0; i < kinnum; i++){
@@ -788,7 +836,7 @@ function baseCommunity(unitNum : number){
         let father  = parents.dad;
         let mother  = parents.mom;
  
-        let kidnum = randomInt(1, 2);
+        let kidnum = randomInt(1, 1);
         let kids = new Array<Monkey>();
         while( kids.length < kidnum){
             let nth = randomInt(0, units.length-1 );
@@ -844,9 +892,10 @@ export function genFrame(commu : Community){
     let migrates = new Array();
     let newKinships = new Array();
     // 从社群中消失的猴子的数量
-    let vainshNum  = randomInt(0, 4);
-    let dead = new Array<Monkey>();
-    let outCommu = new Array<Monkey>();
+    let vainshNum  = randomInt(0, 2);
+    let dead = new Array();
+    let outCommu = new Array();
+    // 注意！！！monkey死亡或者离群时有可能是主雄，所以frame中需要记录！
     for(let i = 0; i < vainshNum; i++){
         let monkey;
         let temp = commu.commuAliveMonkeys();//allmonkeys.filter( m => m.inCommu && m.isAlive);
@@ -855,12 +904,12 @@ export function genFrame(commu : Community){
             // monkey 死亡
             //console.log("死亡的Monkey：", monkey, "在", monkey.realunit.name , " 死亡！");
             //monkey.die();
-            dead.push(monkey);
+            dead.push({monkey: monkey, isMainMale: monkey.isMainMale});
         } else{
             // monkey 离开单元并且不进入任一单元，则表示离开社群
             //console.log("离群的Monkey：", monkey, "从", monkey.realunit.name , " 离群！");
             //monkey.leaveUnit();
-            outCommu.push(monkey);
+            outCommu.push({monkey: monkey, isMainMale: monkey.isMainMale });
         }
         
     }
@@ -881,7 +930,7 @@ export function genFrame(commu : Community){
         enterMonkeys.add( tmp[i]);
     }
     // 未知的猴子进入社群
-    for(let i = randomInt(0, 3); i > 0; i--){
+    for(let i = randomInt(0, 2); i > 0; i--){
         let monkey  = genMonkey("unknown"+i);
         if(Math.random() < .1){
             // 未知的猴子的父母在社群中
@@ -935,8 +984,8 @@ export function genFrame(commu : Community){
     })
     
     // 成年雌、雄性的迁移
-    let migrateMaleNum = randomInt(0, 3);
-    let migrateFemaleNum = randomInt(0, 4);
+    let migrateMaleNum = randomInt(0, 2);
+    let migrateFemaleNum = randomInt(0, 2);
     let migrated = new Array<Monkey>();
     for(let i = 0; i < migrateMaleNum; i++){
         let temp = commu.commuAliveMonkeys().filter(e => e.ageLevel == AGE_LEVEL.ADULT && e.genda == GENDA.MALE && !e.isMainMale && !migrated.includes(e) );
@@ -967,8 +1016,8 @@ export function genFrame(commu : Community){
 
     // 生成的孩子的数目
     let babeNum : number;
-    if(Math.random() < 0.95){
-        babeNum = randomInt(1,3);//randomInt(4, 8);
+    if(Math.random() < 1.95){
+        babeNum = randomInt(2,2);//randomInt(4, 8);
     } else if ( Math.random() < .99){
         babeNum = randomInt(4, 5);//randomInt(9, 15);
     } else{

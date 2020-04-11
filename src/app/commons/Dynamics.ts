@@ -8,7 +8,7 @@ export class Frame {
     public nextFrame : Frame;
     public prevFrame : Frame;
     
-    public vanished: {dead:Array<Monkey>, outCommu: Array<Monkey>};     //消失的猴子，包括进入死亡的和离开社群的猴子
+    public vanished: {dead:Array<{monkey:Monkey, isMainMale: boolean} >, outCommu: Array<{monkey:Monkey, isMainMale: boolean}>};     //消失的猴子，包括进入死亡的和离开社群的猴子
     public newUnits : Array<Unit>;    // 新增单元
     public enterCommu: Array<{monkey:Monkey, unit:Unit}>;   // 进入社群的，包括第一次进入社群的猴子（非婴猴）、重返社群的猴子、新出生的猴子（婴猴）
     public challengeMainMale: Array<{unit:OMU, winner: Monkey, loser: Monkey}>;   // 挑战主雄成功

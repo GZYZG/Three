@@ -186,7 +186,8 @@ export class Kinship extends THREE.Group {
             }
             let kid  = tmp[0];
             kid.visible = true;
-            kid.kidKinshipLink.visible = true;
+            if( kid.kidKinshipLink)
+                kid.kidKinshipLink.visible = true;
         }
         
     }

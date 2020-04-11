@@ -39,11 +39,11 @@ export function OMULayout( unit : OMU){
     let juvenile = unit.allMembers.filter( e => e.ageLevel == AGE_LEVEL.JUVENILE);//new Array<Monkey>();
     // 有可能没有主雄
     if(unit.mainMale){
-        console.log("\n", unit.name, "  主雄：", unit.mainMale, "\n");
+        //console.log("\n", unit.name, "  主雄：", unit.mainMale, "\n");
         adult.splice( adult.indexOf( unit.mainMale ), 1);
         unit.mainMale.position.set(0, 0, 0);
     } else {
-        console.log("\n没有主雄\n");
+        //console.log("\n没有主雄\n");
     }
     
     layerLayout(adult, AGE_LEVEL.ADULT);

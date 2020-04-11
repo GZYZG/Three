@@ -130,9 +130,9 @@ export class OMU extends Unit {
     }
 
     public addMonkeys(){
-        this.addLayer_3( randomInt(2, 4), AGE_LEVEL.ADULT);
+        this.addLayer_3( randomInt(2, 3), AGE_LEVEL.ADULT);
         this.addLayer_3( randomInt(2, 3), AGE_LEVEL.YOUNG);
-        this.addLayer_3( randomInt(2, 4), AGE_LEVEL.JUVENILE);
+        this.addLayer_3( randomInt(2, 3), AGE_LEVEL.JUVENILE);
     }
 
     public get mainMale(){
@@ -230,7 +230,7 @@ export class AMU extends Unit {
     }
 
     public addMonkeys(){
-        this.addLayer( randomInt(3, 5) );
+        this.addLayer( randomInt(3, 4) );
     }
 
     public addLayer( n : number){
@@ -280,7 +280,7 @@ export class FIU extends Unit {
     }
 
     public addMonkeys(){
-        this.addLayer( randomInt(2, 4));
+        this.addLayer( randomInt(2, 3));
     }
 
     public addLayer( n : number){
