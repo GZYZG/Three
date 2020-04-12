@@ -12,7 +12,7 @@
 //  5        gsz         MALE        1961/12/30       -1           -1        1
 //  6        sjm         FEMALE      1974/1/1         -1           -1        1
 import { Unit, OMU, AMU, FIU } from "../commons/Unit";
-import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, GET_TICK_MODE, TICK_MODE } from "../commons/basis";
+import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, GET_TICK_MODE, TICK_MODE, logFrame } from "../commons/basis";
 import { Kinship } from "../commons/Kinship";
 import { Monkey, Male, Female } from "../commons/Monkey";
 import { unitsLayout, OMULayout, AMULayout, FIULayout } from "../commons/PositionCalc";
@@ -25,6 +25,8 @@ import DagreLayout from "@antv/g6/lib/layout/dagre";
 import  ForceLayout from "@antv/g6/lib/layout/force";
 import { addId2Dropdown, addGroupIds2Dropdown, addTick2Dropdown } from "../commons/Dom";
 import { KidKinshipNodeLink } from "../commons/LineFactory";
+
+
 
 // 单元的信息示例如下：
 // ID       name        createdDate         vanishDate
@@ -1092,7 +1094,9 @@ export function genFrame(commu : Community){
     addTick2Dropdown();
     $('#tickDropdown button').get()[0].textContent = ""+GET_TICK();
     console.log("Tick 之后的Community：", commu);
-
+    let logStr = logFrame(frame,commu.frames.indexOf(frame));
+    console.log( logStr );
+    
 }
 
 

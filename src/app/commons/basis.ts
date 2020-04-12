@@ -2,6 +2,8 @@ import { Monkey, Male, Female } from "./Monkey";
 import { ParentsNode, KinshipNode} from './Kinship';
 import * as THREE from 'three'
 import { Community } from "../debug/TestData";
+import { Frame } from "./Dynamics";
+//import fse = require("fs-extra");
 
 // 用于产生的ID
 function GEN_ID(){
@@ -252,4 +254,55 @@ export function cleanCache( obj : any ){
     if(!obj) return;
     obj.geometry.dispose();
     obj.material.dispose();
+}
+
+export function logFrame(frame: Frame, idx: number){
+    let logFilName = "./demo0/src/app/debug/log.txt";
+ 
+    let logStr = "Tick-"+frame.tick+ "  frameIdx: "+ idx+ "\n";
+    logStr += "------------vanished-------------\n";
+    frame.vanished.dead.forEach( e => {
+        let tmp = "Monkey[ ID: "+ e.monkey.ID + ", name: "+ e.monkey.name+ ", isMainMale:"+ e.isMainMale+ " ]"+ " dead in Unit[ "+ e.monkey.unit.name+ " ]\n";
+        logStr += tmp;
+    })
+    frame.vanished.outCommu.forEach( e => {
+        let tmp = "Monkey[ ID: "+ e.monkey.ID + ", name: "+ e.monkey.name+ ", isMainMale:"+ e.isMainMale+ " ]"+
+                  " leave community from Unit[ "+ e.monkey.unit.name+ " ]\n"
+        logStr += tmp;
+    })
+    logStr += "------------newUnits-------------\n";
+    frame.newUnits.forEach( e => {
+        let tmp = "新增单元："+ e.name+ "\n";
+        logStr += tmp;
+    })
+    logStr += "------------enterCommu-------------\n";
+    frame.enterCommu.forEach( e => {
+        let tmp = "Monkey[ ID: "+ e.monkey.ID + ", name: "+ e.monkey.name+ " ] 进入了单元："+ e.unit.name+ "\n";
+        logStr += tmp;
+    })
+    logStr += "------------挑战主雄成功-------------\n";
+    frame.challengeMainMale.forEach( e => {
+        let tmp = "单元："+ e.unit.name+ " winner: [ ID: "+ e.winner.ID + ", name: "+ e.winner.name+ " ]  loser: [ ID: "+ e.loser.ID+ ", name: "+ e.loser.name+ " ]\n";
+        logStr += tmp;
+    })
+    logStr += "------------迁移-------------\n";
+    frame.migrates.forEach( e => {
+        let tmp = "Monkey[ ID: "+ e.monkey.ID+ ", name: "+ e.monkey.name+ " ]  "+ e.originUnit.name+ " ===> "+ e.targetUnit.name+ "\n";
+        logStr += tmp;
+    })
+    logStr += "------------newKinships-------------\n";
+    frame.newKinships.forEach( e => {
+        let tmp = "Kid: [ ID: "+ e.kid.ID+ ", name: "+ e.kid.name+ " unit: "+ e.kid.unit.name+ " ]  "+ 
+                  "Dad: [ ID: "+ e.parents.dad.ID+ ", name: "+ e.parents.dad.name+ " unit: "+ e.parents.dad.unit.name+ " ]  "+ 
+                  "Mom: [ ID: "+ e.parents.mom.ID+ ", name: "+ e.parents.mom.name+ " unit: "+ e.parents.mom.unit.name+ " ] \n"
+        logStr += tmp;
+    })
+    logStr += "------------------------------------\n\n\n";
+
+    // fse.writeFile(logFilName, logStr, (err) => {
+    //     if (err) throw err;
+    //     console.log('\n\nlog保存出错！\n\n');
+    // });
+
+    return logStr;
 }
