@@ -500,6 +500,7 @@ export class Community extends THREE.Object3D{
 
     public forward(step:number=1){ 
         console.log("进入forward，community.tick: ", this.tick);
+        if(step <= 0)   return;
         // 向前步进一个时刻，在当前的基础上执行 this.frames[this.tick] 即可到达下一时刻，再更新this.tick
         let tickMode = GET_TICK_MODE();
         switch(tickMode){
@@ -696,12 +697,13 @@ export class Community extends THREE.Object3D{
     public changeTickMode(tarMode: TICK_MODE) {
         //根据时间模式改变从起始时刻到this.tick 的亲缘关系的可见性
         let tick = this.tick;   // 获取当前社群的tick
-        
+        console.log("TICK-", tick, "  TICK_MODE: ", tarMode);
         if( tick == 0 && tarMode == TICK_MODE.ISOLATE){
             // 如果是在起始时刻，两种模式下的亲缘关系是一样的，不需要改变
-            return;
+            //return;
         }
         let visible : boolean;
+        let baseVis : boolean;
         // 访问各个frame中的newkinships，找到其中的孩子，设置其在kinship中的可见性，
         // 而不是设置在单元中的可见性，因为时间模式的切换不影响tick之前的成员变动的可见性
         if( tarMode == TICK_MODE.ACCUMULATE) {
@@ -716,10 +718,16 @@ export class Community extends THREE.Object3D{
             // 类似if 中的情况，需要单独处理起始时刻的kid
         }
 
+        if( tick == 0 && tarMode == TICK_MODE.ISOLATE){
+            baseVis = true;
+        } else{
+            baseVis = visible;
+        }
+
         this.basekids.forEach( e => {
             let ks = this.findKinshipByParents( e.father, e.mother );
-            ks.changeKidVisible( e.ID, visible);
-            console.log("\t在起始时刻的kid: ", e, " 被设置为", visible? "可": "不可", "见！");
+            ks.changeKidVisible( e.ID, baseVis);
+            console.log("\t在起始时刻的kid: ", e, " 被设置为", baseVis? "可": "不可", "见！");
         })
         for(let i = 0; i < tick-1; i++){
             let f = this.frames[i];
@@ -731,6 +739,17 @@ export class Community extends THREE.Object3D{
                 console.log("\t在 Tick-"+ tick+ " 在frames["+ i+ "] 中，kid: ", tmp[0], " 被设置为",  visible? "可": "不可", "见！");   
             })
         }
+
+        // 要将当前时刻的kinship设置为可见
+        let f = this.frames[tick-1];
+        if(!f)  return;
+        let newKin = f.newKinships;
+        newKin.forEach( e => {
+            let ks = this.findKinshipByParents( e.parents.dad, e.parents.mom );
+            ks.changeKidVisible( e.kid.ID, true);
+            let tmp = ks.kids.filter( ee => ee.ID == e.kid.ID);
+            console.log("\t在 Tick-"+ tick+ " 在frames["+ i+ "] 中，kid: ", tmp[0], " 被设置为可见！");   
+        })
     }
 
 }
