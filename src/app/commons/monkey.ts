@@ -279,7 +279,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
             // 注意！！！需要检查是否已经有相同时刻进入某单元的记录，放置在back/forward 时产生重复的记录
             if( recode && mirror.migrateTable.filter( e => e.tick == tick && e.unit.ID == unit.ID).length == 0)
                 mirror.migrateTable.push({tick: tick, unit: unit} );  // 记录该分身进入了单元unit
-            mirror.material.emissive.setHex( 0x000);
+            mirror.material.emissive.setHex( 0x000 + unit.color);
             
         } else {
             // 将进入的单元中无这个猴子的分身，则创建一个mirror加入到该单元
@@ -289,13 +289,16 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
                 this.mirror.add(this);
                 this.isMirror = false;
                 this.unit = unit;
+                
                 if( recode && this.migrateTable.filter( e => e.tick == tick && e.unit.ID == unit.ID).length == 0)
                     this.migrateTable.push( {tick: tick, unit: unit} );
+                this.material.emissive.setHex(0x000+ unit.color);
                 unit.allMembers.push(this);
                 unit.add(this);
             } else{
                 mirror = this.deepCopy();
                 mirror.material.emissive.setHex( 0x000 );
+                mirror.material.setHex(0x000+ unit.color);
                 mirror.isMirror = false;
                 mirror.unit = unit;
                 if( recode && mirror.migrateTable.filter( e => e.tick == tick && e.unit.ID == unit.ID).length == 0)

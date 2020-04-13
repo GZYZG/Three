@@ -20,6 +20,8 @@ export abstract class Unit extends THREE.Group {
 
     public label : CSS2DObject;
 
+    public color : number;
+
     public allMembers : Array<Monkey>;      // 曾属于单元的所有成员
     constructor( radius : number, unitType : UNIT_TYPE, createdDate? : Date ) {
         super();
