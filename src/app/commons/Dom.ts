@@ -5,7 +5,7 @@ import { GET_TICK } from "./basis";
 
 export function fillBlanks(monkey : Monkey){
     //console.log("fill blanks for: ", monkey);
-    let blanks = document.getElementById("monkey_info").children;
+    let blanks = $("#monkey_info li");//document.getElementById("monkey_info").children;
     let info = new Array();
 
     info.push("ID: " + monkey.ID);
@@ -31,7 +31,7 @@ export function fillBlanks(monkey : Monkey){
     info.push("inCommu: "+ monkey.inCommu );
     info.push("isMirror: "+monkey.isMirror);
 
-    for(let i = 1; i < blanks.length-1; i++){
+    for(let i = 1; i < blanks.length; i++){
         blanks[i].innerText = info[i-1];
     }
 
@@ -41,10 +41,11 @@ export function fillBlanks(monkey : Monkey){
 export function addGroupIds2Dropdown( commu : Community){
     let groups = new Map();
     commu.allunits.forEach( e => {
-        let realMonkeys = e.allMembers.filter( ee => !ee.isMirror );
+        let realMonkeys = e.allMembers.filter( ee => !ee.isMirror &&  ee.visible);
         groups.set(e.name, realMonkeys.map(e => e.ID));
     })
-    groups.set("死亡or离群", commu.vanishedMonkeys().map( e => e.ID));
+    
+    groups.set("死亡or离群", Array.from( new Set(commu.vanishedMonkeys().filter(e => e.visible).map( e => e.ID) ) ) );
 
     let menu = $("#idDropdown .dropdown-menu").empty()[0];
     
@@ -54,7 +55,7 @@ export function addGroupIds2Dropdown( commu : Community){
         let item = document.createElement("button");
         item.className = "dropdown-item disabled";
         item.type="button"
-        item.textContent = ""+t.value[0];
+        item.textContent = ""+t.value[0]+ "( "+t.value[1].length+ ")";
         menu.append(item);
         t.value[1].forEach( e => {
             let item = document.createElement("button");

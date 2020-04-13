@@ -17,6 +17,8 @@ import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
 import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown } from './commons/Dom';
 import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE } from './commons/basis';
 
+var FileSaver = require('file-saver');
+
 var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
 var scene : THREE.Scene;
@@ -343,6 +345,7 @@ function bindEvents(){
     var btn = $("#next")[0];
     btn.onclick = function(){
         genFrame(COMMUNITY);
+
     }
 
     $('#prev').on('click', function(e){
@@ -393,6 +396,8 @@ function bindEvents(){
             COMMUNITY.forward(tick-prev);
             COMMUNITY.changeTickMode(GET_TICK_MODE());
         }
+        // 改变时刻后要及时更新ID列表
+        addGroupIds2Dropdown(COMMUNITY);
         
     });
 
@@ -413,4 +418,31 @@ function bindEvents(){
         console.log("从时间模式 " + prevMode + " => " + GET_TICK_MODE() );
         COMMUNITY.changeTickMode(GET_TICK_MODE() );
     })
+
+    $("#file").on("click", e => {
+        console.log(e);
+        let file = e.target.files[0];
+        if(!file)   return;
+        let name = file.name;//读取选中文件的文件名
+        let size = file.size;//读取选中文件的大小
+        console.log("文件名:"+name+"大小："+size);
+        var reader = new FileReader();//这里是核心！！！读取操作就是由它完成的。
+        reader.readAsText(file);//读取文件的内容
+
+        reader.onload = function(){
+            console.log(this.result);//当读取完成之后会回调这个函数，然后此时文件的内容存储到了result中。直接操作即可。
+        };
+    })
+
+    $("#saveLog").on("click", e => {
+        let tmp = new Array<string>();
+        COMMUNITY.logInfo.forEach( ee => {
+            tmp.push(ee);
+            console.log(ee);
+        })
+        // var blob = new Blob(tmp, {type: "text/plain;charset=utf-8"});
+        // FileSaver.saveAs(blob, "log.txt");
+        //console.log(tmp);
+    })
+    
 }
