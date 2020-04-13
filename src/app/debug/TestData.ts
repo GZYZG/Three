@@ -12,7 +12,7 @@
 //  5        gsz         MALE        1961/12/30       -1           -1        1
 //  6        sjm         FEMALE      1974/1/1         -1           -1        1
 import { Unit, OMU, AMU, FIU } from "../commons/Unit";
-import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, GET_TICK_MODE, TICK_MODE, logFrame } from "../commons/basis";
+import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, GET_TICK_MODE, TICK_MODE, logFrame, logBase } from "../commons/basis";
 import { Kinship } from "../commons/Kinship";
 import { Monkey, Male, Female } from "../commons/Monkey";
 import { unitsLayout, OMULayout, AMULayout, FIULayout } from "../commons/PositionCalc";
@@ -26,6 +26,7 @@ import  ForceLayout from "@antv/g6/lib/layout/force";
 import { addId2Dropdown, addGroupIds2Dropdown, addTick2Dropdown } from "../commons/Dom";
 import { KidKinshipNodeLink } from "../commons/LineFactory";
 
+var FileSaver = require('file-saver');
 
 
 // 单元的信息示例如下：
@@ -148,6 +149,8 @@ export class Community extends THREE.Object3D{
     public tick: number;    // 表示当前的时刻
     public basekids: Array<Monkey>;
 
+    public logInfo: Array<string>;
+
     constructor(baseUnitNum: number = 12){
         super();
 
@@ -173,7 +176,8 @@ export class Community extends THREE.Object3D{
         this.frames = new Array<Frame>();
         this.tick = GET_TICK();
     
-        
+        this.logInfo = new Array<string>();
+        this.logInfo.push( logBase( this));
     }
 
     public tickNext(){
@@ -901,6 +905,7 @@ function baseCommunity(unitNum : number){
         baseMonkeys : monkeys,
         baseKinships : allKinships,
     }
+    
 
 }
 
@@ -1088,16 +1093,20 @@ export function genFrame(commu : Community){
     commu.layout();
     // 因为增加了一个TICK，在这过程中可能会改变TICK_MODE，需要根据当前模式将当前TICK之前的亲缘关系可见性进行设置。
     commu.changeTickMode(GET_TICK_MODE() );
-    //addId2Dropdown( commu );
     addGroupIds2Dropdown(commu);
     //window.graph = commu.getJsonData();
     addTick2Dropdown();
     $('#tickDropdown button').get()[0].textContent = ""+GET_TICK();
     console.log("Tick 之后的Community：", commu);
     let logStr = logFrame(frame,commu.frames.indexOf(frame));
+    commu.logInfo.push(logStr);
     console.log( logStr );
-    
+    var blob = new Blob([logStr], {type: "text/plain;charset=utf-8"});
+    //FileSaver.saveAs(blob, "hello world.txt");
 }
+
+
+
 
 
 

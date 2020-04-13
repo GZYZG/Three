@@ -306,3 +306,16 @@ export function logFrame(frame: Frame, idx: number){
 
     return logStr;
 }
+
+export function logBase(comm: Community){
+    let logStr = "----------社群的起始信息----------\n";
+    let tmp = comm.basekids;
+    tmp.forEach( e => {
+        let tmp = "Kid: [ ID: "+ e.ID+ ", name: "+ e.name+ " unit: "+ e.unit.name+ " ]  "+ 
+                  "Dad: [ ID: "+ e.father.ID+ ", name: "+ e.father.name+ " unit: "+ e.father.unit.name+ " ]  "+ 
+                  "Mom: [ ID: "+ e.mother.ID+ ", name: "+ e.mother.name+ " unit: "+ e.mother.unit.name+ " ] \n"
+        logStr += tmp;
+    })
+    logStr += "------------------------------------\n\n\n";
+    return logStr;
+}
