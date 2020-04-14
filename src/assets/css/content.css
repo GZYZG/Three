@@ -3,3 +3,12 @@
     display: inline;
     margin-left: 3%;
 }
+
+
+
+.tick-range div.slider-selection {
+    background: green;
+}
+.tick-range div.slider-track-low, .tick-range div.slider-track-high {
+    background: red;
+}
