@@ -17,6 +17,7 @@ import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
 import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown } from './commons/Dom';
 import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE } from './commons/basis';
 
+
 var FileSaver = require('file-saver');
 
 var monkeys = new Array<Monkey>();
@@ -234,6 +235,7 @@ export class Application{
 
         states = this.stats = new Stats();
         var container = document.createElement( 'div' );
+        container.id = "stats"
         container.appendChild( this.stats.domElement );
         document.getElementsByClassName('center')[0].appendChild(container);
         //document.body.appendChild( container );
@@ -345,16 +347,14 @@ function bindEvents(){
     var btn = $("#next")[0];
     btn.onclick = function(){
         genFrame(COMMUNITY);
-
+        $('#tickRange').slider({max:GET_TICK()})
+        $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:GET_TICK(), GET_TICK()]);
+        $("#tickLow").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
+        $("#tickHigh").html(GET_TICK() + " / " + GET_TICK());
+        // 要进行刷新
+        $("#tickRange").slider('refresh', { useCurrentValue: true });
     }
 
-    $('#prev').on('click', function(e){
-        console.log("你想回退？想得美！")
-        //回退一个时间单位
-        COMMUNITY.back(1);
-    })
-
-    // 为ID选择下拉列表增加事件
     $("#idDropdown").on('hidden.bs.dropdown',function(e){
         let id = +e.clickEvent.target.textContent;
         if( !isNumber(id))  return;
@@ -398,6 +398,8 @@ function bindEvents(){
         }
         // 改变时刻后要及时更新ID列表
         addGroupIds2Dropdown(COMMUNITY);
+        $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:tick, tick]);
+        $("#tickRange").slider('refresh', { useCurrentValue: true });
         
     });
 
@@ -406,17 +408,21 @@ function bindEvents(){
     $('#mode input[type="radio"]').on('change', function(e){
         console.log(e.target)
         let prevMode = GET_TICK_MODE();
-        
+        let high = $("#tickRange").slider("getValue")[1];
         switch( e.target.id){
             case "isolateTick":
-                SET_TICK_MODE(TICK_MODE.ISOLATE);       break;
+                SET_TICK_MODE(TICK_MODE.ISOLATE);
+               break;
             case "accumulateTick":
-                SET_TICK_MODE(TICK_MODE.ACCUMULATE);    break;
+                SET_TICK_MODE(TICK_MODE.ACCUMULATE);
+                break;
             default:
                 SET_TICK_MODE(TICK_MODE.ACCUMULATE);    break;
         }
         console.log("从时间模式 " + prevMode + " => " + GET_TICK_MODE() );
         COMMUNITY.changeTickMode(GET_TICK_MODE() );
+        $("#tickLow").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE? 0+"" : high+"" );
+        $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:high, high]);
     })
 
     $("#file").on("click", e => {
@@ -444,5 +450,33 @@ function bindEvents(){
         // FileSaver.saveAs(blob, "log.txt");
         //console.log(tmp);
     })
-    
+
+    $('#tickRange').slider({
+        formatter: function (value) {
+            return  value;
+        },
+        tooltip_split: true,
+        tooltip: "always",
+        tooltip_position: "bottom",
+    }).on('slide',  slideEvt => {
+        //当滚动时触发，可能有重复
+        //console.info("slideEvt:", slideEvt);
+    }).on('change', e => {
+        //当值发生改变的时候触发
+        //console.info("changeEvt:", e);
+        //获取旧值和新值
+        console.info(e.value.oldValue + '--' + e.value.newValue);
+        $("#tickLow").html(e.value.newValue[0]);
+        $("#tickHigh").html(e.value.newValue[1] + " / " + GET_TICK());
+        if( e.value.oldValue[1] < e.value.newValue[1]){
+            COMMUNITY.forward(e.value.newValue[1] - e.value.oldValue[1] )
+        } else{
+            COMMUNITY.back(e.value.oldValue[1] - e.value.newValue[1]);
+        }
+        COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
+        $("#tickDropdown button")[0].textContent = ""+e.value.newValue[1];
+        // 改变时刻后要及时更新ID列表
+        addGroupIds2Dropdown(COMMUNITY);
+    });
+
 }
