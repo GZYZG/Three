@@ -700,14 +700,58 @@ export class Community extends THREE.Object3D{
 
     }
 
-    public changeTickMode(tarMode: TICK_MODE) {
-        //根据时间模式改变从起始时刻到this.tick 的亲缘关系的可见性
-        let tick = this.tick;   // 获取当前社群的tick
-        console.log("TICK-", tick, "  TICK_MODE: ", tarMode);
-        if( tick == 0 && tarMode == TICK_MODE.ISOLATE){
-            // 如果是在起始时刻，两种模式下的亲缘关系是一样的，不需要改变
-            //return;
+    public maskKinship(){
+        this.basekids.forEach( e => {
+            let ks = this.findKinshipByParents( e.father, e.mother );
+            ks.changeKidVisible( e.ID, false);
+            //console.log("\t在起始时刻的kid: ", e, " 被设置为", true? "可": "不可", "见！");
+        })
+
+        for(let i = 0; i < GET_TICK(); i++){
+            let f = this.frames[i];
+            let newKin = f.newKinships;
+            newKin.forEach( e => {
+                let ks = this.findKinshipByParents( e.parents.dad, e.parents.mom );
+                ks.changeKidVisible( e.kid.ID, false);
+                let tmp = ks.kids.filter( ee => ee.ID == e.kid.ID);
+                //console.log("\t在 Tick-"+ tick+ " 在frames["+ i+ "] 中，kid: ", tmp[0], " 被设置为",  visible? "可": "不可", "见！");   
+            })
         }
+    }
+
+    public showRangeKinship(start: number, end: number){
+        this.maskKinship();
+        if(start==0){
+            this.basekids.forEach( e => {
+                let ks = this.findKinshipByParents( e.father, e.mother );
+                ks.changeKidVisible( e.ID, true);
+                //console.log("\t在起始时刻的kid: ", e, " 被设置为", true? "可": "不可", "见！");
+            })
+            start += 1;
+        }
+        for(let i = start; i <= end && i<= GET_TICK(); i++){
+            let f = this.frames[i-1];
+            let newKin = f.newKinships;
+            newKin.forEach( e => {
+                let ks = this.findKinshipByParents( e.parents.dad, e.parents.mom );
+                ks.changeKidVisible( e.kid.ID, true);
+                let tmp = ks.kids.filter( ee => ee.ID == e.kid.ID);
+                //console.log("\t在 Tick-"+ tick+ " 在frames["+ i+ "] 中，kid: ", tmp[0], " 被设置为",  visible? "可": "不可", "见！");   
+            })
+        }
+        
+    }
+
+    public changeTickMode(tarMode: TICK_MODE, t?:number) {
+        //根据时间模式改变从起始时刻到this.tick 的亲缘关系的可见性
+        let tick: number;
+        if(!t){
+            tick = this.tick;   // 获取当前社群的tick
+        } else{
+            tick = t;
+        }
+        
+        console.log("TICK-", tick, "  TICK_MODE: ", tarMode);
         let visible : boolean;
         let baseVis : boolean;
         // 访问各个frame中的newkinships，找到其中的孩子，设置其在kinship中的可见性，
@@ -756,6 +800,31 @@ export class Community extends THREE.Object3D{
             let tmp = ks.kids.filter( ee => ee.ID == e.kid.ID);
             console.log("\t在 Tick-"+ tick+ " 在frames["+ i+ "] 中，kid: ", tmp[0], " 被设置为可见！");   
         })
+    }
+
+    public traceMonkey(id: number){
+        // 追溯一个monkey的足迹，包括其性别、ID、名字、进入社群的时间、迁移的时间和目标单元、在那个时间与那个配偶产生了那个孩子、死亡时间
+        
+        let tmp = this.findMonkeyByID(id);
+        if(tmp.length==0 ) {
+            console.error("找不到ID为：" + id + " 的猴子！\n");
+            return;
+        }
+        
+        let m = tmp[0];
+        let mt = m.migrateTable;
+        let life = {
+            ID: id,                 // ID
+            genda: m.genda,         // 性别
+            name: m.name,           // 姓名
+            enterCommuTick: -1,     // 进入社群的时间
+            deadTick: -1,           // 死亡时间
+            belongTo: new Array(),  // 归属，记录各个时刻猴子属于哪个单元
+            migrate: new Array<{tick: number, origin: number, target: number}>(),       // 记录monkey的迁移信息
+            
+        };
+        
+
     }
 
 }
