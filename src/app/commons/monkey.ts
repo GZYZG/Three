@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA, MALE_GEMOMETRY, FEMALE_GEOMETRY, MONKEY_GEN_ID, GET_TICK } from './basis';
+import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA, MALE_GEMOMETRY, FEMALE_GEOMETRY, MONKEY_GEN_ID, GET_TICK, MONKEY_COLOR } from './basis';
 import { Unit, OMU} from './Unit';
 import { Kinship } from './Kinship';
 import { KidKinshipNodeLink } from './LineFactory';
@@ -261,7 +261,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
             this.unit.mainMale = null;
         }
         
-        this.material.emissive.setHex(0x333333);
+        this.material.emissive.setHex(MONKEY_COLOR.MIRROR);
         
         this.mirror.forEach( m => {
             m.inCommu = false;
@@ -279,7 +279,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
             // 注意！！！需要检查是否已经有相同时刻进入某单元的记录，放置在back/forward 时产生重复的记录
             if( recode && mirror.migrateTable.filter( e => e.tick == tick && e.unit.ID == unit.ID).length == 0)
                 mirror.migrateTable.push({tick: tick, unit: unit} );  // 记录该分身进入了单元unit
-            mirror.material.emissive.setHex( 0x000 + unit.color);
+            mirror.material.emissive.setHex( MONKEY_COLOR.REAL + unit.color);
             
         } else {
             // 将进入的单元中无这个猴子的分身，则创建一个mirror加入到该单元
@@ -292,13 +292,12 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
                 
                 if( recode && this.migrateTable.filter( e => e.tick == tick && e.unit.ID == unit.ID).length == 0)
                     this.migrateTable.push( {tick: tick, unit: unit} );
-                this.material.emissive.setHex(0x000+ unit.color);
+                this.material.emissive.setHex(MONKEY_COLOR.REAL + unit.color);
                 unit.allMembers.push(this);
                 unit.add(this);
             } else{
                 mirror = this.deepCopy();
-                mirror.material.emissive.setHex( 0x000 );
-                mirror.material.setHex(0x000+ unit.color);
+                mirror.material.emissive.setHex( MONKEY_COLOR.REAL + unit.color );
                 mirror.isMirror = false;
                 mirror.unit = unit;
                 if( recode && mirror.migrateTable.filter( e => e.tick == tick && e.unit.ID == unit.ID).length == 0)
@@ -322,7 +321,9 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
             m.isAlive = false;
             m.inCommu = false;
             m.isMirror = true;
-            m.material.emissive.setHex(0x333333);
+            // 死亡的统一设置成灰色和线框
+            m.material.emissive.setHex(MONKEY_COLOR.DEAD);
+            m.material.wireframe = true;
             if(m.isMainMale && m.unit instanceof OMU){
                 m.isMainMale = false;
                 m.unit.mainMale = null;
@@ -334,6 +335,9 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.mirror.forEach( m => {
             m.isAlive = true;
             m.inCommu = true;
+            // 复活后统一设置成分身的颜色
+            m.material.emissive.setHex(MONKEY_COLOR.MIRROR);
+            m.material.wireframe = false;
         })
     }
     
@@ -354,6 +358,6 @@ export class Female extends Monkey {
     constructor (id:number, name:string, unit:Unit, birthDate?: Date/*, social_level:string */) {
         super( GENDA.FEMALE, id, name, unit/*, social_level*/);
         this.geometry = FEMALE_GEOMETRY;
-        this.material = new THREE.MeshLambertMaterial( { color: 0x000  } );
+        this.material = new THREE.MeshLambertMaterial( { color: 0x000, vertexColors: true  } );
     }
 }

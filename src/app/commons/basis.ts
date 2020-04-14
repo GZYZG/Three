@@ -69,6 +69,33 @@ export const enum UNIT_TYPE {
     FIU="FIU"
 };
 
+export const enum MONKEY_COLOR {
+    DEAD=0x000000,
+    OUTCOMMUNITY=0x333333,
+    REAL=0x000000,
+    MIRROR=0x333333,
+}
+
+function randomColor(){
+    let unitColor = new Array();
+
+    function genUnitColor(){
+        let color = "0x";
+        let tab = "0123456789abcdef";
+        for(let i = 0; i < 6; i++){
+            color += tab[Math.floor(Math.random()*16)];
+        }
+        return color; 
+    }
+    
+
+    return genUnitColor;
+
+
+}
+
+export var GEN_UNIT_COLOR = randomColor();
+
 export const enum AGE_LEVEL {
     // 将单元分为五层：成年雌性层、成年雄性层（无）、亚成年雄性层、亚成年雌性层（无）、青年猴层、少年猴层、婴幼猴层
     // AF="AF",    // Adult Female
@@ -111,7 +138,7 @@ export const KID_SHIP_NODE_LINK_WIDTH = 2.2;
 export const LAYER_COLOR = 0xaaaaaa;
 
 export var MALE_GEMOMETRY = new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);
-export var FEMALE_GEOMETRY = new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 10, 10);
+export var FEMALE_GEOMETRY = new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 8, 8);
 
 // 关于单元在社区内布局的参数，所有单元的球心均位于同一平面
 // 单元分布在一条条环带上
@@ -282,7 +309,7 @@ export function logFrame(frame: Frame, idx: number){
     })
     logStr += "------------挑战主雄成功-------------\n";
     frame.challengeMainMale.forEach( e => {
-        let tmp = "单元："+ e.unit.name+ " winner: [ ID: "+ e.winner.ID + ", name: "+ e.winner.name+ " ]  loser: [ ID: "+ e.loser.ID+ ", name: "+ e.loser.name+ " ]\n";
+        let tmp = "单元："+ e.unit.name+ " winner: [ ID: "+ e.winner.ID + ", name: "+ e.winner.name+ " ]  loser: [ ID: "+ e.loser?e.loser.ID: "-1"+ ", name: "+ e.loser?e.loser.name:""+ " ]\n";
         logStr += tmp;
     })
     logStr += "------------迁移-------------\n";
