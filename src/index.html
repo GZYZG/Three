@@ -9,7 +9,10 @@
     <!--  引入Font Awesome字体样式文件  >
     <link type="text/css" rel="stylesheet" href="./assets/font/font-awesome.min.css" /-->
     <!--meta http-equiv="Access-Control-Allow-Origin" content="*"-->
-    <title>川金丝猴亲缘结构可视化Demo1</title>
+
+    <!--引入bootstrap-slider 样式文件-->
+    <link href="./assets/css/bootstrap-slider.css" rel="stylesheet" />
+    <title>川金丝猴亲缘结构可视化V1</title>
     <style>
         body{margin: 0;overflow: hidden;}
     </style>
@@ -22,26 +25,14 @@
     <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
     <script type="text/javascript" src="./assets/js/popper.min.js"></script>
     <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
-    <!-- <script>
-        function handleFiles(files) {
-
-            var selectedFile = document.getElementById("file").files[0];//获取读取的File对象
-            var name = selectedFile.name;//读取选中文件的文件名
-            var size = selectedFile.size;//读取选中文件的大小
-            console.log("文件名:"+name+"大小："+size);
-
-            var reader = new FileReader();//这里是核心！！！读取操作就是由它完成的。
-            reader.readAsText(selectedFile);//读取文件的内容
-
-            reader.onload = function(){
-                console.log(this.result);//当读取完成之后会回调这个函数，然后此时文件的内容存储到了result中。直接操作即可。
-            };
-        }
-    </script> -->
+    <!--script type="text/javascript" src="./assets/js/bootstrap-slider.min.js"></script-->
+    <script type="text/javascript" src="./assets/js/bootstrap-slider.js"></script>
+    
     <!--script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.0/build/g6.js"></script-->
    <div class="box">
     <div id="mountNode" style="display: none;"></div>
     <div class="header">
+        
         <div class="dropdown" id="idDropdown" style="align-self: center; margin-left: 10%; white-space: nowrap; display: inline;">
                 <label style="color: white;">根据ID选择Monkey</label>
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -51,18 +42,19 @@
                 </div>
         </div>
         <div id="mode" style="display: inline;">
-            <div class="custom-control custom-radio custom-control-inline">
+            <!--使用时间范围选择替代时间模式和时可选择-->
+            <div class="custom-control custom-radio custom-control-inline" style="display: none;">
                 <input type="radio" id="isolateTick" name="custom" class="custom-control-input">
                 <label class="custom-control-label" for="isolateTick">当前时间产生的亲缘关系</label>
             </div>
-            <div class="custom-control custom-radio custom-control-inline">
+            <div class="custom-control custom-radio custom-control-inline" style="display: none;">
                 <input type="radio" id="accumulateTick" name="custom" class="custom-control-input" checked>
                 <label class="custom-control-label" for="accumulateTick">累积时间单位亲缘关系</label>
             </div>
             
 
 
-            <div class="dropdown" id="tickDropdown" style="align-self: center; white-space: nowrap; display: inline;">
+            <div class="dropdown" id="tickDropdown" style="align-self: center; white-space: nowrap; display: none;">
                 <label style="color: white;">当前时间：</label>
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   选择时间
@@ -70,7 +62,14 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow-y: auto;min-height: 50px;">
                 </div>
             </div>
+            <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline;">
+                <label>选择时间范围：</label>
+                <b id="tickLow">0</b>&nbsp;&nbsp;
+                <input id="tickRange" type="text" class="span2" value="" data-slider-id="slider" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
+                &nbsp;&nbsp;<b id="tickHigh">0</b>
+            </div>
         </div>
+        <div id="tickRange"></div>
     </div>
     <div class="main">
         <div class="left">left</div>
@@ -95,34 +94,26 @@
                     <li class="list-group-item list-group-item-success" value="inCommu" data-toggle="tooltip" data-placement="top" title="是否在社群中">inCommu: </li>
                     <li class="list-group-item list-group-item-success" value="isMirror" data-toggle="tooltip" data-placement="top" title="是否是分身">isMirror: </li>
                     <div>
-                        <button type="button" class="btn btn-danger" id="next"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">TICK-TOCK</button>
-                        <button type="button" class="btn btn-danger" id="prev"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="回退一个时间单位的亲缘关系">TICK-BACK</button>
+                        <button type="button" class="btn btn-danger" id="next"  style="width: 80%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">生成下一时刻亲缘关系</button>
+                        <!--button type="button" class="btn btn-danger" id="prev"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="回退一个时间单位的亲缘关系">TICK-BACK</button-->
                     </div>
                     
-                    <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button>
+                    <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button>
                 </ul>
                 
             </div>
-            
-
-            
-            
-            <!--div class="dropdown" id="tickDropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  选择时间
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                  <button class="dropdown-item" type="button">Tick1</button>
-                  <button class="dropdown-item" type="button">Tick2</button>
-                  <button class="dropdown-item" type="button">Tick3</button>
-                </div>
-              </div-->
             
         </div>
     </div>
     <div class="footer"></div>
 </div>
 <script src="../tsdist/bundle.js"> </script>
+<script>
+    $("#stats > div").css({
+        top: $("div.header").css("height"),
+        margin: "1.5px 0px 0px 1.5px",
+    })
+</script>
 
 </body>
 </html>
