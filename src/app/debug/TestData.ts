@@ -634,11 +634,11 @@ export class Community extends THREE.Object3D{
                 // 如果在 this.tick之前monkey就进入过该targetUnit则不需要设置为不可见
                 // 则只需要执行leaveUnit、enterUnit即可
                 // 注意！！！需要找到再targetUnit里那个分身，令其离开targetUnit，但进入originUnit时则不需要，任意一个分身进入都可以
-                mirror.leaveUnit();
+                mirror.leaveUnit(-1, false);
             } else {
                 // 如果this.tick 是monkey第一次进入targetUnit 单元，则将该分身设置为不可见
                 // 应该找到monkey在targetUnit中的那个分身，并令其离开单元，并设置为不可见
-                mirror.leaveUnit();
+                mirror.leaveUnit(-1, false);
                 mirror.visible = false;
             }
             // 再重新进入originUnit，但不需要增加迁记录
@@ -664,10 +664,10 @@ export class Community extends THREE.Object3D{
             let tmp = m.migrateTable.filter(ee => ee.tick < this.tick && ee.unit.ID == e.unit.ID );
             let mirror = Array.from( m.mirror).filter(ee => ee.unit.ID == e.unit.ID)[0];
             if( tmp.length == 0){
-                mirror.leaveUnit();
+                mirror.leaveUnit(-1, false);
                 mirror.visible = false;
             } else {
-                mirror.leaveUnit();
+                mirror.leaveUnit(-1,false);
             }
         })
 
@@ -817,14 +817,72 @@ export class Community extends THREE.Object3D{
             ID: id,                 // ID
             genda: m.genda,         // 性别
             name: m.name,           // 姓名
-            enterCommuTick: -1,     // 进入社群的时间
+            enterCommuTick: -1,     // 第一次进入社群的时间
             deadTick: -1,           // 死亡时间
-            belongTo: new Array(),  // 归属，记录各个时刻猴子属于哪个单元
+            belongTo: new Array(),  // 归属，记录各个时刻猴子属于哪个单元, belongTo[i] = j表示时刻i属于j单元
             migrate: new Array<{tick: number, origin: number, target: number}>(),       // 记录monkey的迁移信息
-            
+            kinships: new Array<{tick: number, spouse: number, kids: Array<number>}>(), // 记录monkey的亲缘关系
         };
-        
+        // 记录亲缘关系
+        m.kids.forEach( e => {
+            let spouse = e.father.ID == m.ID? e.mother.ID: e.father.ID;
+            let t = e.migrateTable[0].tick;
+            let k = life.kinships.filter(ee => ee.tick == t && ee.spouse == spouse)[0];
+            if(!k){
+                k = {tick: t, spouse:spouse, kids:new Array<number>() }
+            }
+            k.kids.push(e.ID);
+            life.kinships.push(k)
+        })
 
+        life.enterCommuTick = mt[0].tick;
+        life.belongTo = new Array<number>();
+        for(let i = 0; i < life.enterCommuTick; i++){
+            life.belongTo.push(-1);
+        }
+        life.belongTo.push( mt[0].unit.ID );
+
+        let i = 0;
+        while(true){
+            let enterUnit = m.migrateTable[i].unit.ID;
+            let enter = m.migrateTable[i].tick;
+            if(i >= m.leaveTable.length){
+                for(let j = enter; j < this.frames.length; j++){
+                    life.belongTo[j] = enterUnit;
+                }
+                break;
+            }
+            let leave = m.migrateTable[i].tick;
+            for(let j =enter; j < leave; j++){
+                life.belongTo[j] = enterUnit;
+            }
+            let leaveUnit = m.leaveTable[i].unit.ID;
+            if(i+1 >= m.migrateTable.length){
+                // 两个表长度一样的情况
+                for(let j = leave; j < this.frames.length; j++){
+                    life.belongTo[j] = -1;
+                }
+                // 判断monkey是否在这个时刻死亡
+                if(this.frames[leave].vanished.dead.filter( e => e.monkey.ID == m.ID).length != 0){
+                    life.deadTick = leave;
+                }
+                break;
+
+            }
+            let nexEnter = m.migrateTable[i+1].tick;
+            if(nexEnter == leave){
+                life.migrate.push({tick: nexEnter, origin: leaveUnit, target: enterUnit })
+            } else {
+                for(let j = leave; j < nexEnter; j++){
+                    life.belongTo[j] = -1
+                }
+            }
+            
+            i++;
+        }
+
+        return life;
+    
     }
 
 }
