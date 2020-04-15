@@ -65,8 +65,11 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     public selectedColor : number;
     public SELECTED : boolean;
 
+    // migrateTable至多和leaveTable的长度多1，即离开单元的次数一定小于等于进入单元的次数，且不会超过一次
     // 记录Monkey在进入单元的时刻，由所有分身共享
     public migrateTable: Array<{tick: number, unit: Unit}>;
+    // 记录Monkey离开单元的时刻，由所有分身共享
+    public leaveTable: Array<{tick: number, unit: Unit}>;
     //public monkey : MonkeyInfo;
 
     constructor( genda:GENDA, id:number, name:string, unit: Unit, father?: Male, mother?: Female, birthDate ?: Date ){
@@ -103,6 +106,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.mirror = new Set<Monkey>();
         this.isMirror = true;
         this.migrateTable = new Array();
+        this.leaveTable = new Array();
     }
 
     public changePosition(pos : THREE.Vector3){
@@ -229,6 +233,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.mirror.add(ret);
         ret.mirror = this.mirror;
         ret.migrateTable = this.migrateTable;
+        ret.leaveTable = this.leaveTable;
         ret.isMirror = true;
         ret.isMainMale = false;
         return ret;
@@ -251,11 +256,13 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         } );
     }
 
-    public leaveUnit(){
+    public leaveUnit(tick:number=GET_TICK(), recode:boolean=true){
         // 在任一时刻，只有真身才会调用 leaveUnit 方法
         if( this.unit == null) return;
         this.isMirror = true;
         this.inCommu = false;
+        if(tick>=0 && recode)
+            this.leaveTable.push({tick: tick, unit:this.unit})
         if( this.isMainMale && this.unit instanceof OMU){
             this.isMainMale = false;
             this.unit.mainMale = null;
