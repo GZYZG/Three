@@ -1,15 +1,13 @@
 
+
+目录
+---
+---
 ---
 [TOC]
 ---
-##目录
->* [1. Object3D对象的坐标问题](#c1)
->* [2. 关于div元素的 width、height 等相关问题](#c2)
->* [3. DIV元素不换行的方法](#c3)
->* [4. 坐标系的问题](#c4)
->* [5. bugs](#c5)
->* [6. 亲缘关系的显示](#c6)
->* [附录I &nbsp;Markdown 语法参考](#markdown-reference)
+---
+
 
 ### 1.Object3D对象的坐标问题<span id="c1"></span>
 Object3D的position属性时相对坐标，指相对于父对象的坐标。若不进行设置，则为parent的坐标。
@@ -17,7 +15,11 @@ Object3D的position属性时相对坐标，指相对于父对象的坐标。若�
 
 ### 2.关于div元素的 width、height 等相关问题<span id="c2"></span>
 先来了解了解一下css的盒子模型：
-![alt css盒子模型](http://img.smyhvae.com/2015-10-03-css-27.jpg)
+![css盒子模型](./src/assets/box_model.jpg)
+>content: 最中间的 628.400 x 25.600 即是content，即可见区、盒子的内容;
+>padding: 内边距，清除内容周围的区域，内边距是透明的;
+>margin: 外边距，清除边框外的区域，外边距是透明的;
+>border: 边框，围绕在内边距和内容外的边框;
 
 参考资料：
 - [JS中关于clientWidth offsetWidth scrollWidth 等的含义](https://www.cnblogs.com/fullhouse/archive/2012/01/16/2324131.html)
@@ -94,6 +96,20 @@ bug代码为：
 **a)** 不管以上是那种情况，都需要显示累积到 t 的社群的成员变动，只是根据情况选择 t 之前的亲缘关系是否显示；
 **b)** 以上两种情况，从起始时刻到 t 的所有成员变动（进入社群、离开社群、死亡、出生、主雄的替换）都需要显示，只是亲缘关系（具体就是孩子结点）是否需要显示；
 
+
+### 7. div的内容自动换行
+```css
+white-space:normal; word-break:break-all;overflow:hidden;
+```
+
+### 8. bootstrap4 中的collapse 组件
+如果要使需要被折叠的元素每次只有一个显示，可以使这些元素有共同的data-parent。
+
+### 9. 页面元素的样式设计准则：
+    - 宽、高尽量用百分比设置
+    - 尽量只设置内边距(padding)，不设置外边距(margin)。保证兄弟节点之间没有不可控的间隙出现
+    - 使用内边距控制元素内容的显示
+    - 设置内边距时（或外边距），尽可能通过控制padding[margin]- - - left、padding[margin]-top 来设置元素的显示位置
 
 
 <br><br><br><br><br>  

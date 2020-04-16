@@ -15,7 +15,7 @@ import { Kinship } from './commons/Kinship';
 import { Community, genFrame } from './debug/TestData';
 import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
 import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown } from './commons/Dom';
-import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE } from './commons/basis';
+import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE, tickTreeData } from './commons/basis';
 
 
 var FileSaver = require('file-saver');
@@ -353,6 +353,34 @@ function bindEvents(){
         $("#tickHigh").html(GET_TICK() + " / " + GET_TICK());
         // 要进行刷新
         $("#tickRange").slider('refresh', { useCurrentValue: true });
+        let t = $("<a>", {
+            "class": "list-group-item  list-group-item-success",
+            text: "Tick-"+GET_TICK(),
+        });
+        t.attr({
+            "data-toggle": "collapse",
+            "data-target": "#Tick_"+GET_TICK(),
+            "href": "#Tick_"+GET_TICK(),
+            "role": "button",
+        })
+        
+        
+        $("#tickList").append(t);
+        let tree = $("<div>",{
+            text: "123",
+            "class": "collapse",
+            id: "Tick_"+GET_TICK(),
+        });
+        tree.treeview({ 
+            data: tickTreeData(COMMUNITY, GET_TICK() ),
+            levels: 5,
+            expandIcon: "glyphicon glyphicon-plus",
+            onNodeSelected: function(e , data){
+                $("#"+tree.attr("id")).treeview("toggleNodeExpanded", [data.nodeId, {silent: true}]);
+            }
+        })
+        t.after( tree )
+
     }
 
     $("#idDropdown").on('hidden.bs.dropdown',function(e){

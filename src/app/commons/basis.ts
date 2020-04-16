@@ -70,21 +70,30 @@ export const enum UNIT_TYPE {
 };
 
 export const enum MONKEY_COLOR {
-    DEAD=0x000000,
-    OUTCOMMUNITY=0x333333,
+    DEAD=0x990000,
+    OUTCOMMUNITY=0x000000,
     REAL=0x000000,
-    MIRROR=0x333333,
+    MIRROR=0xE8E7E5,
+    CHILD=0xffcc00,
 }
 
 function randomColor(){
-    let unitColor = new Array();
-
+    let unitColor = new Array("0xF1B000", "0x0F4D24", "0x5C0C7B", "0x2059A6", "0x346633", "0xCB3398",  
+                              "0xD6E6B5", "0x30588C", "0x17324D", "0x984D54", "0xEAB34F", "0xCC3467", 
+                              "0xB05C1C");
+    let num = 0;
     function genUnitColor(){
+        if(num < unitColor.length)  {
+            
+            return unitColor[num++];
+        }
         let color = "0x";
         let tab = "0123456789abcdef";
         for(let i = 0; i < 6; i++){
             color += tab[Math.floor(Math.random()*16)];
         }
+        unitColor.push(color);
+        num++;
         return color; 
     }
     
@@ -345,4 +354,117 @@ export function logBase(comm: Community){
     })
     logStr += "------------------------------------\n\n\n";
     return logStr;
+}
+
+export function tickTreeData(commu: Community, tick: number){
+    let data = [];
+    let state = {
+        checked:false,
+        disabled:false,
+        expanded:false,
+        selected:false,
+    }
+    let dead = {
+        id: 0,
+        text: "死亡的猴子",
+        selectable: true,
+        state: state,
+        nodes: new Array(),
+    }
+    let outCommu = {
+        id: 1,
+        text: "离开社群的猴子",
+        selectable: true,
+        state: state,
+        nodes: new Array(),
+    }
+    let enterCommu = {
+        id: 2,
+        text: "进入社群的猴子",
+        selectable: true,
+        state: state,
+        nodes: new Array(),
+    }
+    let migrate = {
+        id: 3,
+        text: "迁移的猴子",
+        selectable: true,
+        state: state,
+        nodes: new Array(),
+    }
+    let challengeMainMale = {
+        id: 4,
+        text: "挑战主雄成功的猴子",
+        selectable: true,
+        state: state,
+        nodes: new Array(),
+    }
+    let newBabe = {
+        id: 5,
+        text: "新生的婴猴",
+        selectable: true,
+        state: state,
+        nodes: new Array(),
+    }
+    data.push(dead, outCommu, enterCommu, migrate, challengeMainMale, newBabe);
+    if(tick == 0){
+        dead.nodes.push();
+        outCommu.nodes.push();
+        enterCommu.nodes.push();
+        migrate.nodes.push();
+        challengeMainMale.nodes.push()
+        commu.basekids.forEach( e => {
+            newBabe.nodes.push({
+                id: e.ID,
+                text: e.ID + "父亲: " + e.father.ID + "母亲: " + e.father.ID,
+            })
+        })
+        return data
+    }
+    let f = commu.frames[tick-1];
+    f.vanished.dead.forEach(e => {
+        dead.nodes.push({
+            id: e.monkey.ID,
+            text: e.monkey.ID + " 在单元 " + e.monkey.unit.ID + "(" + e.monkey.unit.name + ") 中死亡",
+        })
+    })
+
+    f.vanished.outCommu.forEach( e => {
+        outCommu.nodes.push( {
+            id: e.monkey.ID,
+            text: e.monkey.ID + " 从单元 "+  e.monkey.unit.ID + "(" + e.monkey.unit.name + ") 离开社群",
+        })
+    })
+
+    f.enterCommu.forEach( e => {
+        enterCommu.nodes.push( {
+            id: e.monkey.ID,
+            text: e.monkey.ID + " 进入单元 " + e.monkey.unit.ID + "(" + e.monkey.unit.name + ")",
+        })
+    })
+
+    f.migrates.forEach( e => {
+        migrate.nodes.push({
+            id: e.monkey.ID,
+            text: e.monkey.ID + "   " + e.originUnit.ID + "(" + e.originUnit.name + ")  =>  " + e.targetUnit.ID + "(" + e.targetUnit.name + ")",
+        })
+    })
+
+    f.challengeMainMale.forEach( e => {
+        challengeMainMale.nodes.push( {
+            id: e.unit.ID,
+            text: e.unit.ID + "(" + e.unit.name + ")  winner: " + e.winner.ID + "  loser: " + e.loser? e.loser.ID : "无",
+        })
+    })
+
+    f.newKinships.forEach( e => {
+        newBabe.nodes.push( {
+            id: e.kid.ID,
+            text: e.kid.ID + " 父亲: " + e.kid.father.ID + "  母亲: " + e.kid.father.ID,
+            selectable: true,
+        })
+    })
+
+    return data;
+
 }

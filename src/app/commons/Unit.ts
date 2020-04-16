@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt, MONKEY_GEN_ID, UNIT_GEN_ID, GEN_UNIT_COLOR }from './basis';
+import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt, MONKEY_GEN_ID, UNIT_GEN_ID, GEN_UNIT_COLOR, GET_TICK }from './basis';
 import { Monkey, Male, Female } from './Monkey';
 import { Kinship} from './Kinship';
 import { MeshNormalMaterial } from '../threelibs/three';
@@ -17,6 +17,7 @@ export abstract class Unit extends THREE.Group {
     readonly createdDate : Date;
     public vanishDate : Date;
     private _currentMoment : Date;
+    public createTick: number;
 
     public label : CSS2DObject;
 
@@ -40,6 +41,10 @@ export abstract class Unit extends THREE.Group {
 
         let laberDiv = document.createElement('div');//创建div容器
         laberDiv.className = 'label';
+        let self = this;
+        laberDiv.onclick = function(e){
+            console.log(self," : ", e);
+        }
         laberDiv.textContent = this.name;
         laberDiv.style.marginTop = '-1em';
         laberDiv.style.display = "block";
@@ -49,7 +54,8 @@ export abstract class Unit extends THREE.Group {
         this.add(label);
         
         this.color = parseInt(GEN_UNIT_COLOR(), 16);
-    
+        // 自动获取当前的时刻，作为单元建立的时刻
+        this.createTick = GET_TICK();
         
     
     }
@@ -128,6 +134,7 @@ export class OMU extends Unit {
         this._mainMale.isMainMale = true;
         this._mainMale.enterUnit( this);
         this.mainMale.position.set( this.position.x, this.position.y, this.position.z );
+        
         this.add(this.mainMale);
     }
 

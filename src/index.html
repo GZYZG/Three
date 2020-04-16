@@ -27,12 +27,13 @@
     <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
     <!--script type="text/javascript" src="./assets/js/bootstrap-slider.min.js"></script-->
     <script type="text/javascript" src="./assets/js/bootstrap-slider.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap-treeview.js"></script>
     
     <!--script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.0/build/g6.js"></script-->
    <div class="box">
     <div id="mountNode" style="display: none;"></div>
     <div class="header">
-        
+        <input type="color" value="#2D9900"/>
         <div class="dropdown" id="idDropdown" style="align-self: center; margin-left: 10%; white-space: nowrap; display: inline;">
                 <label style="color: white;">根据ID选择Monkey</label>
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -77,10 +78,66 @@
         </div>
 
         <div class="right">
-            <div style="margin: 5px;;" >
-                
-                <ul class="list-group" id="monkey_info" style="white-space: normal; font-family:Consolas; padding-left: 1em;">
-                    <li class="list-group-item list-group-item-success disabled"><strong>被选中的金丝猴信息:</strong></li>
+
+            <div class="accordion" id="accordionExample" >
+                <div class="card">
+                  <div class="card-header" id="headingOne">
+                      <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        被选中的金丝猴的信息
+                      </button>
+                  </div>
+                  <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#headingOne">
+                    <div class="card-body" style="white-space:normal; word-break:break-all;overflow:hidden;">
+                        <ul class="list-group" id="monkey_info" style="white-space: normal; font-family:Consolas; ">
+                            <li class="list-group-item list-group-item-success" value="ID">ID: </li>
+                            <li class="list-group-item list-group-item-success" value="NAME">NAME: </li>
+                            <li class="list-group-item list-group-item-success" value="GENDA">GENDA: </li>
+                            <li class="list-group-item list-group-item-success" value="年龄段">年龄段: </li>
+                            <li class="list-group-item list-group-item-success" value="分身所属单元">分身所属单元: </li>
+                            <li class="list-group-item list-group-item-success" value="当前所属单元">当前所属单元: </li>
+                            <li class="list-group-item list-group-item-success" value="孩子" data-toggle="tooltip" data-placement="top" title="孩子的ID">孩子: </li>
+                            <li class="list-group-item list-group-item-success" value="母亲" data-toggle="tooltip" data-placement="top" title="母亲的名字及ID">母亲: </li>
+                            <li class="list-group-item list-group-item-success" value="父亲" data-toggle="tooltip" data-placement="top" title="父亲的名字及ID">父亲: </li>
+                            <li class="list-group-item list-group-item-success" value="isAlive" data-toggle="tooltip" data-placement="top" title="是否存活">isAlive: </li>
+                            <li class="list-group-item list-group-item-success" value="inCommu" data-toggle="tooltip" data-placement="top" title="是否在社群中">inCommu: </li>
+                            <li class="list-group-item list-group-item-success" value="isMirror" data-toggle="tooltip" data-placement="top" title="是否是分身">isMirror: </li>
+                            <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button>
+                        </ul>
+                        <button type="button" class="btn btn-info">显示历史信息</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-header" id="headingTwo" style="white-space:normal; word-break:break-all;overflow:hidden;">
+                      <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        被选中的单元的信息
+                      </button>
+                  </div>
+                  <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#headingTwo">
+                    <div class="card-body" style="white-space:normal; word-break:break-all;overflow:hidden;">
+                    </div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-header" id="headingThree">
+                      <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        社群信息
+                      </button>
+                  </div>
+                  <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#headingThree">
+                    <div class="card-body" style="white-space:normal; word-break:break-all;overflow:hidden;">
+                        <ul id="tickList" style="white-space: normal; font-family:Consolas; ">
+
+                        </ul>
+                    </div>
+                  </div>
+                </div>
+            </div>
+
+            <div style="margin: 5px;align-items: center;" >
+                <!--a class="btn btn-primary" data-toggle="collapse" href="#monkey_info" role="button" aria-expanded="false" aria-controls="monkey_info"
+                 style="padding-left: 1em;">被选中的金丝猴信息</a>
+                <ul class="list-group collapse" id="monkey_info" style="white-space: normal; font-family:Consolas; padding-left: 1em; width: 80%;">
                     <li class="list-group-item list-group-item-success" value="ID">ID: </li>
                     <li class="list-group-item list-group-item-success" value="NAME">NAME: </li>
                     <li class="list-group-item list-group-item-success" value="GENDA">GENDA: </li>
@@ -93,14 +150,11 @@
                     <li class="list-group-item list-group-item-success" value="isAlive" data-toggle="tooltip" data-placement="top" title="是否存活">isAlive: </li>
                     <li class="list-group-item list-group-item-success" value="inCommu" data-toggle="tooltip" data-placement="top" title="是否在社群中">inCommu: </li>
                     <li class="list-group-item list-group-item-success" value="isMirror" data-toggle="tooltip" data-placement="top" title="是否是分身">isMirror: </li>
-                    <div>
-                        <button type="button" class="btn btn-danger" id="next"  style="width: 80%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">生成下一时刻亲缘关系</button>
-                        <!--button type="button" class="btn btn-danger" id="prev"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="回退一个时间单位的亲缘关系">TICK-BACK</button-->
-                    </div>
+                    <button type="button" class="btn btn-danger" id="prev"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="回退一个时间单位的亲缘关系">TICK-BACK</button>
                     
                     <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button>
-                </ul>
-                
+                </ul-->
+                <button type="button" class="btn btn-danger" id="next"  style="width: 80%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">生成下一时刻亲缘关系</button> 
             </div>
             
         </div>

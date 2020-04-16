@@ -228,8 +228,8 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         ret.mother = this.mother;
         ret._kids = this._kids;
         ret.ageLevel = this.ageLevel;
-        ret.material = new THREE.MeshLambertMaterial( { color : 0x333333})
-        ret.material.emissive.setHex(0x333333);
+        ret.material = new THREE.MeshLambertMaterial( { color :MONKEY_COLOR.REAL})
+        ret.material.emissive.setHex( MONKEY_COLOR.MIRROR);
         this.mirror.add(ret);
         ret.mirror = this.mirror;
         ret.migrateTable = this.migrateTable;
@@ -243,8 +243,8 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.mirror.forEach( m => {
             m.selectedColor = 0xff0000;
             m.unselectedColor = m.material.emissive.getHex();
-            
             m.material.emissive.setHex( m.selectedColor);
+            m.scale.set(2,2,2);
             m.SELECTED = true;
         });
     }
@@ -252,6 +252,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     public unselected () {
         this.mirror.forEach( m => {
             m.material.emissive.setHex( m.unselectedColor ); 
+            m.scale.set(1,1,1);
             m.SELECTED = false;
         } );
     }
@@ -324,6 +325,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     }
 
     public die(){
+        
         this.mirror.forEach( m => {
             m.isAlive = false;
             m.inCommu = false;

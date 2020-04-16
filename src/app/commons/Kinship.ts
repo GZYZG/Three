@@ -5,7 +5,7 @@ import { Colors } from 'three';
 import { LineGeometry } from '../threelibs/LineGeometry';
 import { LineMaterial } from '../threelibs/LineMaterial';
 import { Line2 } from '../threelibs/Line2';
-import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos, cleanCache } from './basis';
+import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos, cleanCache, MONKEY_COLOR } from './basis';
 
 export class KinshipNode extends THREE.Mesh {
     public kpNodeLink : KPNodeLink;
@@ -138,6 +138,7 @@ export class Kinship extends THREE.Group {
 
     public addKid( kid : Monkey ){
         if(this.kids.filter( k => k.ID == kid.ID ).length > 0 ) return;
+        kid.material.emissive.setHex( MONKEY_COLOR.CHILD );
         this.kids.push( kid );
     }
 

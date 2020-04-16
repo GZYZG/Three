@@ -12,3 +12,25 @@
 .tick-range div.slider-track-low, .tick-range div.slider-track-high {
     background: red;
 }
+
+
+div.card-body{
+    margin: 0 0 0 0;
+    padding: 3px 2px 3px 2px;
+}
+
+ul{
+    margin: 0;
+    padding: 0;
+}
+
+ul.li, li.list-group-item {
+    padding: .7em 5px .3em .4em;
+    color: #000000;
+    background-color: #3c495769;
+}
+
+
+div.card-header{
+    padding: .7em 1.2em;
+}

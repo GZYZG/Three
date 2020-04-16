@@ -31,8 +31,8 @@ export function fillBlanks(monkey : Monkey){
     info.push("inCommu: "+ monkey.inCommu );
     info.push("isMirror: "+monkey.isMirror);
 
-    for(let i = 1; i < blanks.length; i++){
-        blanks[i].innerText = info[i-1];
+    for(let i = 0; i < blanks.length; i++){
+        blanks[i].innerText = info[i];
     }
 
 }

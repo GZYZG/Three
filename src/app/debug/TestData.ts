@@ -174,7 +174,7 @@ export class Community extends THREE.Object3D{
         });
 
         this.frames = new Array<Frame>();
-        this.tick = GET_TICK();
+        this.tick = 0;
     
         this.logInfo = new Array<string>();
         this.logInfo.push( logBase( this));
@@ -524,7 +524,9 @@ export class Community extends THREE.Object3D{
         let frame = this.frames[this.tick];
         if(!frame)   return;
         frame.vanished.dead.forEach( e  =>{
+            e.monkey.leaveUnit();
             e.monkey.die();
+            
         })
         frame.vanished.outCommu.forEach( e => {
             e.monkey.leaveUnit();
@@ -852,18 +854,18 @@ export class Community extends THREE.Object3D{
                 }
                 break;
             }
-            let leave = m.migrateTable[i].tick;
+            let leave = m.leaveTable[i].tick;
             for(let j =enter; j < leave; j++){
                 life.belongTo[j] = enterUnit;
             }
             let leaveUnit = m.leaveTable[i].unit.ID;
             if(i+1 >= m.migrateTable.length){
                 // 两个表长度一样的情况
-                for(let j = leave; j < this.frames.length; j++){
+                for(let j = leave; j <= this.frames.length; j++){
                     life.belongTo[j] = -1;
                 }
                 // 判断monkey是否在这个时刻死亡
-                if(this.frames[leave].vanished.dead.filter( e => e.monkey.ID == m.ID).length != 0){
+                if(this.frames[leave-1].vanished.dead.filter( e => e.monkey.ID == m.ID).length != 0){
                     life.deadTick = leave;
                 }
                 break;
@@ -885,6 +887,13 @@ export class Community extends THREE.Object3D{
     
     }
 
+    public traceUnit(id: number){
+        let tmp = this.allunits.filter(e => e.ID == id);
+        if(tmp.length == 0)     return;
+        let unit = tmp[0];
+
+    }
+
 }
 
 function genParents(units : Array<Unit>){
@@ -897,9 +906,6 @@ function genParents(units : Array<Unit>){
         dadUnit = units[nth];
         if( dadUnit instanceof OMU && dadUnit.mainMale){
             father = dadUnit.mainMale;
-        }else if( dadUnit.unitType == UNIT_TYPE.AMU){
-            let num = dadUnit.currentMembers.length;
-            father = dadUnit.currentMembers[ randomInt(0, num-1) ];
         }else {
             let males = dadUnit.currentMembers.filter( e => e.genda == GENDA.MALE && !e.isMirror);
             if( males.length == 0)  continue;
@@ -922,7 +928,6 @@ function genParents(units : Array<Unit>){
             // 注意，在家庭单元中也有可能有成年雄性，而且要从当前时刻在该单元的雌性中挑选
             let females = momUnit.adultLayer.filter(e => e.genda == GENDA.FEMALE && !e.isMirror);
             mother = females[ randomInt(1, females.length-1 ) ];
-        }else if( momUnit.unitType == UNIT_TYPE.AMU){
         }else {
             let females = momUnit.currentMembers.filter( e => e.genda == GENDA.FEMALE && !e.isMirror);
             if( females.length == 0)  continue;
@@ -1024,20 +1029,20 @@ function baseCommunity(unitNum : number){
         }
         
     }
-
+    
     addTick2Dropdown();
     $('#tickDropdown button').get()[0].textContent =  ""+GET_TICK();
+
     return {
         baseUnits : units,
         baseMonkeys : monkeys,
         baseKinships : allKinships,
     }
-    
-
 }
 
 
 export function genFrame(commu : Community){
+    TICK_NEXT();
     let vanished;
     let newUnits = new Array<Unit>(); 
     let enterCommu = new Array();
@@ -1211,7 +1216,7 @@ export function genFrame(commu : Community){
         challengeMainMale: challengeMainMale,
         migrates: migrates,
         newKinships: newKinships,
-        tick: TICK_NEXT(),
+        tick: GET_TICK(),
     }
     let frame = new Frame(para);
     commu.addFrame(frame);
@@ -1228,7 +1233,8 @@ export function genFrame(commu : Community){
     let logStr = logFrame(frame,commu.frames.indexOf(frame));
     commu.logInfo.push(logStr);
     console.log( logStr );
-    var blob = new Blob([logStr], {type: "text/plain;charset=utf-8"});
+    
+    //var blob = new Blob([logStr], {type: "text/plain;charset=utf-8"});
     //FileSaver.saveAs(blob, "hello world.txt");
 }
 

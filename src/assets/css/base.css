@@ -18,11 +18,12 @@ body{
    height: 9%;
    float: top;
    white-space: nowrap;
-   background-color:rgb(0, 0, 0);
+   background-color:rgb(81, 82, 85);
 }
 .footer{
    width : 100%;
    height: calc(1% - 10px);
+   min-height: 3px;
    float : left;
    background-color:rgba(0, 0, 0, 0.808);
 }
@@ -40,21 +41,22 @@ body{
    background-color:#0808089d;
 }
 .main .center{
-   width : calc( 70% - 1px);
+   width : calc( 75% - 1px); 
    height: 100%;
    float: left;
    white-space: nowrap;
-   background-color:#365a7e;
+   background-color:#010101db;
 }
 
 .main .right{
-   width: 30%;
+   width: 25%;
    height: 100%;
    float: left;
    overflow-y: auto;
    overflow-x: auto;
    white-space: nowrap;
-   background-color:rgb(39, 134, 126);
+   background-color:rgb(227, 229, 241);
+   padding: 3px 0px 0px 3px;
 }
 /* .center .canvas {
    width : 100%;
