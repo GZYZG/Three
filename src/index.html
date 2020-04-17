@@ -69,6 +69,31 @@
                 <input id="tickRange" type="text" class="span2" value="" data-slider-id="slider" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
                 &nbsp;&nbsp;<b id="tickHigh">0</b>
             </div>
+            <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalScrollable">
+  Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalScrollable" tabindex="-1" role="dialog" aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalScrollableTitle">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        1231241
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
         </div>
         <div id="tickRange"></div>
     </div>
@@ -92,6 +117,7 @@
                             <li class="list-group-item list-group-item-success" value="ID">ID: </li>
                             <li class="list-group-item list-group-item-success" value="NAME">NAME: </li>
                             <li class="list-group-item list-group-item-success" value="GENDA">GENDA: </li>
+                            <li class="list-group-item list-group-item-success" value="GENDA">入群时间: </li>
                             <li class="list-group-item list-group-item-success" value="年龄段">年龄段: </li>
                             <li class="list-group-item list-group-item-success" value="分身所属单元">分身所属单元: </li>
                             <li class="list-group-item list-group-item-success" value="当前所属单元">当前所属单元: </li>
@@ -103,7 +129,12 @@
                             <li class="list-group-item list-group-item-success" value="isMirror" data-toggle="tooltip" data-placement="top" title="是否是分身">isMirror: </li>
                             <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button>
                         </ul>
-                        <button type="button" class="btn btn-info">显示历史信息</button>
+                        <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#monkeyLifeInfo" aria-expanded="false" aria-controls="monkeyLifeInfo"
+                        style="width: 90%; margin: 3px 0 1.5px 5%; display: inline;">显示生平信息</button>
+                        <div class="collapse" id="monkeyLifeInfo">
+
+                        </div>
+                        
                     </div>
                   </div>
                 </div>
@@ -115,6 +146,18 @@
                   </div>
                   <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#headingTwo">
                     <div class="card-body" style="white-space:normal; word-break:break-all;overflow:hidden;">
+                      <ul class="list-group" id="unit_info" style="white-space: normal; font-family:Consolas; ">
+                        <li class="list-group-item list-group-item-success" value="ID">ID: </li>
+                        <li class="list-group-item list-group-item-success" value="NAME">NAME: </li>
+                        <li class="list-group-item list-group-item-success" value="CREATED">创建时间: </li>
+                      </ul>
+                      <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#unitLifeInfo" aria-expanded="false" aria-controls="unitLifeInfo"
+                        style="width: 90%; margin: 3px 0 1.5px 5%; display: inline;">显示历史信息</button>
+                        <div class="collapse" id="unitLifeInfo">
+                          <ul id="unitTickList" style="white-space: normal; font-family:Consolas; ">
+
+                          </ul>
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -135,25 +178,9 @@
             </div>
 
             <div style="margin: 5px;align-items: center;" >
-                <!--a class="btn btn-primary" data-toggle="collapse" href="#monkey_info" role="button" aria-expanded="false" aria-controls="monkey_info"
-                 style="padding-left: 1em;">被选中的金丝猴信息</a>
-                <ul class="list-group collapse" id="monkey_info" style="white-space: normal; font-family:Consolas; padding-left: 1em; width: 80%;">
-                    <li class="list-group-item list-group-item-success" value="ID">ID: </li>
-                    <li class="list-group-item list-group-item-success" value="NAME">NAME: </li>
-                    <li class="list-group-item list-group-item-success" value="GENDA">GENDA: </li>
-                    <li class="list-group-item list-group-item-success" value="年龄段">年龄段: </li>
-                    <li class="list-group-item list-group-item-success" value="分身所属单元">分身所属单元: </li>
-                    <li class="list-group-item list-group-item-success" value="当前所属单元">当前所属单元: </li>
-                    <li class="list-group-item list-group-item-success" value="孩子" data-toggle="tooltip" data-placement="top" title="孩子的ID">孩子: </li>
-                    <li class="list-group-item list-group-item-success" value="母亲" data-toggle="tooltip" data-placement="top" title="母亲的名字及ID">母亲: </li>
-                    <li class="list-group-item list-group-item-success" value="父亲" data-toggle="tooltip" data-placement="top" title="父亲的名字及ID">父亲: </li>
-                    <li class="list-group-item list-group-item-success" value="isAlive" data-toggle="tooltip" data-placement="top" title="是否存活">isAlive: </li>
-                    <li class="list-group-item list-group-item-success" value="inCommu" data-toggle="tooltip" data-placement="top" title="是否在社群中">inCommu: </li>
-                    <li class="list-group-item list-group-item-success" value="isMirror" data-toggle="tooltip" data-placement="top" title="是否是分身">isMirror: </li>
-                    <button type="button" class="btn btn-danger" id="prev"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="回退一个时间单位的亲缘关系">TICK-BACK</button>
-                    
-                    <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button>
-                </ul-->
+                <!--button type="button" class="btn btn-danger" id="prev"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="回退一个时间单位的亲缘关系">TICK-BACK</button>
+                <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button-->
+                
                 <button type="button" class="btn btn-danger" id="next"  style="width: 80%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">生成下一时刻亲缘关系</button> 
             </div>
             

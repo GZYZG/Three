@@ -12,7 +12,7 @@
 //  5        gsz         MALE        1961/12/30       -1           -1        1
 //  6        sjm         FEMALE      1974/1/1         -1           -1        1
 import { Unit, OMU, AMU, FIU } from "../commons/Unit";
-import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, GET_TICK_MODE, TICK_MODE, logFrame, logBase } from "../commons/basis";
+import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, GET_TICK_MODE, TICK_MODE, logFrame, logBase, Slice, OMUSlice, AMUSlice } from "../commons/basis";
 import { Kinship } from "../commons/Kinship";
 import { Monkey, Male, Female } from "../commons/Monkey";
 import { unitsLayout, OMULayout, AMULayout, FIULayout } from "../commons/PositionCalc";
@@ -23,7 +23,7 @@ import { TextGeometry } from "../threelibs/three";
 import FruchtermanLayout from  "@antv/g6/lib/layout/fruchterman";
 import DagreLayout from "@antv/g6/lib/layout/dagre";
 import  ForceLayout from "@antv/g6/lib/layout/force";
-import { addId2Dropdown, addGroupIds2Dropdown, addTick2Dropdown } from "../commons/Dom";
+import { addId2Dropdown, addGroupIds2Dropdown, addTick2Dropdown, showCommunityTickList } from "../commons/Dom";
 import { KidKinshipNodeLink } from "../commons/LineFactory";
 
 var FileSaver = require('file-saver');
@@ -147,6 +147,10 @@ export class Community extends THREE.Object3D{
     //public allmonkeys : Array<Monkey>;
     public frames: Array<Frame>;
     public tick: number;    // 表示当前的时刻
+
+    //起点时刻的状态
+    public baseunits: Array<Unit>;
+    public basemember: Array<Monkey>;
     public basekids: Array<Monkey>;
 
     public logInfo: Array<string>;
@@ -160,6 +164,9 @@ export class Community extends THREE.Object3D{
         let base = baseCommunity(baseUnitNum);
         this.allunits = base.baseUnits;
         this.allkinships = base.baseKinships;
+
+        this.baseunits = base.baseUnits;
+        this.basemember = base.baseMonkeys;
         this.basekids = new Array<Monkey>();
         base.baseKinships.forEach( e => {
             e.kids.forEach( ee => {
@@ -282,6 +289,12 @@ export class Community extends THREE.Object3D{
         return tmp;
     }
 
+    public findUnitByID(id: number){
+        let tmp = this.allunits.filter( e => e.ID == id);
+        if(tmp.length == 0) return null;
+        return tmp[0];
+    }
+
     public findKinshipByParents( father : Male, mother : Female){
         let tmp = this.allkinships.filter( m => m.father.ID == father.ID && m.mother.ID == mother.ID);
         if( tmp.length == 0)    return null;
@@ -304,6 +317,14 @@ export class Community extends THREE.Object3D{
                     FIULayout(u);
                     break;
             }
+            // 统计每个单元此刻的成员
+            if(!u.tickMembers.get(GET_TICK() ){
+                let tickMember = u.allMembers.filter( ee => !ee.isMirror &&  ee.visible).map( ee => ee.ID);
+                u.tickMembers.set( GET_TICK(), tickMember);
+                if( u instanceof OMU){
+                    u.tickMainMale.set(GET_TICK(), u.mainMale?u.mainMale.ID: -1 );
+                }
+            }
         });
         this.G6Layout("dagre");
 
@@ -312,6 +333,7 @@ export class Community extends THREE.Object3D{
             k.layout();
         })
 
+      
         
     }
 
@@ -806,7 +828,6 @@ export class Community extends THREE.Object3D{
 
     public traceMonkey(id: number){
         // 追溯一个monkey的足迹，包括其性别、ID、名字、进入社群的时间、迁移的时间和目标单元、在那个时间与那个配偶产生了那个孩子、死亡时间
-        
         let tmp = this.findMonkeyByID(id);
         if(tmp.length==0 ) {
             console.error("找不到ID为：" + id + " 的猴子！\n");
@@ -849,7 +870,7 @@ export class Community extends THREE.Object3D{
             let enterUnit = m.migrateTable[i].unit.ID;
             let enter = m.migrateTable[i].tick;
             if(i >= m.leaveTable.length){
-                for(let j = enter; j < this.frames.length; j++){
+                for(let j = enter; j <= this.frames.length; j++){
                     life.belongTo[j] = enterUnit;
                 }
                 break;
@@ -887,11 +908,395 @@ export class Community extends THREE.Object3D{
     
     }
 
+    public monkeyLifeTreeData(id: number){
+        let life = this.traceMonkey(id);
+        if(!life)   return;
+        let data = []
+        let state = {
+            checked:false,
+            disabled:false,
+            expanded:false,
+            selected:false,
+        }
+        let belong = {
+            id: 0,
+            text: "单元归属",
+            state: state,
+            nodes: new Array(),
+        }
+        let kin = {
+            id: 1,
+            text: "配偶及孩子",
+            state: state,
+            nodes: new Array(),
+        }
+        let migrate = {
+            id:2,
+            text: "迁移",
+            state: state,
+            nodes: new Array(),
+        }
+        let dead = {
+            id: 3,
+            text: " 死亡时间",
+            state: state,
+            nodes: new Array(),
+        }
+        data.push( belong, kin, migrate, dead );
+        
+        for (let i = 0; i < life.belongTo.length; i++) {
+            let text = "Tick-" + i + "    ";
+            if(life.belongTo[i] == -1 ){
+                text += "不在社群中"; 
+            } else {
+                let unit = this.allunits.filter(e => e.ID == life.belongTo[i])[0];
+                text += unit.ID + "(" + unit.name + ")";
+            }
+            belong.nodes.push( {
+                text: text,
+            })
+        }
+
+        for(let i = 0; i < life.kinships.length; i++){
+            let k = life.kinships[i];
+            let text = "配偶: " + k.spouse + "    孩子: [ ";
+            k.kids.forEach( e => {
+                text += e + " ";
+            })
+            text += " ]" + "    Tick-" + k.tick;
+            kin.nodes.push({
+                text: text,
+            })
+        }
+
+        for(let i = 0; i < life.migrate.length; i++){
+            let m = life.migrate[i];
+            let ori = this.allunits.filter( e => e.ID == m.origin)[0];
+            let tar = this.allunits.filter( e => e.ID == m.target)[0];
+            let text = "Tick-" + m.tick + "    ";
+            text += ori.name + "(" + m.origin + ")  =>  " + tar.name + "(" + m.target + ")";
+            migrate.nodes.push( {
+                text: text,
+            })
+        }
+
+        dead.nodes.push({
+            text: life.deadTick == -1? "没有死亡" : "Tick-" + life.deadTick,
+        })
+        return data;
+    }
+
+
     public traceUnit(id: number){
         let tmp = this.allunits.filter(e => e.ID == id);
-        if(tmp.length == 0)     return;
+        if(tmp.length == 0){
+            console.error("找不到ID为：" + id + " 的单元！\n");
+            return;
+        }     
         let unit = tmp[0];
+        let life = {
+            id: unit.ID,
+            name: unit.name,
+            createdTick: unit.createTick,
+            baseMembers: unit.tickMembers.get( unit.createTick ),
+            tickChanges: new Array<Slice>(),
+        }
+        let slice:Slice;
+        if(unit instanceof OMU){
+            slice = new OMUSlice();
+        } else{
+            slice = new AMUSlice();
+        }
+        
+        let tick = unit.createTick;
+        if(tick == 0){
+            let ts = slice.clone();
+            this.basekids.forEach( e => {
+                ts.newBabes.push({
+                    monkey: e.ID,
+                    father: e.father,
+                    mother: e.mother,
+                })
+            })
+            
+            if(unit instanceof OMU && ts instanceof OMUSlice) ts.mainMale = unit.tickMainMale.get(0);
+            ts.tickMembers = unit.tickMembers.get(0);
+            life.tickChanges.push( ts );
+            tick++;
+        }
+  
+        for(let i = tick; i <= this.frames.length; i++){
+            let f = this.frames[i-1];
+            let ts = slice.clone()
+            // 从社群进入单元，源单元为-1
+            f.enterCommu.filter( e => e.unit.ID == unit.ID ).forEach( e => {
+                ts.enterUnit.push({
+                    monkey: e.monkey.ID,
+                    origin: -1,
+                })
+            }) 
+            // 在单元中死亡
+            f.vanished.dead.filter( e => e.monkey.unit.ID == unit.ID ).forEach( e => {
+                ts.dead.push({
+                    monkey: e.monkey.ID,
+                })
+            })
+            // 从单元中离群
+            f.vanished.outCommu.filter( e => e.monkey.unit.ID == unit.ID).forEach( e => {
+                ts.leaveUnit.push( {
+                    monkey: e.monkey.ID,
+                    target: -1,
+                })
+            })
+            // 从其他单元进入该单元或者从该单元到其他单元
+            f.migrates.filter( e => e.originUnit.ID == unit.ID || e.targetUnit.ID == unit.ID ).forEach(e => {
+                if( e.originUnit.ID == unit.ID){
+                    ts.leaveUnit.push({
+                        monkey: e.monkey.ID,
+                        target: e.targetUnit.ID,
+                    })
+                } else {
+                    ts.enterUnit.push( {
+                        monkey: e.monkey.ID,
+                        origin: e.originUnit.ID,
+                    })
+                }
+            })
+            // 在该单元内的婴猴
+            f.newKinships.filter( e => e.kid.unit.ID == unit.ID).forEach(e => {
+                ts.newBabes.push( {
+                    monkey: e.kid.ID,
+                    father: e.parents.dad,
+                    mother: e.parents.mom,
+                })
+            })
 
+            if( unit instanceof OMU && ts instanceof OMUSlice)    ts.mainMale = unit.tickMainMale.get(tick);
+            ts.tickMembers = unit.tickMembers.get(tick);
+            life.tickChanges.push( ts);
+        }
+        
+        return life;
+    }
+
+    public unitLifeTreeData(id: number){
+        let life = this.traceUnit(id);
+        if(!life){
+            return;
+        }
+        let allTickData = new Array();
+        life.tickChanges.forEach( e => {
+            allTickData.push( this.oneTickUnitTreeData(e) )
+        })
+        
+        return allTickData;
+    }
+
+    public oneTickUnitTreeData(slice: Slice){
+        let data = []
+        let state = {
+            checked:false,
+            disabled:false,
+            expanded:false,
+            selected:false,
+        }
+        let members = {
+            text: "成员",
+            state: state,
+            nodes: new Array(),
+        }
+        let enterUnit = {
+            text: "进入单元",
+            state: state,
+            nodes: new Array(),
+        }
+        let leaveUnit = {
+            text: "离开单元",
+            state: state,
+            nodes: new Array(),
+        }
+        data.push(members, enterUnit, leaveUnit);
+        let mainMale;
+        if(slice instanceof OMUSlice){
+            mainMale = {
+                text: "主雄:  " + slice.mainMale,
+            }
+            data.push(mainMale);
+        }
+        let newBabes = {
+            text: "新生婴猴",
+            state: state,
+            noeds: new Array(),
+        }
+        let dead = {
+            text: "死亡",
+            state: state,
+            nodes: new Array(),
+        }
+        data.push(newBabes, dead);
+        slice.tickMembers.forEach( e => {
+            let tmp = this.findMonkeyByID(e);
+            members.nodes.push( {
+                text: e + "\t" + ( tmp.length == 0? "" : tmp[0].name),
+            })
+        })
+        slice.enterUnit.forEach( e =>{
+            let tmp = this.findUnitByID(e.origin);
+            enterUnit.nodes.push({
+                text: e.monkey + "\t" + " from " + (tmp? tmp.name + "(" + tmp.ID + ")" : " 社群外 "),
+            })
+        })
+        slice.leaveUnit.forEach( e => {
+            let tmp = this.findUnitByID(e.target);
+            leaveUnit.nodes.push( {
+                text: e.monkey + "\t" + " to " + (tmp ? tmp.name + "(" + tmp.ID + ")" : "社群外")
+            })
+        })
+        slice.newBabes.forEach( e => {
+            newBabes.noeds.push( {
+                text: "孩子: " + e.monkey + "\t父亲: " + e.father.ID + "\t母亲:" + e.mother.ID,
+            })
+        })
+        slice.dead.forEach( e => {
+            let tmp = this.findMonkeyByID(e.monkey);
+            dead.nodes.push( {
+                text: e.monkey + "\t" + ( tmp.length == 0? "" : tmp[0].name),
+            })
+        })
+
+
+        return data;
+    }
+
+    public tickTreeData( tick: number){
+        var commu = this;
+        let data = [];
+        let state = {
+            checked:false,
+            disabled:false,
+            expanded:false,
+            selected:false,
+        }
+        
+        let dead = {
+            id: 0,
+            text: "死亡的猴子",
+            selectable: true,
+            state: state,
+            nodes: new Array(),
+        }
+        let outCommu = {
+            id: 1,
+            text: "离开社群的猴子",
+            selectable: true,
+            state: state,
+            nodes: new Array(),
+        }
+        let enterCommu = {
+            id: 2,
+            text: "进入社群的猴子",
+            selectable: true,
+            state: state,
+            nodes: new Array(),
+        }
+        let migrate = {
+            id: 3,
+            text: "迁移的猴子",
+            selectable: true,
+            state: state,
+            nodes: new Array(),
+        }
+        let challengeMainMale = {
+            id: 4,
+            text: "挑战主雄成功的猴子",
+            selectable: true,
+            state: state,
+            nodes: new Array(),
+        }
+        let newBabe = {
+            id: 5,
+            text: "新生的婴猴",
+            selectable: true,
+            state: state,
+            nodes: new Array(),
+        }
+        let newUnit = {
+            id: 6,
+            text: "新增单元",
+            selectable: true,
+            state: state,
+            nodes: new Array(),
+        }
+        data.push(dead, outCommu, enterCommu, migrate, challengeMainMale, newBabe, newUnit);
+        if(tick == 0){
+            dead.nodes.push();
+            outCommu.nodes.push();
+            enterCommu.nodes.push();
+            migrate.nodes.push();
+            challengeMainMale.nodes.push()
+            commu.basekids.forEach( e => {
+                newBabe.nodes.push({
+                    id: e.ID,
+                    text: e.ID + "父亲: " + e.father.ID + "母亲: " + e.father.ID,
+                })
+            })
+            commu.baseunits.forEach( e => {
+                newUnit.nodes.push({
+                    text: e.name + "(" + e.ID + ")",
+                })
+            })
+            return data
+        }
+        let f = commu.frames[tick-1];
+        f.vanished.dead.forEach(e => {
+            dead.nodes.push({
+                id: e.monkey.ID,
+                text: e.monkey.ID + " 在单元 " + e.monkey.unit.ID + "(" + e.monkey.unit.name + ") 中死亡",
+            })
+        })
+    
+        f.vanished.outCommu.forEach( e => {
+            outCommu.nodes.push( {
+                id: e.monkey.ID,
+                text: e.monkey.ID + " 从单元 "+  e.monkey.unit.ID + "(" + e.monkey.unit.name + ") 离开社群",
+            })
+        })
+    
+        f.enterCommu.forEach( e => {
+            enterCommu.nodes.push( {
+                id: e.monkey.ID,
+                text: e.monkey.ID + " 进入单元 " + e.monkey.unit.ID + "(" + e.monkey.unit.name + ")",
+            })
+        })
+    
+        f.migrates.forEach( e => {
+            migrate.nodes.push({
+                id: e.monkey.ID,
+                text: e.monkey.ID + "   " + e.originUnit.ID + "(" + e.originUnit.name + ")  =>  " + e.targetUnit.ID + "(" + e.targetUnit.name + ")",
+            })
+        })
+    
+        f.challengeMainMale.forEach( e => {
+            challengeMainMale.nodes.push( {
+                id: e.unit.ID,
+                text: e.unit.ID + "(" + e.unit.name + ")  winner: " + e.winner.ID + "  loser: " + e.loser? e.loser.ID : "无",
+            })
+        })
+    
+        f.newKinships.forEach( e => {
+            newBabe.nodes.push( {
+                id: e.kid.ID,
+                text: e.kid.ID + " 父亲: " + e.kid.father.ID + "  母亲: " + e.kid.father.ID,
+                selectable: true,
+            })
+        })
+        f.newUnits.forEach( e => {
+            newUnit.nodes.push({
+                text: e.name + "(" + e.ID + ")",
+            })
+        })
+        return data;
+    
     }
 
 }

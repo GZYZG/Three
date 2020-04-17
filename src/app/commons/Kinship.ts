@@ -55,7 +55,11 @@ export class Kinship extends THREE.Group {
         
         this.father = father;
         this.mother = mother;
-        this.kids = kids;
+        this.kids = new Array<Monkey>();
+        kids.forEach(e => {
+            this.addKid(e);
+        })
+        //this.kids = kids;
         
         this.parentsLink = null;
         this.parentsNode = null;

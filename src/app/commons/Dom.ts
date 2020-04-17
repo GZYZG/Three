@@ -1,7 +1,7 @@
 import {Monkey} from "./Monkey";
 import { genFrame, Community} from "../debug/TestData";
 import $ = require("jquery");
-import { GET_TICK } from "./basis";
+import { GET_TICK, GET_COMMUNITY } from "./basis";
 
 export function fillBlanks(monkey : Monkey){
     //console.log("fill blanks for: ", monkey);
@@ -11,6 +11,7 @@ export function fillBlanks(monkey : Monkey){
     info.push("ID: " + monkey.ID);
     info.push("NAME: " + monkey.name.replace("-cloned", ""));
     info.push("GENDA: " + monkey.genda);
+    info.push("入群时间: Tick-" + monkey.migrateTable[0].tick);
     info.push("年龄段: "+ monkey.ageLevel);
     info.push("分身所属单元: " + monkey.unit.name);
     let tmp = monkey.realunit ;
@@ -98,4 +99,69 @@ export function addTick2Dropdown(tick?:number){
         html: ""+tick,
     }).appendTo(menu);
 
+}
+
+
+export function showUnitTickList(id: number){
+    var COMMUNITY = GET_COMMUNITY();
+    let allTickData = COMMUNITY.unitLifeTreeData(id);
+    console.log("allTickData:", allTickData );
+    $("#unitTickList").empty();
+    for(let i = 0; i <= GET_TICK(); i++){
+        if($("#unitTick_"+i).length != 0){
+            continue;
+        }
+        let t = $("<a>", {
+            "class": "list-group-item  list-group-item-success",
+            text: "Tick-" + i,
+        });
+        t.attr({
+            "data-toggle": "collapse",
+            "data-target": "#unitTick_"+i,
+            "href": "#unitTick_"+i,
+            "role": "button",
+        })
+        $("#unitTickList").append(t);
+        
+        let tree = $("<div>",{
+            text: "123",
+            "class": "collapse",
+            id: "unitTick_"+i,
+        });
+        tree.treeview({ 
+            data: allTickData[i],
+            levels: 5,
+            expandIcon: "glyphicon glyphicon-plus",
+            
+        })
+        t.after( tree )
+    }
+}
+
+export function showCommunityTickList(commu:Community=GET_COMMUNITY(), tick: number=GET_TICK() ){
+    if(!commu)  commu = GET_COMMUNITY();
+    let t = $("<a>", {
+        "class": "list-group-item  list-group-item-success",
+        text: "Tick-"+tick,
+    });
+    t.attr({
+        "data-toggle": "collapse",
+        "data-target": "#Tick_" + tick,
+        "href": "#Tick_" + tick,
+        "role": "button",
+    })
+
+    $("#tickList").append(t);
+
+    let tree = $("<div>",{
+        text: "123",
+        "class": "collapse",
+        id: "Tick_" + tick,
+    });
+    tree.treeview({ 
+        data: commu.tickTreeData( tick ),
+        levels: 5,
+        expandIcon: "glyphicon glyphicon-plus",
+    })
+    t.after( tree )
 }

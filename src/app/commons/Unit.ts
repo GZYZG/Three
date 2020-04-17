@@ -20,10 +20,11 @@ export abstract class Unit extends THREE.Group {
     public createTick: number;
 
     public label : CSS2DObject;
-
     public color : number;
 
     public allMembers : Array<Monkey>;      // 曾属于单元的所有成员
+    public tickMembers: Map<number, Array<number>>;     // 每个时刻的成员表
+    public tickMainMale: Map<number, number>;
     constructor( radius : number, unitType : UNIT_TYPE, createdDate? : Date ) {
         super();
         this.radius = radius;
@@ -41,10 +42,13 @@ export abstract class Unit extends THREE.Group {
 
         let laberDiv = document.createElement('div');//创建div容器
         laberDiv.className = 'label';
-        let self = this;
-        laberDiv.onclick = function(e){
-            console.log(self," : ", e);
-        }
+        laberDiv.setAttribute("unitID", ""+this.ID);
+        // let self = this;
+        // laberDiv.onclick = function(e){
+        //     console.log(self," : ", e);
+            
+        // }
+
         laberDiv.textContent = this.name;
         laberDiv.style.marginTop = '-1em';
         laberDiv.style.display = "block";
@@ -57,6 +61,8 @@ export abstract class Unit extends THREE.Group {
         // 自动获取当前的时刻，作为单元建立的时刻
         this.createTick = GET_TICK();
         
+        this.tickMembers = new Map<number, Array<number>>();
+        this.tickMainMale = new Map<number, number>();
     
     }
 

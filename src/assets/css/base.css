@@ -6,6 +6,7 @@ body{
    margin:0;
    height:100%;
    overflow-x: auto;
+   font-size: 15px;
 }
 .box{
    width:100%;
@@ -72,4 +73,9 @@ body{
    padding: 1px;
    opacity: .5;
    background: rgba(0, 0, 0, 0.952);
+}
+
+.label:hover{
+   background-color: #ff0000;
+   font-size: larger;
 }

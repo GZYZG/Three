@@ -14,8 +14,8 @@ import { unitsLayout, OMULayout, AMULayout, FIULayout } from './commons/Position
 import { Kinship } from './commons/Kinship';
 import { Community, genFrame } from './debug/TestData';
 import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
-import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown } from './commons/Dom';
-import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE, tickTreeData } from './commons/basis';
+import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown, showUnitTickList, showCommunityTickList} from './commons/Dom';
+import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE, GET_COMMUNITY } from './commons/basis';
 
 
 var FileSaver = require('file-saver');
@@ -33,8 +33,9 @@ var matLineUnDashed = new LineMaterial({
 });
 var self : any;
 var rendererContainer : any;
-var COMMUNITY : Community = new Community(5);
 
+//var COMMUNITY : Community = new Community(5);
+var COMMUNITY = GET_COMMUNITY();
 // 为元素绑定事件
 bindEvents();
 
@@ -334,6 +335,12 @@ export class Application{
             
             selected.selected();
             fillBlanks(selected);
+            $("#monkeyLifeInfo").treeview({ 
+                data: COMMUNITY.monkeyLifeTreeData(selected.ID),
+                levels: 5,
+                expandIcon: "glyphicon glyphicon-plus",
+            })
+
            
          }//else if(selected){
         //     selected.unselected();
@@ -353,34 +360,14 @@ function bindEvents(){
         $("#tickHigh").html(GET_TICK() + " / " + GET_TICK());
         // 要进行刷新
         $("#tickRange").slider('refresh', { useCurrentValue: true });
-        let t = $("<a>", {
-            "class": "list-group-item  list-group-item-success",
-            text: "Tick-"+GET_TICK(),
-        });
-        t.attr({
-            "data-toggle": "collapse",
-            "data-target": "#Tick_"+GET_TICK(),
-            "href": "#Tick_"+GET_TICK(),
-            "role": "button",
-        })
-        
-        
-        $("#tickList").append(t);
-        let tree = $("<div>",{
-            text: "123",
-            "class": "collapse",
-            id: "Tick_"+GET_TICK(),
-        });
-        tree.treeview({ 
-            data: tickTreeData(COMMUNITY, GET_TICK() ),
-            levels: 5,
-            expandIcon: "glyphicon glyphicon-plus",
-            onNodeSelected: function(e , data){
-                $("#"+tree.attr("id")).treeview("toggleNodeExpanded", [data.nodeId, {silent: true}]);
-            }
-        })
-        t.after( tree )
 
+        // 显示社群的历史变更信息
+        showCommunityTickList();
+        if($("#unit_info > li:nth-child(1)").attr("unitID") ){
+            let unitID =  +$("#unit_info > li:nth-child(1)").attr("unitID");
+            showUnitTickList(unitID );
+        }
+        
     }
 
     $("#idDropdown").on('hidden.bs.dropdown',function(e){
@@ -507,4 +494,20 @@ function bindEvents(){
         addGroupIds2Dropdown(COMMUNITY);
     });
 
+    window.onload=  function(){
+        $(".label").on("click", e => {
+            let unitID = parseInt(e.target.getAttribute("unitID") );
+            let unit = COMMUNITY.allunits.filter( e => e.ID == unitID)[0];
+            let blanks = $("#unit_info li");
+            blanks[0].innerText =  "ID: " + unit.ID;
+            blanks[0].setAttribute("unitID", unitID+"");
+            blanks[1].innerText = "name: " + unit.name;
+            blanks[2].innerText = "创建时间: Tick-" + unit.createTick;
+            showUnitTickList(unitID);
+        })
+    }
+
 }
+
+
+

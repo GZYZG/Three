@@ -78,9 +78,9 @@ export const enum MONKEY_COLOR {
 }
 
 function randomColor(){
-    let unitColor = new Array("0xF1B000", "0x0F4D24", "0x5C0C7B", "0x2059A6", "0x346633", "0xCB3398",  
-                              "0xD6E6B5", "0x30588C", "0x17324D", "0x984D54", "0xEAB34F", "0xCC3467", 
-                              "0xB05C1C");
+    let unitColor = new Array( "0x99FFFF", "0xFFFFCC", "0x99cc33", "0x2059A6", "0x0099CC", "0xCB3398",  
+                               "0x88EE99", "0x66ccff", "0x66CC00", "0xff9966", "0xEAB34F", "0xCC3467", 
+                               "0x009966", "0x00cc00", "0xFF9966", "0x339999", "0x0066ff", "0xB05C1C" );
     let num = 0;
     function genUnitColor(){
         if(num < unitColor.length)  {
@@ -125,6 +125,17 @@ export const enum GENDA {
     FEMALE="female",
     UNKNOWN="unknown"
 }
+
+var COM: Community;
+
+export function GET_COMMUNITY(){
+    if(!COM) {
+        COM = new Community(5);
+    }
+    return COM;
+}
+
+
 
 // 川金丝猴年龄分界
 export const JUVENILE_AGE = 3;  // 小于3岁则为少年猴
@@ -318,7 +329,7 @@ export function logFrame(frame: Frame, idx: number){
     })
     logStr += "------------挑战主雄成功-------------\n";
     frame.challengeMainMale.forEach( e => {
-        let tmp = "单元："+ e.unit.name+ " winner: [ ID: "+ e.winner.ID + ", name: "+ e.winner.name+ " ]  loser: [ ID: "+ e.loser?e.loser.ID: "-1"+ ", name: "+ e.loser?e.loser.name:""+ " ]\n";
+        let tmp = "单元："+ e.unit.name+ " winner: [ ID: "+ e.winner.ID + ", name: "+ e.winner.name+ " ]  loser: [ ID: "+ (e.loser?e.loser.ID: "-1"+ ", name: " ) + (e.loser?e.loser.name:"") + " ]\n";
         logStr += tmp;
     })
     logStr += "------------迁移-------------\n";
@@ -356,115 +367,55 @@ export function logBase(comm: Community){
     return logStr;
 }
 
-export function tickTreeData(commu: Community, tick: number){
-    let data = [];
-    let state = {
-        checked:false,
-        disabled:false,
-        expanded:false,
-        selected:false,
-    }
-    let dead = {
-        id: 0,
-        text: "死亡的猴子",
-        selectable: true,
-        state: state,
-        nodes: new Array(),
-    }
-    let outCommu = {
-        id: 1,
-        text: "离开社群的猴子",
-        selectable: true,
-        state: state,
-        nodes: new Array(),
-    }
-    let enterCommu = {
-        id: 2,
-        text: "进入社群的猴子",
-        selectable: true,
-        state: state,
-        nodes: new Array(),
-    }
-    let migrate = {
-        id: 3,
-        text: "迁移的猴子",
-        selectable: true,
-        state: state,
-        nodes: new Array(),
-    }
-    let challengeMainMale = {
-        id: 4,
-        text: "挑战主雄成功的猴子",
-        selectable: true,
-        state: state,
-        nodes: new Array(),
-    }
-    let newBabe = {
-        id: 5,
-        text: "新生的婴猴",
-        selectable: true,
-        state: state,
-        nodes: new Array(),
-    }
-    data.push(dead, outCommu, enterCommu, migrate, challengeMainMale, newBabe);
-    if(tick == 0){
-        dead.nodes.push();
-        outCommu.nodes.push();
-        enterCommu.nodes.push();
-        migrate.nodes.push();
-        challengeMainMale.nodes.push()
-        commu.basekids.forEach( e => {
-            newBabe.nodes.push({
-                id: e.ID,
-                text: e.ID + "父亲: " + e.father.ID + "母亲: " + e.father.ID,
-            })
-        })
-        return data
-    }
-    let f = commu.frames[tick-1];
-    f.vanished.dead.forEach(e => {
-        dead.nodes.push({
-            id: e.monkey.ID,
-            text: e.monkey.ID + " 在单元 " + e.monkey.unit.ID + "(" + e.monkey.unit.name + ") 中死亡",
-        })
-    })
 
-    f.vanished.outCommu.forEach( e => {
-        outCommu.nodes.push( {
-            id: e.monkey.ID,
-            text: e.monkey.ID + " 从单元 "+  e.monkey.unit.ID + "(" + e.monkey.unit.name + ") 离开社群",
-        })
-    })
+export abstract class Slice{
+    public enterUnit: Array<{ monkey: number, origin: number }>;
+    public leaveUnit: Array<{ monkey: number, target: number }>;
+    public newBabes: Array<{ monkey: number, father: Male, mother: Female}>;
+    public dead: Array<{monkey: number}>;
+    public tickMembers: Array<number>;
 
-    f.enterCommu.forEach( e => {
-        enterCommu.nodes.push( {
-            id: e.monkey.ID,
-            text: e.monkey.ID + " 进入单元 " + e.monkey.unit.ID + "(" + e.monkey.unit.name + ")",
-        })
-    })
+    constructor(){
+        this.enterUnit = new Array<{ monkey: number, origin: number }>();
+        this.leaveUnit = new Array<{ monkey: number, target: number }>();
+        this.newBabes = new Array<{ monkey: number, father: Male, mother: Female}>();
+        this.dead = new Array<{monkey: number}>();
+        this.tickMembers = new Array<number>();
+    }
 
-    f.migrates.forEach( e => {
-        migrate.nodes.push({
-            id: e.monkey.ID,
-            text: e.monkey.ID + "   " + e.originUnit.ID + "(" + e.originUnit.name + ")  =>  " + e.targetUnit.ID + "(" + e.targetUnit.name + ")",
-        })
-    })
+    abstract clone():Slice;
+}
 
-    f.challengeMainMale.forEach( e => {
-        challengeMainMale.nodes.push( {
-            id: e.unit.ID,
-            text: e.unit.ID + "(" + e.unit.name + ")  winner: " + e.winner.ID + "  loser: " + e.loser? e.loser.ID : "无",
-        })
-    })
+export class OMUSlice extends Slice{
+    public mainMale: number;
 
-    f.newKinships.forEach( e => {
-        newBabe.nodes.push( {
-            id: e.kid.ID,
-            text: e.kid.ID + " 父亲: " + e.kid.father.ID + "  母亲: " + e.kid.father.ID,
-            selectable: true,
-        })
-    })
+    constructor(){
+        super();
+        this.mainMale = null;
+    }
 
-    return data;
+    public clone(){
+        return new OMUSlice();
+    }
 
+}
+
+export class AMUSlice extends Slice{
+    constructor(){
+        super();
+    }
+
+    public clone(){
+        return new AMUSlice();
+    }
+}
+
+export class FIUSlice extends Slice{
+    constructor(){
+        super();
+    }
+    
+    public clone(){
+        return new FIUSlice();
+    }
 }
