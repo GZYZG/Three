@@ -1,7 +1,8 @@
 import {Monkey} from "./Monkey";
 import { genFrame, Community} from "../debug/TestData";
-import $ = require("jquery");
+//import $ = require("jquery");
 import { GET_TICK, GET_COMMUNITY } from "./basis";
+import { Unit } from "./Unit";
 
 export function fillBlanks(monkey : Monkey){
     //console.log("fill blanks for: ", monkey);
@@ -38,6 +39,50 @@ export function fillBlanks(monkey : Monkey){
 
 }
 
+export function addMonkeyIds2Selecter( commu: Community){
+    let groups = new Map();
+    commu.allunits.forEach( e => {
+        let realMonkeys = e.allMembers.filter( ee => !ee.isMirror &&  ee.visible);
+        groups.set(e, realMonkeys);
+    })
+    
+    groups.set("死亡or离群", Array.from( new Set(commu.vanishedMonkeys().filter(e => e.visible) ) ) );
+    console.log("\ngroup:", groups);
+    let selecter = $("#monkeySelecter").empty();
+    
+    let entries = groups.entries();
+    let t;
+    while( !(t = entries.next()).done){
+        let optGroup = $("<optgroup>", {
+            "class": "",
+            label: `${t.value[0] instanceof Unit ?t.value[0].name: "死亡or离群"}(${t.value[1].length})`,
+        });
+        let unitColor = t.value[0] instanceof Unit ? "#"+ (t.value[0].color).toString(16) : "lightgray"  
+        
+        
+        selecter.append(optGroup);
+        t.value[1].forEach( e => {
+            let item = $("<option>", {
+                label: `${e.ID}`,
+                text: `${e.ID}`,
+                monkeyID: ""+e.ID,
+            }).attr({
+                "data-subtext": `${e.name}`
+            })
+
+            item.css({
+                "background-color":unitColor,
+                "width":"90%",
+                "padding": "0 5%",
+                "margin": "2px 5%",
+                "border-radius": "6px",
+                "opacity": ".8",
+            })
+            optGroup.append(item);
+        })
+    }
+    selecter.selectpicker("refresh");
+}
 
 export function addGroupIds2Dropdown( commu : Community){
     let groups = new Map();
@@ -164,4 +209,8 @@ export function showCommunityTickList(commu:Community=GET_COMMUNITY(), tick: num
         expandIcon: "glyphicon glyphicon-plus",
     })
     t.after( tree )
+}
+
+export function selectMonkeyID(){
+
 }

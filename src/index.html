@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <!--  引入Bootstrap样式文件  -->
     <link type="text/css" rel="stylesheet" href="./assets//css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="./assets//css/bootstrap-select.min.css" />
     <!--  引入Font Awesome字体样式文件  >
     <link type="text/css" rel="stylesheet" href="./assets/font/font-awesome.min.css" /-->
     <!--meta http-equiv="Access-Control-Allow-Origin" content="*"-->
@@ -28,13 +29,23 @@
     <!--script type="text/javascript" src="./assets/js/bootstrap-slider.min.js"></script-->
     <script type="text/javascript" src="./assets/js/bootstrap-slider.js"></script>
     <script type="text/javascript" src="./assets/js/bootstrap-treeview.js"></script>
+    <script type="text/javascript" src="./assets/js/bootstrap-select.min.js"></script>
     
     <!--script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.0/build/g6.js"></script-->
    <div class="box">
     <div id="mountNode" style="display: none;"></div>
     <div class="header">
-        <input type="color" value="#2D9900"/>
-        <div class="dropdown" id="idDropdown" style="align-self: center; margin-left: 10%; white-space: nowrap; display: inline;">
+        <!-- <input type="color" value="#2D9900"/> -->
+        <div style="display: inline;">
+          <label style="color: white;">根据ID选择Monkey</label>
+          <select class="selectpicker" data-live-search="true" id="monkeySelecter"  data-style="btn-info" data-none-selected-text="选择Monkey的ID" title="选择Monkey的ID">
+            
+          </select>
+        </div>
+        
+        
+        
+        <div class="dropdown" id="idDropdown" style="align-self: center; margin-left: 10%; white-space: nowrap; display: none;">
                 <label style="color: white;">根据ID选择Monkey</label>
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   选择Monkey 的 ID
@@ -69,10 +80,12 @@
                 <input id="tickRange" type="text" class="span2" value="" data-slider-id="slider" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
                 &nbsp;&nbsp;<b id="tickHigh">0</b>
             </div>
-            <!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalScrollable">
+        </div>
+        <div id="tickRange"></div>
+        <!-- Button trigger modal -->
+<!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalScrollable">
   Launch demo modal
-</button>
+</button> -->
 
 <!-- Modal -->
 <div class="modal fade" id="exampleModalScrollable" tabindex="-1" role="dialog" aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">
@@ -94,8 +107,6 @@
     </div>
   </div>
 </div>
-        </div>
-        <div id="tickRange"></div>
     </div>
     <div class="main">
         <div class="left">left</div>

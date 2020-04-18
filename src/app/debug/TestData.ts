@@ -23,7 +23,7 @@ import { TextGeometry } from "../threelibs/three";
 import FruchtermanLayout from  "@antv/g6/lib/layout/fruchterman";
 import DagreLayout from "@antv/g6/lib/layout/dagre";
 import  ForceLayout from "@antv/g6/lib/layout/force";
-import { addId2Dropdown, addGroupIds2Dropdown, addTick2Dropdown, showCommunityTickList } from "../commons/Dom";
+import { addId2Dropdown, addGroupIds2Dropdown, addTick2Dropdown, showCommunityTickList, addMonkeyIds2Selecter } from "../commons/Dom";
 import { KidKinshipNodeLink } from "../commons/LineFactory";
 
 var FileSaver = require('file-saver');
@@ -185,6 +185,7 @@ export class Community extends THREE.Object3D{
     
         this.logInfo = new Array<string>();
         this.logInfo.push( logBase( this));
+        showCommunityTickList(this, 0);
     }
 
     public tickNext(){
@@ -866,6 +867,7 @@ export class Community extends THREE.Object3D{
         life.belongTo.push( mt[0].unit.ID );
 
         let i = 0;
+        
         while(true){
             let enterUnit = m.migrateTable[i].unit.ID;
             let enter = m.migrateTable[i].tick;
@@ -894,7 +896,7 @@ export class Community extends THREE.Object3D{
             }
             let nexEnter = m.migrateTable[i+1].tick;
             if(nexEnter == leave){
-                life.migrate.push({tick: nexEnter, origin: leaveUnit, target: enterUnit })
+                life.migrate.push({tick: nexEnter, origin: leaveUnit, target: m.migrateTable[i+1].unit.ID })
             } else {
                 for(let j = leave; j < nexEnter; j++){
                     life.belongTo[j] = -1
@@ -950,7 +952,7 @@ export class Community extends THREE.Object3D{
                 text += "不在社群中"; 
             } else {
                 let unit = this.allunits.filter(e => e.ID == life.belongTo[i])[0];
-                text += unit.ID + "(" + unit.name + ")";
+                text += unit.name + "(" + unit.ID + ")";
             }
             belong.nodes.push( {
                 text: text,
@@ -1011,7 +1013,7 @@ export class Community extends THREE.Object3D{
         let tick = unit.createTick;
         if(tick == 0){
             let ts = slice.clone();
-            this.basekids.forEach( e => {
+            this.basekids.filter(e => e.unit.ID == unit.ID).forEach( e => {
                 ts.newBabes.push({
                     monkey: e.ID,
                     father: e.father,
@@ -1072,7 +1074,7 @@ export class Community extends THREE.Object3D{
             })
 
             if( unit instanceof OMU && ts instanceof OMUSlice)    ts.mainMale = unit.tickMainMale.get(tick);
-            ts.tickMembers = unit.tickMembers.get(tick);
+            ts.tickMembers = unit.tickMembers.get(i);
             life.tickChanges.push( ts);
         }
         
@@ -1126,7 +1128,7 @@ export class Community extends THREE.Object3D{
         let newBabes = {
             text: "新生婴猴",
             state: state,
-            noeds: new Array(),
+            nodes: new Array(),
         }
         let dead = {
             text: "死亡",
@@ -1139,7 +1141,7 @@ export class Community extends THREE.Object3D{
             members.nodes.push( {
                 text: e + "\t" + ( tmp.length == 0? "" : tmp[0].name),
             })
-        })
+        }) 
         slice.enterUnit.forEach( e =>{
             let tmp = this.findUnitByID(e.origin);
             enterUnit.nodes.push({
@@ -1149,18 +1151,18 @@ export class Community extends THREE.Object3D{
         slice.leaveUnit.forEach( e => {
             let tmp = this.findUnitByID(e.target);
             leaveUnit.nodes.push( {
-                text: e.monkey + "\t" + " to " + (tmp ? tmp.name + "(" + tmp.ID + ")" : "社群外")
+                text: e.monkey + "\t" + " to " + (tmp ? tmp.name + "(" + tmp.ID + ")" : "社群外"),
             })
         })
         slice.newBabes.forEach( e => {
-            newBabes.noeds.push( {
+            newBabes.nodes.push( {
                 text: "孩子: " + e.monkey + "\t父亲: " + e.father.ID + "\t母亲:" + e.mother.ID,
             })
         })
         slice.dead.forEach( e => {
             let tmp = this.findMonkeyByID(e.monkey);
             dead.nodes.push( {
-                text: e.monkey + "\t" + ( tmp.length == 0? "" : tmp[0].name),
+                text: e.monkey + "\t" + ( tmp.length == 0? "" : tmp[0].name)
             })
         })
 
@@ -1215,7 +1217,7 @@ export class Community extends THREE.Object3D{
         }
         let newBabe = {
             id: 5,
-            text: "新生的婴猴",
+            text: "新生婴猴",
             selectable: true,
             state: state,
             nodes: new Array(),
@@ -1631,6 +1633,7 @@ export function genFrame(commu : Community){
     // 因为增加了一个TICK，在这过程中可能会改变TICK_MODE，需要根据当前模式将当前TICK之前的亲缘关系可见性进行设置。
     commu.changeTickMode(GET_TICK_MODE() );
     addGroupIds2Dropdown(commu);
+    addMonkeyIds2Selecter(commu);
     //window.graph = commu.getJsonData();
     addTick2Dropdown();
     $('#tickDropdown button').get()[0].textContent = ""+GET_TICK();

@@ -14,7 +14,7 @@ import { unitsLayout, OMULayout, AMULayout, FIULayout } from './commons/Position
 import { Kinship } from './commons/Kinship';
 import { Community, genFrame } from './debug/TestData';
 import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
-import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown, showUnitTickList, showCommunityTickList} from './commons/Dom';
+import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown, showUnitTickList, showCommunityTickList, addMonkeyIds2Selecter} from './commons/Dom';
 import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE, GET_COMMUNITY } from './commons/basis';
 
 
@@ -91,7 +91,7 @@ export class Application{
         commu.layout();
         //addId2Dropdown( commu );
         addGroupIds2Dropdown(commu);
-
+        addMonkeyIds2Selecter(commu);
         
         this.labelRenderer.domElement.addEventListener( 'mouseup', this.pickObject);
         
@@ -340,8 +340,9 @@ export class Application{
                 levels: 5,
                 expandIcon: "glyphicon glyphicon-plus",
             })
-
-           
+            $("#collapseOne").collapse("show");
+            $("#monkeySelecter").selectpicker("val", selected.ID);
+            $("#monkeySelecter").selectpicker("refresh");
          }//else if(selected){
         //     selected.unselected();
         // }
@@ -371,6 +372,7 @@ function bindEvents(){
     }
 
     $("#idDropdown").on('hidden.bs.dropdown',function(e){
+
         let id = +e.clickEvent.target.textContent;
         if( !isNumber(id))  return;
         let monkey = COMMUNITY.findMonkeyByID(id)[0];
@@ -393,6 +395,31 @@ function bindEvents(){
         e.relatedTarget.textContent=e.clickEvent.target.textContent; //你点击的那个选项值：Value1或Value2
     });
 
+    $('#monkeySelecter').on('hide.bs.select', function(e){
+        if( !$("#monkeySelecter").val() ){
+            return;
+        }
+        let id = +$("#monkeySelecter").val();
+        if( !isNumber(id))  return;
+        let monkey = COMMUNITY.findMonkeyByID(id)[0];
+        if(!monkey)     return;
+        if( selected  ){
+            selected.unselected();
+        }
+        console.log("intersected : ", monkey)
+        selected = monkey;
+        // 看向选中的Monkey，首先计算相机的位置，然后设置相机看向的位置
+        let pos = calcMonkeyCommunityPos(monkey);
+        let dist = pos.distanceTo(new THREE.Vector3(0, 0, 0));
+        let cosAlpha = dist !=0 ? pos.x / dist : 1;
+        // let cosBeta = dist !=0 ? pos.y / dist : 1;   // 为了保持相机在被观察物体的上方，所以不再y 方向上乘以步长
+        let cosTheta = dist !=0 ? pos.z / dist : 1;
+        camera.position.set(pos.x + cosAlpha * 60, pos.y +  60, pos.z + cosTheta * 60);
+        camera.lookAt( pos);
+        selected.selected();
+        fillBlanks(selected);
+    });
+
     // 为时间选择列表绑定事件
     $("#tickDropdown").on('hidden.bs.dropdown',function(e){
         let tick = +e.clickEvent.target.textContent;
@@ -413,6 +440,7 @@ function bindEvents(){
         }
         // 改变时刻后要及时更新ID列表
         addGroupIds2Dropdown(COMMUNITY);
+        addMonkeyIds2Selecter(COMMUNITY);
         $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:tick, tick]);
         $("#tickRange").slider('refresh', { useCurrentValue: true });
         
@@ -492,6 +520,7 @@ function bindEvents(){
         $("#tickDropdown button")[0].textContent = ""+e.value.newValue[1];
         // 改变时刻后要及时更新ID列表
         addGroupIds2Dropdown(COMMUNITY);
+        addMonkeyIds2Selecter(COMMUNITY);
     });
 
     window.onload=  function(){
@@ -504,10 +533,8 @@ function bindEvents(){
             blanks[1].innerText = "name: " + unit.name;
             blanks[2].innerText = "创建时间: Tick-" + unit.createTick;
             showUnitTickList(unitID);
+            $("#collapseTwo").collapse("show");
         })
     }
 
 }
-
-
-

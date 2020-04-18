@@ -20,6 +20,8 @@ body{
    float: top;
    white-space: nowrap;
    background-color:rgb(81, 82, 85);
+   padding-top: 5px;
+   padding-left: 25%;
 }
 .footer{
    width : 100%;
@@ -27,6 +29,7 @@ body{
    min-height: 3px;
    float : left;
    background-color:rgba(0, 0, 0, 0.808);
+   
 }
 .main{
    width: 100%;

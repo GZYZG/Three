@@ -110,8 +110,19 @@ white-space:normal; word-break:break-all;overflow:hidden;
     - 尽量只设置内边距(padding)，不设置外边距(margin)。保证兄弟节点之间没有不可控的间隙出现
     - 使用内边距控制元素内容的显示
     - 设置内边距时（或外边距），尽可能通过控制padding[margin]- - - left、padding[margin]-top 来设置元素的显示位置
+    - 使用padding来调节元素内的子元素的偏移，使用margin来调整元素与兄弟元素的偏移
 
 
+### 10. TS中使用格式字符串
+```
+`${变量名|函数调用}`
+```
+eg:
+```typescript
+var name = "GZY";
+console.log( `Hello! My name is ${name}.` );
+```
+使用 `` 包起来的字符串也可以进行拼接。
 <br><br><br><br><br>  
 
 ---

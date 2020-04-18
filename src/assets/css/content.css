@@ -25,7 +25,7 @@ ul{
 }
 
 ul.li, li.list-group-item {
-    padding: .7em 5px .3em .4em;
+    padding: .5em 5px .2em .3em;
     color: #000000;
     background-color:#3c495769 ;
 }
@@ -33,4 +33,17 @@ ul.li, li.list-group-item {
 
 div.card-header{
     padding: .7em 1.2em;
+}
+
+/* 调整bootstrap 的 glyphicon 图标的大小 */
+span.icon.expand-icon.glyphicon.glyphicon-plus, span.icon.expand-icon.glyphicon.glyphicon-minus{
+    font-size: 10px;
+}
+
+/* 设置 select中的option 鼠标悬浮的样式*/
+a.dropdown-item:hover{
+    background-color: black;
+    color: red;
+    font-size: 20px;
+    opacity: 0.5;
 }
