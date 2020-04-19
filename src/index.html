@@ -36,7 +36,10 @@
     <div id="mountNode" style="display: none;"></div>
     <div class="header">
         <!-- <input type="color" value="#2D9900"/> -->
-        <div style="display: inline;">
+        <!-- <div style="display: inline;">
+          <input type="file" />
+        </div> -->
+        <div style="display: inline; height: 30px;">
           <label style="color: white;">根据ID选择Monkey</label>
           <select class="selectpicker" data-live-search="true" id="monkeySelecter"  data-style="btn-info" data-none-selected-text="选择Monkey的ID" title="选择Monkey的ID">
             
@@ -53,7 +56,7 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow-y: auto; max-height:600px;">
                 </div>
         </div>
-        <div id="mode" style="display: inline;">
+        <div id="mode" style="display: inline;height: 30px;">
             <!--使用时间范围选择替代时间模式和时可选择-->
             <div class="custom-control custom-radio custom-control-inline" style="display: none;">
                 <input type="radio" id="isolateTick" name="custom" class="custom-control-input">
@@ -65,7 +68,7 @@
             </div>
             
 
-
+            
             <div class="dropdown" id="tickDropdown" style="align-self: center; white-space: nowrap; display: none;">
                 <label style="color: white;">当前时间：</label>
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -75,13 +78,24 @@
                 </div>
             </div>
             <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline;">
-                <label>选择时间范围：</label>
+                <input id="tickRangeToggle" type="checkbox" checked/> Enabled
+                <label>选择亲缘关系时间范围：</label>
                 <b id="tickLow">0</b>&nbsp;&nbsp;
                 <input id="tickRange" type="text" class="span2" value="" data-slider-id="slider" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
                 &nbsp;&nbsp;<b id="tickHigh">0</b>
-            </div>
+            </div>&nbsp;&nbsp;&nbsp;
+            <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline;">
+              <input id="tickRangeStrucToggle" type="checkbox" checked/> Enabled
+              <label>选择社会组成时间范围：</label>
+              <b id="tickLowStruc">0</b>&nbsp;&nbsp;
+              <input id="tickRangeStruc" type="text" class="span2" value="" data-slider-id="sliderStruc" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
+              &nbsp;&nbsp;<b id="tickHighStruc">0</b>
+          </div>
+          <div id="tickRange"></div>
+          <div id="tickRangeStruc"></div>
         </div>
-        <div id="tickRange"></div>
+
+        
         <!-- Button trigger modal -->
 <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalScrollable">
   Launch demo modal
@@ -205,6 +219,31 @@
         top: $("div.header").css("height"),
         margin: "1.5px 0px 0px 1.5px",
     })
+    $('#tickRangeStruc').slider({
+        formatter: function (value) {
+            return  value;
+        },
+        tooltip_split: true,
+        tooltip: "always",
+        tooltip_position: "bottom",
+    })
+    $("#tickRangeToggle").click(function() {
+      if(this.checked) {
+        $("#tickRange").slider("enable");
+      }
+      else {
+        $("#tickRange").slider("disable");
+      }
+    });
+    $("#tickRangeStrucToggle").click(function() {
+      if(this.checked) {
+        $("#tickRangeStruc").slider("enable");
+      }
+      else {
+        $("#tickRangeStruc").slider("disable");
+      }
+    });
+    
 </script>
 
 </body>

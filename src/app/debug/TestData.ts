@@ -744,6 +744,12 @@ export class Community extends THREE.Object3D{
         }
     }
 
+    public maskMember() {
+        this.allmonkeys.forEach( e => {
+            e.visible = false;
+        })
+    }
+
     public showRangeKinship(start: number, end: number){
         this.maskKinship();
         if(start==0){
@@ -764,6 +770,12 @@ export class Community extends THREE.Object3D{
                 //console.log("\t在 Tick-"+ tick+ " 在frames["+ i+ "] 中，kid: ", tmp[0], " 被设置为",  visible? "可": "不可", "见！");   
             })
         }
+        
+    }
+
+    
+    public showRangeCommunityChange(start: number, end: number){
+        this.maskMember();
         
     }
 
@@ -1300,6 +1312,8 @@ export class Community extends THREE.Object3D{
         return data;
     
     }
+
+    
 
 }
 

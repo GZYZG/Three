@@ -357,7 +357,7 @@ export class Male extends Monkey {
     constructor (id:number, name:string,  unit:Unit, birthDate?: Date, /*, social_level:string*/ ) {
         super(GENDA.MALE, id, name, unit/*, social_level*/);
         this.geometry = MALE_GEMOMETRY;//new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);//;
-        this.material =  new THREE.MeshLambertMaterial( { color: 0x000,  vertexColors: true } );
+        this.material =  new THREE.MeshLambertMaterial( { color: 0x000,  vertexColors: true} );
     }
 
     

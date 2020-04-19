@@ -106,7 +106,7 @@ export class Application{
         this.labelRenderer = new CSS2DRenderer(); //新建CSS2DRenderer 
         this.labelRenderer.setSize( rendererContainer.offsetWidth, rendererContainer.offsetHeight);
         this.labelRenderer.domElement.style.position = 'fixed';
-        this.labelRenderer.domElement.style.top = "9%";
+        this.labelRenderer.domElement.style.top = "10%";
         rendererContainer.appendChild(this.labelRenderer.domElement);
     }
 
