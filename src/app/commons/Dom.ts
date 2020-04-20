@@ -63,6 +63,7 @@ export function addMonkeyIds2Selecter( commu: Community){
         selecter.append(optGroup);
         t.value[1].forEach( e => {
             let item = $("<option>", {
+                "class":"sepcial"
                 label: `${e.ID}`,
                 text: `${e.ID}`,
                 monkeyID: ""+e.ID,

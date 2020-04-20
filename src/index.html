@@ -32,6 +32,8 @@
     <script type="text/javascript" src="./assets/js/bootstrap-select.min.js"></script>
     
     <!--script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.0/build/g6.js"></script-->
+
+
    <div class="box">
     <div id="mountNode" style="display: none;"></div>
     <div class="header">
@@ -41,7 +43,7 @@
         </div> -->
         <div style="display: inline; height: 30px;">
           <label style="color: white;">根据ID选择Monkey</label>
-          <select class="selectpicker" data-live-search="true" id="monkeySelecter"  data-style="btn-info" data-none-selected-text="选择Monkey的ID" title="选择Monkey的ID">
+          <select class="selectpicker" data-live-search="true" id="monkeySelecter"  data-style="btn-info" data-none-selected-text="选择Monkey的ID" title="选择Monkey的ID" multiple data-actions-box="true">
             
           </select>
         </div>
@@ -56,7 +58,7 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow-y: auto; max-height:600px;">
                 </div>
         </div>
-        <div id="mode" style="display: inline;height: 30px;">
+        <div id="mode" style="display: inline;height: 30px; white-space: nowrap;">
             <!--使用时间范围选择替代时间模式和时可选择-->
             <div class="custom-control custom-radio custom-control-inline" style="display: none;">
                 <input type="radio" id="isolateTick" name="custom" class="custom-control-input">
@@ -66,9 +68,7 @@
                 <input type="radio" id="accumulateTick" name="custom" class="custom-control-input" checked>
                 <label class="custom-control-label" for="accumulateTick">累积时间单位亲缘关系</label>
             </div>
-            
 
-            
             <div class="dropdown" id="tickDropdown" style="align-self: center; white-space: nowrap; display: none;">
                 <label style="color: white;">当前时间：</label>
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -77,50 +77,40 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow-y: auto;min-height: 50px;">
                 </div>
             </div>
-            <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline;">
+            <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline; width: 20%;">
                 <input id="tickRangeToggle" type="checkbox" checked/> Enabled
                 <label>选择亲缘关系时间范围：</label>
                 <b id="tickLow">0</b>&nbsp;&nbsp;
-                <input id="tickRange" type="text" class="span2" value="" data-slider-id="slider" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
+                <input id="tickRange" type="text" class="span2" style="width: 10%;" value="" data-slider-id="slider" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
                 &nbsp;&nbsp;<b id="tickHigh">0</b>
             </div>&nbsp;&nbsp;&nbsp;
-            <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline;">
+
+            <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline; width: 20%;">
               <input id="tickRangeStrucToggle" type="checkbox" checked/> Enabled
               <label>选择社会组成时间范围：</label>
               <b id="tickLowStruc">0</b>&nbsp;&nbsp;
-              <input id="tickRangeStruc" type="text" class="span2" value="" data-slider-id="sliderStruc" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
+              <input id="tickRangeStruc" type="text" class="span2" style="width: 10%;" value="" data-slider-id="sliderStruc" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
               &nbsp;&nbsp;<b id="tickHighStruc">0</b>
-          </div>
+            </div>
+
           <div id="tickRange"></div>
           <div id="tickRangeStruc"></div>
+          
+        </div>
+        <!-- 可定制的要素 -->
+        <div style="align-self: center; white-space: nowrap; display: block; width: 100%;margin: 0; padding: 0; text-align: center;">
+          <div id="customKeyDiv" style="width: 100%; margin: 0; padding: 0; text-align: center;">
+            <a class="collapsed btn btn-link glyphicon glyphicon-chevron-down" type="button"  style="color: white; font-weight: bolder; font-size: 15px; padding-top: 0;"
+            data-toggle="collapse" data-target="#customKeyCollapse" aria-expanded="false" aria-controls="customKeyCollapse">
+              定制显示要素
+            </a>
+          </div>
+          <div id="customKeyCollapse" class="collapse" aria-labelledby="customKeyDiv" data-parent="#customKeyDiv"
+           style="background-color: #fbfbfbc9 ; border-radius: 5px; margin: 5px 30%; padding: 0; position: relative; z-index: 10000; text-align: left;">
+
+          </div>
         </div>
 
-        
-        <!-- Button trigger modal -->
-<!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalScrollable">
-  Launch demo modal
-</button> -->
-
-<!-- Modal -->
-<div class="modal fade" id="exampleModalScrollable" tabindex="-1" role="dialog" aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalScrollableTitle">Modal title</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        1231241
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
-    </div>
-  </div>
-</div>
     </div>
     <div class="main">
         <div class="left">left</div>
@@ -243,6 +233,71 @@
         $("#tickRangeStruc").slider("disable");
       }
     });
+    var tree = [
+  {
+    text: "社会组成要素",
+    //selectable: false,
+    selectedIcon: "",
+    nodes: [
+      {
+        text: "入群",
+      },
+      {
+        text: "退群"
+      },
+      {
+        text: "迁移"
+      },
+      {
+        text: "主雄变更"
+      },
+      {
+        text: "新增单元"
+      },
+      {
+        text: "死亡"
+      }
+    ]
+  },
+  {
+    text: "未采样个体"
+  },
+  {
+    text: "未涉及个体"
+  },
+ 
+];
+
+$('#customKeyCollapse').treeview({
+  data: tree,         // data is not optional
+  levels: 5,
+  backColor: 'green',
+  multiSelect: true,
+  checkedIcon: "glyphicon glyphicon-check",
+  //selectedIcon: "glyphicon glyphicon-check",
+  showCheckbox: true,
+});
+
+$('#customKeyCollapse').on('nodeChecked',function(event, data){
+     console.log("evt:", event, " data:", data)
+     if(!data.nodes) return;
+     let tree = $('#customKeyCollapse');
+     data.nodes.forEach( e => {
+       tree.treeview('checkNode', [ e.nodeId, { silent: true } ]);
+     })
+     
+})
+
+$('#customKeyCollapse').on('nodeUnchecked',function(event, data){
+     console.log("evt:", event, " data:", data)
+     if(!data.nodes) return;
+     let tree = $('#customKeyCollapse');
+     data.nodes.forEach( e => {
+       tree.treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
+     })
+     
+})
+
     
 </script>
 

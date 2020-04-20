@@ -8,10 +8,15 @@
 
 .tick-range div.slider-selection {
     background: green;
+    width: 20%;
 }
 .tick-range div.slider-track-low, .tick-range div.slider-track-high {
     background: red;
 }
+/*调节滑动条的宽度*/
+/* .slider .slider-horizontal{
+    max-width: 100px;
+} */
 
 
 div.card-body{
@@ -46,4 +51,15 @@ a.dropdown-item:hover{
     color: red;
     font-size: 20px;
     opacity: 0.5;
+}
+
+.special {
+    font-weight: bold !important;
+    color: #fff !important;
+    background: #bc0000 !important;
+    text-transform: uppercase;
+  }
+
+.dropdown .bootstrap-select .show-tick .selectpicker {
+    width: 10%;
 }

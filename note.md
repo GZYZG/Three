@@ -159,7 +159,8 @@ console.log( `Hello! My name is ${name}.` );
 | bb  | AMU | amu1 | 5 | -1 |
 | cc  | FIU | fiu1 | 4 | -1 |
 
-
+### 12. html元素显示层级
+- **z-index** 仅能在定位元素上奏效（position属性值设置除默认值static以外的元素，包括relative，absolute，fixed样式）内
 <br><br><br><br><br>  
 
 ---
