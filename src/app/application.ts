@@ -16,6 +16,7 @@ import { Community, genFrame } from './debug/TestData';
 import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
 import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown, showUnitTickList, showCommunityTickList, addMonkeyIds2Selecter} from './commons/Dom';
 import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE, GET_COMMUNITY } from './commons/basis';
+import { bindTickRangeStruc } from './commons/BindEvent';
 
 
 var FileSaver = require('file-saver');
@@ -362,7 +363,14 @@ function bindEvents(){
         // 要进行刷新
         $("#tickRange").slider('refresh', { useCurrentValue: true });
 
-        // 显示社群的历史变更信息
+        $('#tickRangeStruc').slider({max:GET_TICK()})
+        $("#tickRangeStruc").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:GET_TICK(), GET_TICK()]);
+        $("#tickLowStruc").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
+        $("#tickHighStruc").html(GET_TICK() + " / " + GET_TICK());
+        // 要进行刷新
+        $("#tickRangeStruc").slider('refresh', { useCurrentValue: true });
+
+        // 显示社群的历史变更信息，增加一个年份的信息
         showCommunityTickList();
         if($("#unit_info > li:nth-child(1)").attr("unitID") ){
             let unitID =  +$("#unit_info > li:nth-child(1)").attr("unitID");
@@ -512,16 +520,19 @@ function bindEvents(){
         $("#tickLow").html(e.value.newValue[0]);
         $("#tickHigh").html(e.value.newValue[1] + " / " + GET_TICK());
         if( e.value.oldValue[1] < e.value.newValue[1]){
-            COMMUNITY.forward(e.value.newValue[1] - e.value.oldValue[1] )
+            //COMMUNITY.forward(e.value.newValue[1] - e.value.oldValue[1] )
         } else{
-            COMMUNITY.back(e.value.oldValue[1] - e.value.newValue[1]);
+            //COMMUNITY.back(e.value.oldValue[1] - e.value.newValue[1]);
         }
         COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
         $("#tickDropdown button")[0].textContent = ""+e.value.newValue[1];
         // 改变时刻后要及时更新ID列表
-        addGroupIds2Dropdown(COMMUNITY);
-        addMonkeyIds2Selecter(COMMUNITY);
+        //addGroupIds2Dropdown(COMMUNITY);
+        //addMonkeyIds2Selecter(COMMUNITY);
     });
+
+    // 为社会变动时间范围选择器绑定事件
+    bindTickRangeStruc();
 
     window.onload=  function(){
         $(".label").on("click", e => {

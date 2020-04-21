@@ -744,10 +744,21 @@ export class Community extends THREE.Object3D{
         }
     }
 
+    public showAllMirror(){
+        this.allmonkeys.forEach( e => {
+            e.visible = true;
+        })
+    }
+
     public maskMember() {
         this.allmonkeys.forEach( e => {
             e.visible = false;
         })
+    }
+
+    public showRange(kinshipRange:{start: number, end: number}, changeRange: {start: number, end: number}){
+        this.showRangeCommunityChange( changeRange.start, changeRange.end);
+        this.showRangeKinship( kinshipRange.start, kinshipRange.end);
     }
 
     public showRangeKinship(start: number, end: number){
@@ -774,10 +785,306 @@ export class Community extends THREE.Object3D{
     }
 
     
+
     public showRangeCommunityChange(start: number, end: number){
         this.maskMember();
+        let viewkeys = window.VIEW_KEYS;
+        if(viewkeys["strucKey"]["enterCommu"]){
+            this.showEnterCommu(start, end);
+        } else {
+            this.maskEnterCommu(start, end);
+        }
+
+        if(viewkeys["strucKey"]["outCommu"]){
+            this.showOutCommu(start, end);
+        } else {
+            this.maskOutCommu(start, end);
+        }
+
+        if(viewkeys["strucKey"]["migrate"]){
+            this.showMigrate(start, end);
+        } else {
+            this.maskMigrate(start, end);
+        }
+
+        if(viewkeys["strucKey"]["mainMaleChange"]){
+            this.showMainMaleChange(start, end);
+        } else {
+            this.maskMainMaleChange(start, end);
+        }
+
+        if(viewkeys["strucKey"]["newUnit"]){
+            this.showNewUnit(start, end);
+        } else {
+            this.maskNewUnit(start, end);
+        }
+
+        if(viewkeys["strucKey"]["dead"]){
+            this.showDead(start, end);
+        } else {
+            this.maskDead(start, end);
+        }
         
     }
+
+    
+
+    public showEnterCommu(start: number, end: number){
+        if( start == 0){
+            // 显示在时刻0进入社群的猴子
+            this.basemember.forEach( e => {
+                e.visible = true;
+            })
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.enterCommu.forEach( e => {
+                let   tmp = e.unit.allMembers.filter( ee => ee.ID == e.monkey.ID);
+                if( tmp.length != 0)    tmp[0].visible = true;
+            })
+        }
+    }
+
+    public maskEnterCommu(start: number, end: number){
+        if( start == 0){
+            // 遮盖在时刻0进入社群的猴子
+            this.basemember.forEach( e => {
+                e.visible = false;
+            })
+            start++;
+        }
+        for(let i = start; i < end && i < this.frames.length; i++){
+            let f = this.frames[i];
+            f.enterCommu.forEach( e => {
+                let tmp = e.unit.allMembers.filter( ee => ee.ID == e.monkey.ID);
+                if( tmp.length != 0)    tmp[0].visible = false;
+            })
+        }
+    }
+
+    public showOutCommu(start: number, end: number){
+        if( start == 0){
+            // 显示在时刻0离开社群的猴子
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.vanished.outCommu.forEach( e => {
+                e.monkey.visible = true;
+            })
+        }
+    }
+
+    public maskOutCommu(start: number, end: number){
+        if( start == 0){
+            // 遮盖在时刻0离开社群的猴子
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.vanished.outCommu.forEach( e => {
+                e.monkey.visible = false;
+            })
+        }
+    }
+
+    public showMigrate(start: number, end: number){
+        if( start == 0){
+            // 显示在时刻0迁移的猴子
+
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.migrates.forEach( e => {
+                e.monkey.mirror.forEach( ee => {
+                    if(ee.unit.ID == e.originUnit.ID)   ee.visible = true;
+                    if(ee.unit.ID == e.targetUnit.ID)   ee.visible = true;
+                })
+            })
+        }
+    }
+
+    public maskMigrate(start: number, end: number){
+        if( start == 0){
+            // 遮盖在时刻0迁移的猴子
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.migrates.forEach( e => {
+                e.monkey.mirror.forEach( ee => {
+                    if(ee.unit.ID == e.originUnit.ID)   ee.visible = false;
+                    if(ee.unit.ID == e.targetUnit.ID)   ee.visible = false;
+                })
+            })
+        }
+    }
+
+    public showMainMaleChange(start: number,  end: number){
+        if( start == 0){
+            // 显示在时刻0参与到主雄变更的猴子
+
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.challengeMainMale.forEach( e => {
+                // 怎么处理主雄的变更
+                e.winner.mirror.forEach( ee => {
+                    if( ee.unit.ID == e.unit.ID )  {
+                        ee.visible = true;
+                        //break;
+                    }
+                })
+                e.loser.mirror.forEach( ee => {
+                    if( ee.unit.ID == e.unit.ID ){
+                        ee.visible = true;
+                        //break;
+                    }
+                });
+            })
+        }
+    }
+
+    public maskMainMaleChange(start: number,  end: number){
+        if( start == 0){
+            // 在时遮盖刻0参与到主雄变更的猴子
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.challengeMainMale.forEach( e => {
+                // 怎么处理主雄的变更
+                e.winner.mirror.forEach( ee => {
+                    if( ee.unit.ID == e.unit.ID )  {
+                        ee.visible = false;
+                        //break;
+                    }
+                })
+                e.loser.mirror.forEach( ee => {
+                    if( ee.unit.ID == e.unit.ID ){
+                        ee.visible = false;
+                        //break;
+                    }
+                });
+            })
+        }
+    }
+
+    public showNewUnit(start: number, end: number){
+        if( start == 0){
+            // 显示在时刻0进入社群的猴子
+            this.baseunits.forEach( e => {
+                e.visible = true;
+            })
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.newUnits.forEach( e => {
+                // 怎么处理新增单元
+                e.visible = true;
+            })
+        }
+    }
+
+    public maskNewUnit(start: number, end: number){
+        if( start == 0){
+            // 显示在时刻0进入社群的猴子
+            this.baseunits.forEach( e => {
+                e.visible = false;
+            })
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.newUnits.forEach( e => {
+                // 怎么处理新增单元
+                e.visible = false;
+            })
+        }
+    }
+
+    public showDead(start: number, end: number){
+        if( start == 0){
+            // 显示在时刻0进入社群的猴子
+
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.vanished.dead.forEach( e => {
+                // 怎么处理死亡的猴子
+                e.monkey.visible = true;
+            })
+        }
+    }
+
+    public maskDead(start: number, end: number){
+        if( start == 0){
+            // 显示在时刻0进入社群的猴子
+
+            start++;
+        }
+        for(let i = start; i < end; i++){
+            let f = this.frames[i];
+            f.vanished.dead.forEach( e => {
+                // 怎么处理死亡的猴子
+                e.monkey.visible = false;
+            })
+        }
+    }
+
+    public showInvolvedMirror(monkey: Monkey, start: number, end: number){
+        let belongTo = this.traceMonkey(monkey.ID).belongTo;
+        let tmp = Array.from( monkey.mirror);
+        for( let i = start; i <= end; i++){
+            if(belongTo[i] != -1){
+                tmp.filter( e => e.unit.ID == belongTo[i] )[0].visible = true;
+            }
+        }
+    }
+
+    public maskInvolvedMirror(monkey: Monkey, start: number, end: number){
+        let belongTo = this.traceMonkey(monkey.ID).belongTo;
+        let tmp = Array.from( monkey.mirror);
+        for( let i = start; i <= end; i++){
+            if(belongTo[i] != -1){
+                tmp.filter( e => e.unit.ID == belongTo[i] )[0].visible = false;
+            }
+        }
+    }
+
+    public showUninvolved(start: number, end: number, mirror: boolean = true){
+        // 显示未参与的个体的真身，分身是否显示由mirror觉得
+        this.allunits.forEach( e => {
+            for(let i = start; i <= end; i++){
+                e.tickMembers.get(i).forEach( ee => {
+                    let m = e.allMembers.filter( eee => eee.ID == ee )[0]
+                    m.visible = true;
+                    //m.mirror.forEach( eee => eee.visible = mirror);
+                })
+            }
+        })
+    }
+
+    public maskUninvolved( start: number, end: number, mirror: boolean = true){
+        this.allunits.forEach( e => {
+            for(let i = start; i <= end; i++){
+                e.tickMembers.get(i).forEach( ee => {
+                    let m = e.allMembers.filter( eee => eee.ID == ee )[0]
+                    m.visible = false;
+                    // m.mirror.forEach( eee => {
+                    //     if( eee.ID != m.ID)
+                    //         eee.visible = mirror
+                    // });
+                })
+            }
+        })
+    }
+
 
     public changeTickMode(tarMode: TICK_MODE, t?:number) {
         //根据时间模式改变从起始时刻到this.tick 的亲缘关系的可见性
@@ -1013,7 +1320,7 @@ export class Community extends THREE.Object3D{
             name: unit.name,
             createdTick: unit.createTick,
             baseMembers: unit.tickMembers.get( unit.createTick ),
-            tickChanges: new Array<Slice>(),
+            tickChanges: new Array<Slice>(),    // 单元内每个时刻的变动信息
         }
         let slice:Slice;
         if(unit instanceof OMU){

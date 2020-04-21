@@ -131,6 +131,7 @@ var COM: Community;
 export function GET_COMMUNITY(){
     if(!COM) {
         COM = new Community(5);
+        window.community = COM;
     }
     return COM;
 }
@@ -181,7 +182,23 @@ export const UNITNUM_ON_RING = [UNIT_RING.filter(e => e == 0).length,
                                 UNIT_RING.filter(e => e == 6).length
                             ];
 
-//export var COMMUNITY = new Community();
+export var VIEW_KEYS = {
+    strucKey:{
+        enterCommu: true,
+        outCommu  : true,
+        migrate   : true,
+        mainMaleChange: true,
+        newUnit   : true,
+        dead      : true,
+        involvedMirror: true,
+    },
+    uninvolved    : true,
+    kinship       : true,
+    allmirror     : true,
+    unSampled     : false,
+}
+window.VIEW_KEYS = VIEW_KEYS;
+
 
 export function isNumber(obj: any) {
     return obj === +obj
