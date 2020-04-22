@@ -20,9 +20,11 @@ export function bindTickRangeStruc(){
         $("#tickHighStruc").html(e.value.newValue[1] + " / " + GET_TICK());
         if( e.value.oldValue[1] < e.value.newValue[1]){
             COMMUNITY.forward(e.value.newValue[1] - e.value.oldValue[1] )
+            // 按照显示要素显示(e.value.oldValue[1], e.value.newValue[1] ] 中的个体
         } else{
             COMMUNITY.back(e.value.oldValue[1] - e.value.newValue[1]);
         }
+
         //COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
         COMMUNITY.showRangeCommunityChange(e.value.newValue[0], e.value.newValue[1] );
         // 改变时刻后要及时更新ID列表

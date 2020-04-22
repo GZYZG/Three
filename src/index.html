@@ -390,9 +390,9 @@ $('#customKeyCollapse').on('nodeUnchecked',function(event, data){
      }
      
     let v = $("#tickRangeStruc").slider("getValue");
-
+    let v1 = $("#tickRange").slider("getValue");
     window.community.showRangeCommunityChange( v[0], v[1] );
-     
+    window.community.showRangeKinship(v[0], v[1] );
 })
 
     

@@ -835,7 +835,7 @@ export class Community extends THREE.Object3D{
             this.basemember.forEach( e => {
                 e.visible = true;
             })
-            start++;
+            //start++;
         }
         for(let i = start; i < end; i++){
             let f = this.frames[i];
@@ -852,7 +852,7 @@ export class Community extends THREE.Object3D{
             this.basemember.forEach( e => {
                 e.visible = false;
             })
-            start++;
+            //start++;
         }
         for(let i = start; i < end && i < this.frames.length; i++){
             let f = this.frames[i];
@@ -866,7 +866,7 @@ export class Community extends THREE.Object3D{
     public showOutCommu(start: number, end: number){
         if( start == 0){
             // 显示在时刻0离开社群的猴子
-            start++;
+            //start++;
         }
         for(let i = start; i < end; i++){
             let f = this.frames[i];
@@ -879,7 +879,7 @@ export class Community extends THREE.Object3D{
     public maskOutCommu(start: number, end: number){
         if( start == 0){
             // 遮盖在时刻0离开社群的猴子
-            start++;
+            //start++;
         }
         for(let i = start; i < end; i++){
             let f = this.frames[i];
@@ -893,7 +893,7 @@ export class Community extends THREE.Object3D{
         if( start == 0){
             // 显示在时刻0迁移的猴子
 
-            start++;
+            //start++;
         }
         for(let i = start; i < end; i++){
             let f = this.frames[i];
@@ -909,7 +909,7 @@ export class Community extends THREE.Object3D{
     public maskMigrate(start: number, end: number){
         if( start == 0){
             // 遮盖在时刻0迁移的猴子
-            start++;
+            //start++;
         }
         for(let i = start; i < end; i++){
             let f = this.frames[i];
@@ -926,7 +926,7 @@ export class Community extends THREE.Object3D{
         if( start == 0){
             // 显示在时刻0参与到主雄变更的猴子
 
-            start++;
+            //start++;
         }
         for(let i = start; i < end; i++){
             let f = this.frames[i];
@@ -951,7 +951,7 @@ export class Community extends THREE.Object3D{
     public maskMainMaleChange(start: number,  end: number){
         if( start == 0){
             // 在时遮盖刻0参与到主雄变更的猴子
-            start++;
+            //start++;
         }
         for(let i = start; i < end; i++){
             let f = this.frames[i];
@@ -979,7 +979,7 @@ export class Community extends THREE.Object3D{
             this.baseunits.forEach( e => {
                 e.visible = true;
             })
-            start++;
+            //start++;
         }
         for(let i = start; i < end; i++){
             let f = this.frames[i];
@@ -996,7 +996,7 @@ export class Community extends THREE.Object3D{
             this.baseunits.forEach( e => {
                 e.visible = false;
             })
-            start++;
+            //start++;
         }
         for(let i = start; i < end; i++){
             let f = this.frames[i];
@@ -1026,7 +1026,7 @@ export class Community extends THREE.Object3D{
         if( start == 0){
             // 显示在时刻0进入社群的猴子
 
-            start++;
+            //start++;
         }
         for(let i = start; i < end; i++){
             let f = this.frames[i];
