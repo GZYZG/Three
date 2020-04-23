@@ -24,8 +24,8 @@ export function bindTickRangeStruc(){
         } else{
             COMMUNITY.back(e.value.oldValue[1] - e.value.newValue[1]);
         }
-
-        //COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
+        let v1 = $("#tickRange").slider("getValue");
+        COMMUNITY.showRangeKinship(v1[0], v1[1]);
         COMMUNITY.showRangeCommunityChange(e.value.newValue[0], e.value.newValue[1] );
         // 改变时刻后要及时更新ID列表
         addGroupIds2Dropdown(COMMUNITY);

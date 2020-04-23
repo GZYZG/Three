@@ -1607,7 +1607,7 @@ export class Community extends THREE.Object3D{
         f.newKinships.forEach( e => {
             newBabe.nodes.push( {
                 id: e.kid.ID,
-                text: e.kid.ID + " 父亲: " + e.kid.father.ID + "  母亲: " + e.kid.father.ID,
+                text: e.kid.ID + " 父亲: " + e.kid.father.ID + "  母亲: " + e.kid.mother.ID,
                 selectable: true,
             })
         })
