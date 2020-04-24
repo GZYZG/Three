@@ -262,8 +262,10 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         if( this.unit == null) return;
         this.isMirror = true;
         this.inCommu = false;
-        if(tick>=0 && recode)
+        if(tick>=0 && recode && this.leaveTable.filter(e => e.tick == tick && e.unit.ID == this.unit.ID ).length == 0){
             this.leaveTable.push({tick: tick, unit:this.unit})
+        }
+            
         if( this.isMainMale && this.unit instanceof OMU){
             this.isMainMale = false;
             this.unit.mainMale = null;

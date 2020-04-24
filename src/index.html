@@ -368,9 +368,14 @@ $('#customKeyCollapse').on('nodeChecked',function(event, data){
      
     console.log("显示要素发生变化!", window.VIEW_KEYS)
     let v = $("#tickRangeStruc").slider("getValue");
-    let v1 = $("#tickRange").slider("getValue");
+    
     window.community.showRangeCommunityChange( v[0], v[1] );
-    window.community.showRangeKinship(v1[0], v1[1] );
+    
+
+    //if(data.nodeKey = "kinship" ){
+      let v1 = $("#tickRange").slider("getValue");
+      window.community.showRangeKinship(v1[0], v1[1] );
+    //}
 })
 
 $('#customKeyCollapse').on('nodeUnchecked',function(event, data){
@@ -394,7 +399,14 @@ $('#customKeyCollapse').on('nodeUnchecked',function(event, data){
     let v = $("#tickRangeStruc").slider("getValue");
     let v1 = $("#tickRange").slider("getValue");
     window.community.showRangeCommunityChange( v[0], v[1] );
-    window.community.showRangeKinship(v[0], v[1] );
+    if(data.nodeKey == "kinship"){
+      window.community.maskKinship();
+      window.community.showRangeCommunityChange( v[0], v[1] );
+    } else {
+      window.community.showRangeCommunityChange( v[0], v[1] );
+      window.community.showRangeKinship(v1[0], v1[1] );
+    }
+    
 })
 
     

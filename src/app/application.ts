@@ -524,7 +524,9 @@ function bindEvents(){
         } else{
             //COMMUNITY.back(e.value.oldValue[1] - e.value.newValue[1]);
         }
+        let v1 = $("#tickRangeStruc").slider("getValue");
         COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
+        COMMUNITY.showRangeCommunityChange(v1[0], v1[1]);
         $("#tickDropdown button")[0].textContent = ""+e.value.newValue[1];
         // 改变时刻后要及时更新ID列表
         //addGroupIds2Dropdown(COMMUNITY);

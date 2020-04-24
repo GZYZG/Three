@@ -789,59 +789,69 @@ export class Community extends THREE.Object3D{
     public showRangeCommunityChange(start: number, end: number){
         this.maskMember();
         let viewkeys = window.VIEW_KEYS;
+        let involvedMirror = viewkeys["strucKey"]["involvedMirror"];
         if(viewkeys["strucKey"]["enterCommu"]){
-            this.showEnterCommu(start, end);
+            this.showEnterCommu(start, end, involvedMirror);
         } else {
-            this.maskEnterCommu(start, end);
+            //this.maskEnterCommu(start, end);
         }
 
         if(viewkeys["strucKey"]["outCommu"]){
-            this.showOutCommu(start, end);
+            this.showOutCommu(start, end, involvedMirror);
         } else {
-            this.maskOutCommu(start, end);
+            //this.maskOutCommu(start, end);
         }
 
         if(viewkeys["strucKey"]["migrate"]){
-            this.showMigrate(start, end);
+            this.showMigrate(start, end, involvedMirror);
         } else {
-            this.maskMigrate(start, end);
+            //this.maskMigrate(start, end);
         }
 
         if(viewkeys["strucKey"]["mainMaleChange"]){
-            this.showMainMaleChange(start, end);
+            this.showMainMaleChange(start, end, involvedMirror);
         } else {
-            this.maskMainMaleChange(start, end);
+            //this.maskMainMaleChange(start, end);
         }
 
         if(viewkeys["strucKey"]["newUnit"]){
             this.showNewUnit(start, end);
         } else {
-            this.maskNewUnit(start, end);
+            //this.maskNewUnit(start, end);
         }
 
         if(viewkeys["strucKey"]["dead"]){
-            this.showDead(start, end);
+            this.showDead(start, end, involvedMirror);
         } else {
-            this.maskDead(start, end);
+            //this.maskDead(start, end);
         }
+        
         
     }
 
     
 
-    public showEnterCommu(start: number, end: number){
+    public showEnterCommu(start: number, end: number, involvedMirror: boolean){
         if( start == 0){
             // 显示在时刻0进入社群的猴子
             this.basemember.forEach( e => {
                 e.visible = true;
             })
-            //start++;
+            start++;
         }
-        for(let i = start; i < end; i++){
+        for(let i = start-1; i < end; i++){
             let f = this.frames[i];
             f.enterCommu.forEach( e => {
                 let   tmp = e.unit.allMembers.filter( ee => ee.ID == e.monkey.ID);
-                if( tmp.length != 0)    tmp[0].visible = true;
+                if( tmp.length != 0)   {
+                    tmp[0].visible = true;
+                    
+                    tmp[0].mirror.forEach( ee => {
+                        // 如果需要显示涉及到的个体的其他分身，则显示其他分身
+                        if(involvedMirror && ee.unit.tickMembers.has(i) && ee.unit.tickMembers.get(i).includes( ee.ID) )    ee.visible = true;
+                    })
+                } 
+
             })
         }
     }
@@ -863,15 +873,18 @@ export class Community extends THREE.Object3D{
         }
     }
 
-    public showOutCommu(start: number, end: number){
+    public showOutCommu(start: number, end: number, involvedMirror: boolean){
         if( start == 0){
             // 显示在时刻0离开社群的猴子
-            //start++;
+            start++;
         }
-        for(let i = start; i < end; i++){
+        for(let i = start-1; i < end; i++){
             let f = this.frames[i];
             f.vanished.outCommu.forEach( e => {
                 e.monkey.visible = true;
+                e.monkey.mirror.forEach( ee => {
+                    if(involvedMirror && ee.unit.tickMembers.has(i) && ee.unit.tickMembers.get(i).includes(ee.ID) )   ee.visible = true;
+                })
             })
         }
     }
@@ -889,18 +902,21 @@ export class Community extends THREE.Object3D{
         }
     }
 
-    public showMigrate(start: number, end: number){
+    public showMigrate(start: number, end: number, involvedMirror: boolean){
         if( start == 0){
             // 显示在时刻0迁移的猴子
 
-            //start++;
+            start++;
         }
-        for(let i = start; i < end; i++){
+        for(let i = start-1; i < end; i++){
             let f = this.frames[i];
             f.migrates.forEach( e => {
                 e.monkey.mirror.forEach( ee => {
                     if(ee.unit.ID == e.originUnit.ID)   ee.visible = true;
                     if(ee.unit.ID == e.targetUnit.ID)   ee.visible = true;
+                })
+                e.monkey.mirror.forEach( ee => {
+                    if(involvedMirror && ee.unit.tickMembers.has(i) && ee.unit.tickMembers.get(i).includes(ee.ID) )   ee.visible = true;
                 })
             })
         }
@@ -922,13 +938,13 @@ export class Community extends THREE.Object3D{
         }
     }
 
-    public showMainMaleChange(start: number,  end: number){
+    public showMainMaleChange(start: number,  end: number, involvedMirror: boolean){
         if( start == 0){
             // 显示在时刻0参与到主雄变更的猴子
 
-            //start++;
+            start++;
         }
-        for(let i = start; i < end; i++){
+        for(let i = start-1; i < end; i++){
             let f = this.frames[i];
             f.challengeMainMale.forEach( e => {
                 // 怎么处理主雄的变更
@@ -938,12 +954,18 @@ export class Community extends THREE.Object3D{
                         //break;
                     }
                 })
+                e.winner.mirror.forEach( ee => {
+                    if(involvedMirror && ee.unit.tickMembers.has(i) && ee.unit.tickMembers.get(i).includes(ee.ID) )   ee.visible = true;
+                })
                 e.loser.mirror.forEach( ee => {
                     if( ee.unit.ID == e.unit.ID ){
                         ee.visible = true;
                         //break;
                     }
                 });
+                e.loser.mirror.forEach( ee => {
+                    if(involvedMirror && ee.unit.tickMembers.has(i) && ee.unit.tickMembers.get(i).includes(ee.ID) )   ee.visible = true;
+                })
             })
         }
     }
@@ -979,9 +1001,9 @@ export class Community extends THREE.Object3D{
             this.baseunits.forEach( e => {
                 e.visible = true;
             })
-            //start++;
+            start++;
         }
-        for(let i = start; i < end; i++){
+        for(let i = start-1; i < end; i++){
             let f = this.frames[i];
             f.newUnits.forEach( e => {
                 // 怎么处理新增单元
@@ -1007,17 +1029,20 @@ export class Community extends THREE.Object3D{
         }
     }
 
-    public showDead(start: number, end: number){
+    public showDead(start: number, end: number, involvedMirror: boolean){
         if( start == 0){
             // 显示在时刻0进入社群的猴子
 
             start++;
         }
-        for(let i = start; i < end; i++){
+        for(let i = start-1; i < end; i++){
             let f = this.frames[i];
             f.vanished.dead.forEach( e => {
                 // 怎么处理死亡的猴子
                 e.monkey.visible = true;
+                e.monkey.mirror.forEach( ee => {
+                    if(involvedMirror && ee.unit.tickMembers.has(i) && ee.unit.tickMembers.get(i).includes(ee.ID) )   ee.visible = true;
+                })
             })
         }
     }
@@ -1059,6 +1084,7 @@ export class Community extends THREE.Object3D{
 
     public showUninvolved(start: number, end: number, mirror: boolean = true){
         // 显示未参与的个体的真身，分身是否显示由mirror觉得
+        
         this.allunits.forEach( e => {
             for(let i = start; i <= end; i++){
                 e.tickMembers.get(i).forEach( ee => {
