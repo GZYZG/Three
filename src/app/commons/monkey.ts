@@ -60,6 +60,8 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
     public inCommu : boolean;
     public isAlive : boolean;
     public isMainMale : boolean;
+    public isSampled : boolean;
+
 
     public unselectedColor : number;
     public selectedColor : number;
@@ -100,6 +102,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.inCommu = true;
         this.isAlive = true;
         this.isMainMale = false;
+        this.isSampled = true;
 
         this.ageLevel = AGE_LEVEL.JUVENILE;
 
@@ -212,7 +215,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         // 3) kids;
         // 4) mirror;
         // 5) name;
-        // 6) isAlive、inCommu、;
+        // 6) isAlive、inCommu、isSampled;
         // 7) selectedColor、unselectedColor、SELECTED;
         // 8) migrateTable;
 
@@ -236,6 +239,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         ret.leaveTable = this.leaveTable;
         ret.isMirror = true;
         ret.isMainMale = false;
+        ret.isSampled = this.isSampled;
         return ret;
     }
 

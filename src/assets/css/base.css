@@ -82,3 +82,8 @@ body{
    background-color: #ff0000;
    font-size: larger;
 }
+
+div#hideRightSide:hover {
+   width: 40px;
+   background-color: red;
+}

@@ -118,8 +118,8 @@
         </div>
 
         <div class="right" style="display: flex;">
-            <div data-toggle="tooltip" data-placement="top" title="收缩"
-            style="width: 8px; background: black; height: 10%; white-space: nowrap; display: inline; border-radius: 5px; margin-top: 75%; ">
+            <div id="hideRightSide" data-toggle="tooltip" data-placement="top" title="收缩"
+            style="width: 8px; background: black; height: 30%; white-space: nowrap; display: inline; border-radius: 5px; margin-top: 75%; ">
             </div>
             <div style="flex: 1; width: auto;">
               <div class="accordion" id="accordionExample"  >
@@ -407,6 +407,11 @@ $('#customKeyCollapse').on('nodeUnchecked',function(event, data){
       window.community.showRangeKinship(v1[0], v1[1] );
     }
     
+})
+
+$("#hideRightSide").on("click", e => {
+  console.log("123");
+  $("#hideRightSide").next().width(0);
 })
 
     

@@ -817,7 +817,7 @@ export class Community extends THREE.Object3D{
         if(viewkeys["strucKey"]["newUnit"]){
             this.showNewUnit(start, end);
         } else {
-            //this.maskNewUnit(start, end);
+            this.maskNewUnit(start, end);
         }
 
         if(viewkeys["strucKey"]["dead"]){
@@ -826,6 +826,14 @@ export class Community extends THREE.Object3D{
             //this.maskDead(start, end);
         }
         
+        if(viewkeys["uninvolved"]) {
+            this.showUninvolved(start, end, false);
+        }
+
+        if(viewkeys["unSampled"]) {
+            // 显示未采样个体
+            this.showUnsampled(start, end, false);
+        }
         
     }
 
@@ -1087,6 +1095,7 @@ export class Community extends THREE.Object3D{
         
         this.allunits.forEach( e => {
             for(let i = start; i <= end; i++){
+                if( !e.tickMembers.get(i) )   continue;
                 e.tickMembers.get(i).forEach( ee => {
                     let m = e.allMembers.filter( eee => eee.ID == ee )[0]
                     m.visible = true;
@@ -1109,6 +1118,10 @@ export class Community extends THREE.Object3D{
                 })
             }
         })
+    }
+
+    public showUnsampled(start: number, end: number, mirror: boolean = true) {
+
     }
 
 

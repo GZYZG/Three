@@ -358,14 +358,14 @@ function bindEvents(){
         genFrame(COMMUNITY);
         $('#tickRange').slider({max:GET_TICK()})
         $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:GET_TICK(), GET_TICK()]);
-        $("#tickLow").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
+        //$("#tickLow").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
         $("#tickHigh").html(GET_TICK() + " / " + GET_TICK());
         // 要进行刷新
         $("#tickRange").slider('refresh', { useCurrentValue: true });
 
         $('#tickRangeStruc').slider({max:GET_TICK()})
         $("#tickRangeStruc").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:GET_TICK(), GET_TICK()]);
-        $("#tickLowStruc").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
+        //$("#tickLowStruc").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
         $("#tickHighStruc").html(GET_TICK() + " / " + GET_TICK());
         // 要进行刷新
         $("#tickRangeStruc").slider('refresh', { useCurrentValue: true });
