@@ -130,17 +130,19 @@ console.log( `Hello! My name is ${name}.` );
 - ID: 猴子的id，唯一，取值为数字或者字符串
 - genda: 猴子的性别，取值为F或M, F为雌性，M为雄性
 - name: 猴子的名字，为字符串，若无名字则为""
-- ageLevel: 猴子在该年份的年龄阶段，取值为ADULT、YOUNG、INFANT
+- ageLevel: 猴子在该年份的年龄阶段，取值为ADULT、YOUNG、JUVENILE
 - father: 猴子的父亲，取值为父亲的ID，若不知道父亲，则为-1
 - mother: 猴子的母亲，取值为母亲的ID，若不知道母亲，则为-1
+- year: 观察时刻
+- unit: 猴子在观察时刻的归属单元的ID
 
 >例如2011年的数据:  
 
-|  ID   | genda  | name  | ageLevel  | father  | mother  |
-|  ----  | ----  | ----  | ----  | ----  | ----  |
-| H001  | F | monkey1 | INFANT | H002 | H003 |
-| H002  | M | monkey2 | ADULT | -1 | -1 |
-| H003  | F | monkey3 | ADULT | -1 | -1 |
+|  ID   | genda  | name  | ageLevel  | father  | mother  | unit | year |
+|  ----  | ----  | ----  | ----  | ----  | ----  | --- | --- |
+| H001  | F | monkey1 | JUVENILE | H002 | H003 | bzt | 2004 |
+| H002  | M | monkey2 | ADULT | -1 | -1 | bzt | 2004 |
+| H003  | F | monkey3 | ADULT | -1 | -1 | bzt | 2004 |
 
 <b>单元的数据</b>
 每一个年份的数据都可以作为一张表格，每张表格里每一行都代表一个单元在该年份的数据，每个单元必须的属性如下：
@@ -148,16 +150,19 @@ console.log( `Hello! My name is ${name}.` );
 - ID: 单元的ID
 - name: 单元的名字，若无则为""
 - type: 单元类型，取值为OMU、AMU、FIU，分别对应家庭单元、全雄单元、其余单元
+- adult: 单元诶成年个体的数量
+- young: 单元内青年个体的数量
+- juvenile: 单元内少年和幼年的个体的数量
 - size: 家庭成员的个数，为数字
 - mainMale: 单元的主雄的ID，只针对OMU，其他类型的单元的该属性为-1
 -socialClass: 单元的社会等级，如果数据缺失则为-1
 >例如2011年的数据:  
 
-|  ID   | type  | name | size  | mainMale  |
-|  ----  | ----  | ----  | ----  | ---- |
-| bzt  | OMU | omu1 | 15 | H002 |
-| bb  | AMU | amu1 | 5 | -1 |
-| cc  | FIU | fiu1 | 4 | -1 |
+|  ID   | type  | name |  mainMale  | adult | young | juvenile |size  | year |
+|  ----  | ----  | ----  | ----  | ---- | ---- | ---- | ---- | --- |
+| bzt  | OMU | omu1 |  H002 | 4 | 5 | 6 |15 | 2004 |
+| bb  | AMU | amu1 | -1 | 3 | 1 | 1 | 5 | 2004 |
+| cc  | FIU | fiu1 | -1 | 3 | 1 | 0 | 4 | 2004 |
 
 ### 12. html元素显示层级
 - **z-index** 仅能在定位元素上奏效（position属性值设置除默认值static以外的元素，包括relative，absolute，fixed样式）内

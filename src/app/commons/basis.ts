@@ -192,9 +192,9 @@ export var VIEW_KEYS = {
         dead      : true,
         involvedMirror: true,
     },
-    uninvolved    : true,
+    uninvolved    : false,
     kinship       : true,
-    allmirror     : true,
+    //allmirror     : true,
     unSampled     : false,
 }
 window.VIEW_KEYS = VIEW_KEYS;
@@ -356,7 +356,7 @@ export function logFrame(frame: Frame, idx: number){
     })
     logStr += "------------newKinships-------------\n";
     frame.newKinships.forEach( e => {
-        let tmp = "Kid: [ ID: "+ e.kid.ID+ ", name: "+ e.kid.name+ " unit: "+ e.kid.unit.name+ " ]  "+ 
+        let tmp = "Kid: [ ID: "+ e.kid.ID+ ", name: "+ e.kid.name+ " unit: "+ e.parents.mom.unit.name+ " ]  "+ 
                   "Dad: [ ID: "+ e.parents.dad.ID+ ", name: "+ e.parents.dad.name+ " unit: "+ e.parents.dad.unit.name+ " ]  "+ 
                   "Mom: [ ID: "+ e.parents.mom.ID+ ", name: "+ e.parents.mom.name+ " unit: "+ e.parents.mom.unit.name+ " ] \n"
         logStr += tmp;

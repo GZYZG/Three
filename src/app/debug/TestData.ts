@@ -25,121 +25,11 @@ import DagreLayout from "@antv/g6/lib/layout/dagre";
 import  ForceLayout from "@antv/g6/lib/layout/force";
 import { addId2Dropdown, addGroupIds2Dropdown, addTick2Dropdown, showCommunityTickList, addMonkeyIds2Selecter } from "../commons/Dom";
 import { KidKinshipNodeLink } from "../commons/LineFactory";
+import {genSlice} from './Benchmark';
 
 var FileSaver = require('file-saver');
 
 
-// 单元的信息示例如下：
-// ID       name        createdDate         vanishDate
-// 1         qhc          1900/1/1              -1
-// 2         sx           1900/1/1              -1
-
-var monkeysData = {
-    2016:[
-        {"ID":1, "name":"", "genda":GENDA.MALE, "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":2, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":3, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":4, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":5, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":6, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":7, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":8, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":9, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":10, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":11, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":12, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":13, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":14, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":15, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":16, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":17, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-    ],
-    2017:[
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-    ],
-    2018:[
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-    ],
-    2019:[
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-    ],
-    2020:[
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-        {"ID":1, "name":"", "genda":"", "birthDate":"", "father":"", "mother":"", "unit":""},
-    ]
-
-}
-
-var unitsData = {
-
-}
-
-
-exports.monkeysData = monkeysData;
-exports.unitsData = unitsData;
 
 export class Community extends THREE.Object3D{
     public allunits : Array<Unit>;
@@ -546,13 +436,13 @@ export class Community extends THREE.Object3D{
 
         let frame = this.frames[this.tick];
         if(!frame)   return;
+        let tick = this.tick+1;
         frame.vanished.dead.forEach( e  =>{
-            e.monkey.leaveUnit();
+            e.monkey.leaveUnit(tick);
             e.monkey.die();
-            
         })
         frame.vanished.outCommu.forEach( e => {
-            e.monkey.leaveUnit();
+            e.monkey.leaveUnit(tick);
         })
 
         frame.newUnits.forEach( e => {
@@ -565,7 +455,7 @@ export class Community extends THREE.Object3D{
         })
 
         frame.enterCommu.forEach( e => {
-            e.monkey.enterUnit( e.unit);
+            e.monkey.enterUnit( e.unit, tick);
             let tmp = e.unit.allMembers.filter( ee => ee.ID == e.monkey.ID)[0];
             if(!tmp.visible)
                 tmp.visible = true;
@@ -578,8 +468,8 @@ export class Community extends THREE.Object3D{
         })
 
         frame.migrates.forEach( e => {
-            e.monkey.leaveUnit();
-            e.monkey.enterUnit( e.targetUnit);
+            e.monkey.leaveUnit(tick);
+            e.monkey.enterUnit( e.targetUnit, tick);
             // 因为可能存在回退，需要设置分身的可见性
             let tmp = e.targetUnit.allMembers.filter( ee => ee.ID == e.monkey.ID)[0];
             if(!tmp.visible)
@@ -706,7 +596,7 @@ export class Community extends THREE.Object3D{
         // 进入该分身所属的单元即可
         // 注意！！！monkey死亡或者离群时有可能是主雄，所以frame中需要记录！
         frame.vanished.outCommu.forEach( e => {
-            e.monkey.enterUnit( e.monkey.unit);
+            e.monkey.enterUnit( e.monkey.unit, -1, false);
             if(e.isMainMale && e.monkey.unit instanceof OMU)
                 e.monkey.unit.mainMale = e.monkey.unit.allMembers.filter( ee => ee.ID == e.monkey.ID)[0];
         })
@@ -714,7 +604,7 @@ export class Community extends THREE.Object3D{
         // 死亡的也需要复活
         frame.vanished.dead.forEach( e => {
             e.monkey.revive();
-            e.monkey.enterUnit( e.monkey.unit);
+            e.monkey.enterUnit( e.monkey.unit, -1, false);
             if(e.isMainMale && e.monkey.unit instanceof OMU)
                 e.monkey.unit.mainMale = e.monkey.unit.allMembers.filter( ee => ee.ID == e.monkey.ID)[0];
         })
@@ -855,7 +745,7 @@ export class Community extends THREE.Object3D{
                     tmp[0].visible = true;
                     
                     tmp[0].mirror.forEach( ee => {
-                        // 如果需要显示涉及到的个体的其他分身，则显示其他分身
+                        // 如果需要显示涉及到的个体的其他分身，则显示其他分身，注意，其他分身也应该是在 [start, end]范围内
                         if(involvedMirror && ee.unit.tickMembers.has(i) && ee.unit.tickMembers.get(i).includes( ee.ID) )    ee.visible = true;
                     })
                 } 
@@ -965,15 +855,18 @@ export class Community extends THREE.Object3D{
                 e.winner.mirror.forEach( ee => {
                     if(involvedMirror && ee.unit.tickMembers.has(i) && ee.unit.tickMembers.get(i).includes(ee.ID) )   ee.visible = true;
                 })
-                e.loser.mirror.forEach( ee => {
-                    if( ee.unit.ID == e.unit.ID ){
-                        ee.visible = true;
-                        //break;
-                    }
-                });
-                e.loser.mirror.forEach( ee => {
-                    if(involvedMirror && ee.unit.tickMembers.has(i) && ee.unit.tickMembers.get(i).includes(ee.ID) )   ee.visible = true;
-                })
+                if(e.loser) {
+                    e.loser.mirror.forEach( ee => {
+                        if( ee.unit.ID == e.unit.ID ){
+                            ee.visible = true;
+                            //break;
+                        }
+                    });
+                    e.loser.mirror.forEach( ee => {
+                        if(involvedMirror && ee.unit.tickMembers.has(i) && ee.unit.tickMembers.get(i).includes(ee.ID) )   ee.visible = true;
+                    })
+                }
+                
             })
         }
     }
@@ -1092,7 +985,7 @@ export class Community extends THREE.Object3D{
 
     public showUninvolved(start: number, end: number, mirror: boolean = true){
         // 显示未参与的个体的真身，分身是否显示由mirror觉得
-        
+        // 未涉及个体指的是未参与社会组成的变动，并且在[start, end] 区间内存在的个体
         this.allunits.forEach( e => {
             for(let i = start; i <= end; i++){
                 if( !e.tickMembers.get(i) )   continue;

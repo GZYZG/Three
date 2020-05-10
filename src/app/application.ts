@@ -17,6 +17,7 @@ import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
 import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown, showUnitTickList, showCommunityTickList, addMonkeyIds2Selecter} from './commons/Dom';
 import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE, GET_COMMUNITY } from './commons/basis';
 import { bindTickRangeStruc } from './commons/BindEvent';
+import { genSlice } from './debug/Benchmark';
 
 
 var FileSaver = require('file-saver');
@@ -35,6 +36,7 @@ var matLineUnDashed = new LineMaterial({
 var self : any;
 var rendererContainer : any;
 
+window.genSlice = genSlice;
 //var COMMUNITY : Community = new Community(5);
 var COMMUNITY = GET_COMMUNITY();
 // 为元素绑定事件
@@ -404,9 +406,10 @@ function bindEvents(){
     });
 
     $('#monkeySelecter').on('hide.bs.select', function(e){
-        if( !$("#monkeySelecter").val() ){
+        if( !$("#monkeySelecter").val() || $("#monkeySelecter").val().length == 0 ){
             return;
         }
+        console.log($("#monkeySelecter").val())
         let id = +$("#monkeySelecter").val();
         if( !isNumber(id))  return;
         let monkey = COMMUNITY.findMonkeyByID(id)[0];
@@ -527,6 +530,7 @@ function bindEvents(){
         let v1 = $("#tickRangeStruc").slider("getValue");
         COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
         COMMUNITY.showRangeCommunityChange(v1[0], v1[1]);
+        COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
         $("#tickDropdown button")[0].textContent = ""+e.value.newValue[1];
         // 改变时刻后要及时更新ID列表
         //addGroupIds2Dropdown(COMMUNITY);

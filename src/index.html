@@ -30,6 +30,8 @@
     <script type="text/javascript" src="./assets/js/bootstrap-slider.js"></script>
     <script type="text/javascript" src="./assets/js/bootstrap-treeview.js"></script>
     <script type="text/javascript" src="./assets/js/bootstrap-select.min.js"></script>
+    <!-- 引入读取 .xlxs 格式的文件 -->
+    <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.15.6/xlsx.full.min.js"></script>
     
     <!--script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.0/build/g6.js"></script-->
 
@@ -43,7 +45,8 @@
         </div> -->
         <div style="display: inline; height: 30px;">
           <label style="color: white;">根据ID选择Monkey</label>
-          <select class="selectpicker" data-live-search="true" id="monkeySelecter"  data-style="btn-info" data-none-selected-text="选择Monkey的ID" title="选择Monkey的ID" multiple data-actions-box="true">
+          <!-- 如果需要多选，则可以在select 中添加 multiple -->
+          <select class="selectpicker" data-live-search="true" id="monkeySelecter"  data-style="btn-info" data-none-selected-text="选择Monkey的ID" title="选择Monkey的ID"  data-actions-box="true">
             
           </select>
         </div>
@@ -78,7 +81,7 @@
                 </div>
             </div>
             <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline; width: 20%;">
-                <input id="tickRangeToggle" type="checkbox" checked/> Enabled
+                <!-- <input id="tickRangeToggle" type="checkbox" checked/> Enabled -->
                 <label>选择亲缘关系时间范围：</label>
                 <b id="tickLow">0</b>&nbsp;&nbsp;
                 <input id="tickRange" type="text" class="span2" style="width: 10%;" value="" data-slider-id="slider" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
@@ -86,7 +89,7 @@
             </div>&nbsp;&nbsp;&nbsp;
 
             <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline; width: 20%;">
-              <input id="tickRangeStrucToggle" type="checkbox" checked/> Enabled
+              <!-- <input id="tickRangeStrucToggle" type="checkbox" checked/> Enabled -->
               <label>选择社会组成时间范围：</label>
               <b id="tickLowStruc">0</b>&nbsp;&nbsp;
               <input id="tickRangeStruc" type="text" class="span2" style="width: 10%;" value="" data-slider-id="sliderStruc" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
@@ -98,7 +101,7 @@
           
         </div>
         <!-- 可定制的要素 -->
-        <div style="align-self: center; white-space: nowrap; display: block; width: 100%;margin: 0; padding: 0; text-align: center;">
+        <div style="align-self: center; white-space: nowrap; display: inline-block; width: 100%;margin: 0; padding: 0; text-align: center;">
           <div id="customKeyDiv" style="width: 100%; margin: 0; padding: 0; text-align: center;">
             <a class="collapsed btn btn-link glyphicon glyphicon-chevron-down" type="button"  style="color: white; font-weight: bolder; font-size: 15px; padding-top: 0;"
             data-toggle="collapse" data-target="#customKeyCollapse" aria-expanded="false" aria-controls="customKeyCollapse">
@@ -111,6 +114,20 @@
           </div>
         </div>
 
+        <!-- <div class="card" style="align-self: center; white-space: nowrap; display: inline-block; margin: 0; padding: 0; text-align: center;">
+          <div class="card-header" id="test">
+              <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTest" aria-expanded="false" aria-controls="collapseTest">
+                信息
+              </button>
+          </div>
+          <div id="collapseTest" class="collapse" aria-labelledby="test" data-parent="#test">
+            <div class="card-body" style="white-space:normal; word-break:break-all;overflow:hidden;">
+                123
+                123
+            </div>
+          </div>
+        </div> -->
+
     </div>
     <div class="main">
         <div class="left">left</div>
@@ -118,9 +135,9 @@
         </div>
 
         <div class="right" style="display: flex;">
-            <div id="hideRightSide" data-toggle="tooltip" data-placement="top" title="收缩"
+            <!-- <div id="hideRightSide" data-toggle="tooltip" data-placement="top" title="收缩"
             style="width: 8px; background: black; height: 30%; white-space: nowrap; display: inline; border-radius: 5px; margin-top: 75%; ">
-            </div>
+            </div> -->
             <div style="flex: 1; width: auto;">
               <div class="accordion" id="accordionExample"  >
                 <div class="card">
@@ -200,7 +217,9 @@
                   <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button-->
                   
                   <button type="button" class="btn btn-danger" id="next"  style="width: 80%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" 
-                  data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">生成下一时刻亲缘关系</button> 
+                  data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">生成下一时刻亲缘关系</button> <br>
+                  <input type="file" id="data"><br>
+                  <button class="btn btn-info" onclick="exportCommunityData()">导出社群数据</button>
               </div>
             </div>
             
@@ -313,16 +332,16 @@
     nodeKey: "uninvolved",
     selectable: false,
     state: {
-          checked: true,
+          checked: window.VIEW_KEYS["uninvolved"],
     },
-  }, {
+  },/* {
     text: "所有分身",
     nodeKey: "allmirror",
     selectable: false,
     state: {
       checked: true,
     }
-  },{
+  },*/{
     text: "未采样个体",
     nodeKey: "unSampled",
     selectable: false,
@@ -410,11 +429,143 @@ $('#customKeyCollapse').on('nodeUnchecked',function(event, data){
 })
 
 $("#hideRightSide").on("click", e => {
-  console.log("123");
+  console.log("123",$("#hideRightSide").next().width() );
   $("#hideRightSide").next().width(0);
 })
 
+
+// 将一个sheet转成最终的excel文件的blob对象，然后利用URL.createObjectURL下载
+function sheet2blob(sheets, sheetNames) {
+  sheetNames = sheetNames || sheets.map((e, idx) => 'sheet'+idx);
+	var workbook = {
+		SheetNames: sheetNames,
+		Sheets: {}
+  };
+  workbook.SheetNames.forEach( (e, idx) => {
+    workbook.Sheets[e] = sheets[idx];
+  })
+	//workbook.Sheets[sheetName] = sheet;
+	// 生成excel的配置项
+	var wopts = {
+		bookType: 'xlsx', // 要生成的文件类型
+		bookSST: false, // 是否生成Shared String Table，官方解释是，如果开启生成速度会下降，但在低版本IOS设备上有更好的兼容性
+		type: 'binary'
+	};
+	var wbout = XLSX.write(workbook, wopts);
+	var blob = new Blob([s2ab(wbout)], {type:"application/octet-stream"});
+	// 字符串转ArrayBuffer
+	function s2ab(s) {
+		var buf = new ArrayBuffer(s.length);
+		var view = new Uint8Array(buf);
+		for (var i=0; i!=s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
+		return buf;
+	}
+	return blob;
+}
+
+/**
+ * 通用的打开下载对话框方法，没有测试过具体兼容性
+ * @param url 下载地址，也可以是一个blob对象，必选
+ * @param saveName 保存文件名，可选
+ */
+ function openDownloadDialog(url, saveName){
+	if(typeof url == 'object' && url instanceof Blob)
+	{
+		url = URL.createObjectURL(url); // 创建blob地址
+	}
+	var aLink = document.createElement('a');
+	aLink.href = url;
+	aLink.download = saveName || ''; // HTML5新增的属性，指定保存文件名，可以不要后缀，注意，file:///模式下不会生效
+	var event;
+	if(window.MouseEvent) event = new MouseEvent('click');
+	else
+	{
+		event = document.createEvent('MouseEvents');
+		event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+	}
+	aLink.dispatchEvent(event);
+}
+
+function getMonkeyData(){
+   var community = window.community;
+   var data = new Array([	'ID',	'genda',	'name',	'ageLevel',	'father',	'mother',	'unit',	'dead' , 'year']);
+   for(let i = 0; i <= community.frames.length; i++){
+      community.allunits.forEach( e => {
+        if(e.tickMembers.get(i)){
+          e.tickMembers.get(i).forEach(ee => {
+            let row = new Array();
+            let monkey = community.findMonkeyByID(ee)[0];
+            row = [ee, monkey.genda, monkey.name, monkey.ageLevel, monkey.father ? monkey.father.ID : '', monkey.mother ? monkey.mother.ID : '', e.ID]
+            if(i > 0 && community.frames[i-1].vanished.dead.filter(eee => eee.ID == ee).length > 0){
+              row.push('T');
+            } else{
+              row.push('');
+            }
+            row.push(i);
+            data.push(row);
+          });
+        }
+      })
     
+   }
+   return data;
+}
+
+function getUnitData(){
+  var data = new Array(['ID', 'type', 'Rank', 'mainMale','adultFemale','young','juvenile','size','year']);
+  community = window.community;
+  for(let i = 0; i <= community.frames.length; i++){
+    community.allunits.forEach( e => {
+      if(e.tickMembers.get(i)){
+        let row = [e.ID, e.unitType, '', e.unitType=='OMU' && e.mainMale ? e.mainMale.ID : '', '', '', '', e.tickMembers.get(i).length, i ];
+        data.push(row);
+      }
+    })
+  }
+  return data;
+}
+
+function exportCommunityData(){
+  var monkeyData = getMonkeyData();
+  var unitData = getUnitData();
+  var monkeySheet = XLSX.utils.aoa_to_sheet(monkeyData);
+  var unitSheet = XLSX.utils.aoa_to_sheet(unitData);
+  openDownloadDialog(sheet2blob([monkeySheet, unitSheet], ['金丝猴数据', '单元数据']), '金丝猴社群数据.xlsx');
+}
+
+
+function importFile(obj){//1.onchange事件绑定方法出发
+    //2.如果没有选中文件则取消
+    console.log(obj);
+    if (!obj.target.files){
+        return
+    }
+    //3.获得选择的文件对象
+    var f = obj.target.files[0]
+    //4.初始化新的文件读取对象，浏览器自带，不用导入
+    var reader = new FileReader();
+    //5.绑定FileReader对象读取文件对象时的触发方法
+    reader.onload = function(e){
+        //7.获取文件二进制数据流
+        var data = e.currentTarget.result;
+        //8.利用XLSX解析二进制文件为xlsx对象
+        var wb = XLSX.read(data,{type:'binary'})
+        //9.利用XLSX把wb第一个sheet转换成JSON对象
+        //wb.SheetNames[0]是获取Sheets中第一个Sheet的名字
+        //wb.Sheets[Sheet名]获取第一个Sheet的数据
+        console.log("workbook:",wb)
+        var j_data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
+        //10.在终端输出查看结果
+        console.log(j_data)
+    }
+    //6.使用reader对象以二进制读取文件对象f，
+    reader.readAsBinaryString(f)
+}
+
+$("#data").change(function(e){
+  importFile(e);
+})
+
 </script>
 
 </body>
