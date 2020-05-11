@@ -14,8 +14,8 @@ import { unitsLayout, OMULayout, AMULayout, FIULayout } from './commons/Position
 import { Kinship } from './commons/Kinship';
 import { Community, genFrame } from './debug/TestData';
 import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
-import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown, showUnitTickList, showCommunityTickList, addMonkeyIds2Selecter} from './commons/Dom';
-import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, GET_TICK_MODE, GET_COMMUNITY } from './commons/basis';
+import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown, showUnitTickList, showCommunityTickList, addMonkeyIds2Selecter, addTick2Dropdown} from './commons/Dom';
+import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, TICK_NEXT, GET_TICK_MODE, GET_COMMUNITY, logFrame } from './commons/basis';
 import { bindTickRangeStruc } from './commons/BindEvent';
 import { genSlice } from './debug/Benchmark';
 
@@ -357,7 +357,30 @@ export class Application{
 function bindEvents(){
     var btn = $("#next")[0];
     btn.onclick = function(){
-        genFrame(COMMUNITY);
+        //let frame = genFrame(COMMUNITY);
+        let frame = genSlice(COMMUNITY);
+        TICK_NEXT();
+        frame.tick = GET_TICK();
+
+        COMMUNITY.addFrame(frame);
+        COMMUNITY.forward();
+        //commu.tickNext();
+        COMMUNITY.layout();
+        // 因为增加了一个TICK，在这过程中可能会改变TICK_MODE，需要根据当前模式将当前TICK之前的亲缘关系可见性进行设置。
+        COMMUNITY.changeTickMode(GET_TICK_MODE() );
+        addGroupIds2Dropdown(COMMUNITY);
+        addMonkeyIds2Selecter(COMMUNITY);
+        //window.graph = commu.getJsonData();
+        addTick2Dropdown();
+        $('#tickDropdown button').get()[0].textContent = ""+GET_TICK();
+        console.log("Tick 之后的Community：", COMMUNITY);
+        let logStr = logFrame(frame,COMMUNITY.frames.indexOf(frame));
+        COMMUNITY.logInfo.push(logStr);
+        console.log( logStr );
+
+
+
+
         $('#tickRange').slider({max:GET_TICK()})
         $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:GET_TICK(), GET_TICK()]);
         //$("#tickLow").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());

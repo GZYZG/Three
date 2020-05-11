@@ -394,6 +394,9 @@ $('#customKeyCollapse').on('nodeChecked',function(event, data){
     //if(data.nodeKey = "kinship" ){
       let v1 = $("#tickRange").slider("getValue");
       window.community.showRangeKinship(v1[0], v1[1] );
+      if(!window.VIEW_KEYS['kinship']){
+        window.community.maskKinship();
+      }
     //}
 })
 
@@ -418,7 +421,7 @@ $('#customKeyCollapse').on('nodeUnchecked',function(event, data){
     let v = $("#tickRangeStruc").slider("getValue");
     let v1 = $("#tickRange").slider("getValue");
     window.community.showRangeCommunityChange( v[0], v[1] );
-    if(data.nodeKey == "kinship"){
+    if(data.nodeKey == "kinship" || !window.VIEW_KEYS['kinship']){
       window.community.maskKinship();
       window.community.showRangeCommunityChange( v[0], v[1] );
     } else {
@@ -493,19 +496,19 @@ function getMonkeyData(){
       community.allunits.forEach( e => {
         if(e.tickMembers.get(i)){
           e.tickMembers.get(i).forEach(ee => {
-            let row = new Array();
             let monkey = community.findMonkeyByID(ee)[0];
-            row = [ee, monkey.genda, monkey.name, monkey.ageLevel, monkey.father ? monkey.father.ID : '', monkey.mother ? monkey.mother.ID : '', e.ID]
-            if(i > 0 && community.frames[i-1].vanished.dead.filter(eee => eee.ID == ee).length > 0){
-              row.push('T');
-            } else{
-              row.push('');
-            }
-            row.push(i);
+            let row = [ee, monkey.genda, monkey.name, monkey.ageLevel, monkey.father ? monkey.father.ID : '', monkey.mother ? monkey.mother.ID : '', e.ID, '', i]
             data.push(row);
           });
         }
       })
+      if(i > 0 ){
+        community.frames[i-1].vanished.dead.forEach( e => {
+          let m = e.monkey;
+          let row = [m.ID, m.genda, m.name, m.ageLevel, m.father ? m.father.ID : '', m.mother ? m.mother.ID : '', m.unit.ID, 'T', i];
+          data.push(row);
+        })
+      }
     
    }
    return data;

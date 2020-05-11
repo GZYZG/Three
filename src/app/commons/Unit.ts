@@ -125,23 +125,27 @@ export abstract class Unit extends THREE.Group {
     }
 
     public abstract addMonkeys():void;
+
+    public abstract buildLayer(type:AGE_LEVEL):any;
+
+    public abstract buildUnit():void;
+
 }
 
 export class OMU extends Unit {
     private _mainMale : Male;
 
-    
-
-    constructor (radius : number) {
+    constructor (radius : number, mainMale?:Male) {
         //var name = Math.random().toPrecision(4).toString();
         super( radius, UNIT_TYPE.OMU);
-        this._mainMale = new Male(MONKEY_GEN_ID(), this.name+'.'+'主雄', this);
+        this._mainMale = mainMale || new Male(MONKEY_GEN_ID(), this.name+'.'+'主雄', this);
         this._mainMale.ageLevel = AGE_LEVEL.ADULT;
         this._mainMale.isMainMale = true;
         this._mainMale.enterUnit( this);
         this.mainMale.position.set( this.position.x, this.position.y, this.position.z );
         
-        this.add(this.mainMale);
+        //this.add(this.mainMale);
+        this.buildUnit();
     }
 
     public addMonkeys(){
@@ -164,34 +168,24 @@ export class OMU extends Unit {
             mainMale.isMainMale = true;
     }
 
-    public addLayer_3(n: number, layerType: AGE_LEVEL) {
-        // 为每层随机生成Monkey， 但是不对其进行布局
+    public buildLayer(type:AGE_LEVEL){
         var x = 0;
         var y = 0;
         var z = 0;
-
         var _y : number;
         var rk : number;
-        var maleRatio : number;
-        let tempLayer;
-        switch(layerType) {
+        switch(type) {
             case AGE_LEVEL.ADULT:
                 rk = this.radius;
-                _y = y;
-                maleRatio = .1;
-                //tempLayer = this.adultLayer;
+                _y = 0;
                 break;
             case AGE_LEVEL.YOUNG:
                 rk = this.radius * Math.sqrt(8) / 3;
                 _y = -.33 * this.radius;
-                maleRatio = .4;
-                //tempLayer = this.youngLayer;
                 break;
             case AGE_LEVEL.JUVENILE:
                 rk = this.radius * Math.sqrt(5) / 3;
                 _y = -.67 * this.radius;
-                maleRatio = .5;
-                //tempLayer = this.juvenileLayer;
                 break;
             default:
                 break;
@@ -204,16 +198,37 @@ export class OMU extends Unit {
         // 注意是弧度不是角度
         layer.rotateX(- Math.PI / 2);
         layer.position.set(x, y + _y, z);
-        // console.log( layerType, " : ", layer.position);
-        this.add(layer);
+        return layer;
+    }
 
-        const t =  0.017453293 ;
-        const seg = 360 / n;
+    public buildUnit(){
+        let layer = this.buildLayer(AGE_LEVEL.ADULT);
+        this.add(layer);
+        layer = this.buildLayer(AGE_LEVEL.YOUNG);
+        this.add(layer);
+        layer = this.buildLayer(AGE_LEVEL.JUVENILE);
+        this.add(layer);
+    }
+
+    public addLayer_3(n: number, layerType: AGE_LEVEL) {
+        // 为每层随机生成Monkey， 但是不对其进行布局
+        var maleRatio : number;
+        switch(layerType) {
+            case AGE_LEVEL.ADULT:
+                maleRatio = .1;
+                break;
+            case AGE_LEVEL.YOUNG:
+                maleRatio = .4;
+                break;
+            case AGE_LEVEL.JUVENILE:
+                maleRatio = .5;
+                break;
+            default:
+                break;
+        }
 
         let monkey : Monkey;
         for( var i = 0; i < n; i++) {
-            var _x = Math.cos( i * seg * t ) * rk;
-            var _z = Math.sin( i * seg * t ) * rk;
             if( Math.random() <= maleRatio){
                 // 生成一个雄性
                 monkey = new Male(MONKEY_GEN_ID(), this.name+'.'+layerType+'.'+(i+1).toString(), this )
@@ -223,10 +238,7 @@ export class OMU extends Unit {
                 monkey = new Female(MONKEY_GEN_ID(), this.name+'.'+layerType+'.'+(i+1).toString(), this );
             }
             monkey.ageLevel = layerType;
-            //tempLayer.push(monkey);
             monkey.enterUnit( this);
-            // this.add(monkey);
-            // this.allMembers.push(monkey);
         }
     }
 
@@ -241,14 +253,14 @@ export class AMU extends Unit {
     constructor(radius : number) {
         //let name = 'AMU-'+Math.random().toPrecision(4).toString();
         super(radius, UNIT_TYPE.AMU);
-        
+        this.buildUnit()
     }
 
     public addMonkeys(){
         this.addLayer( randomInt(3, 4) );
     }
 
-    public addLayer( n : number){
+    public buildLayer(type:AGE_LEVEL){
         var x = this.position.x;
         var y = this.position.y;
         var z = this.position.z;
@@ -263,15 +275,19 @@ export class AMU extends Unit {
         // 注意是弧度不是角度
         layer.rotateX(- Math.PI / 2);
         layer.position.set(x, y + _y, z);
-        // console.log( layerType, " : ", layer.position);
-        this.add(layer);
+        return layer;
+    }
 
-        const t =  0.017453293 ;
-        const seg = 360 / n;
+    public buildUnit(){
+        let layer = this.buildLayer(AGE_LEVEL.ADULT);
+        this.add(layer);
+    }
+
+    public addLayer( n : number){
+        var maleRatio = 2;
+    
         let monkey : Monkey;
         for( var i = 0; i < n; i++) {
-            var _x = Math.cos( i * seg * t ) * rk;
-            var _z = Math.sin( i * seg * t ) * rk;
             if( Math.random() <= maleRatio){
                 // 生成一个雄性
                 monkey = new Male(MONKEY_GEN_ID(), this.name+'.M.'+(i+1), this );
@@ -279,8 +295,6 @@ export class AMU extends Unit {
                 // 生成一个雌性
                 monkey = new Female(MONKEY_GEN_ID(), this.name+'.F.'+(i+1), this );
             }
-            // this.add(monkey);
-            // this.allMembers.push( monkey);
             monkey.enterUnit( this);
             monkey.ageLevel = AGE_LEVEL.ADULT;
         }
@@ -291,14 +305,14 @@ export class FIU extends Unit {
     constructor(radius : number) {
         //let name = 'FIU-'+Math.random().toPrecision(4).toString();
         super(radius, UNIT_TYPE.FIU);
-        
+        this.buildUnit()
     }
 
     public addMonkeys(){
         this.addLayer( randomInt(2, 3));
     }
 
-    public addLayer( n : number){
+    public buildLayer(type:AGE_LEVEL){
         var x = this.position.x;
         var y = this.position.y;
         var z = this.position.z;
@@ -313,15 +327,19 @@ export class FIU extends Unit {
         // 注意是弧度不是角度
         layer.rotateX(- Math.PI / 2);
         layer.position.set(x, y + _y, z);
-        // console.log( layerType, " : ", layer.position);
-        this.add(layer);
+        return layer;
+    }
 
-        const t =  0.017453293 ;
-        const seg = 360 / n;
+    public buildUnit(){
+        let layer = this.buildLayer(AGE_LEVEL.ADULT);
+        this.add(layer);
+    }
+
+    public addLayer( n : number){
+        var maleRatio = .5;
+
         let monkey : Monkey;
         for( var i = 0; i < n; i++) {
-            var _x = Math.cos( i * seg * t ) * rk;
-            var _z = Math.sin( i * seg * t ) * rk;
             if( Math.random() <= maleRatio){
                 // 生成一个雄性
                 monkey = new Male(MONKEY_GEN_ID(), this.name+'.M.'+(i+1), this )

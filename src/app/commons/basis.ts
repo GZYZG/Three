@@ -128,6 +128,10 @@ export const enum GENDA {
 
 var COM: Community;
 
+export function SET_COMMUNITY(baseData:any){
+    COM = new Community(5, baseData);
+}
+
 export function GET_COMMUNITY(){
     if(!COM) {
         COM = new Community(5);

@@ -2,7 +2,9 @@ import {Community} from './TestData';
 import {Unit, OMU, AMU, FIU} from './../commons/Unit';
 import { Monkey, Male, Female} from '../commons/Monkey';
 import { Frame} from '../commons/Dynamics';
-import { randomInt, AGE_LEVEL, GENDA, logFrame, MONKEY_GEN_ID, UNIT_TYPE} from '../commons/basis';
+import { Kinship} from '../commons/Kinship';
+import { randomInt, AGE_LEVEL, GENDA, logFrame, MONKEY_GEN_ID, UNIT_TYPE, SET_COMMUNITY, GET_COMMUNITY, TICK_NEXT, GET_TICK} from '../commons/basis';
+import { SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG } from 'constants';
 
 
 function genName(nameLen:number=4){
@@ -28,7 +30,7 @@ function genNum(type:string, max:number){
                 ret = randomInt(13, 18);
             }
             break;
-        case '_IM':
+        case 'IM':
         case 'EM':
         case 'MR':
         case 'M':
@@ -106,7 +108,91 @@ function genParents(units : Array<Unit>){
     }
 }
 
-export function genSlice(commu : Community){
+function genBase(unitNum:number){
+    var units = new Array<Unit>();
+    var monkeys = new Array<Monkey>();
+    var unit:Unit;
+    // 先创建一定数量的单元，但是先不设置坐标
+    for(let i = 0; i < unitNum; i++){
+        let t = Math.random();
+        if( t < 0.8){
+            unit = new OMU(10);
+        }else if( t < 0.93 ){
+            unit = new AMU(8);
+        }else{
+            unit = new FIU(8);
+        }
+        unit.addMonkeys();
+        units.push(unit);
+        unit.allMembers.forEach( m =>{
+            monkeys.push(m);
+        });
+    }
+
+    // 随机挑选父母，生成孩子
+    let kinnum = randomInt(2, 2);
+    let allkids = new Set<Monkey>();
+    var allKinships = new Array<Kinship>();
+    for(let i = 0; i < kinnum; i++){
+        // 挑选一对成年异性猴子
+        let parents = genParents(units);
+        let father  = parents.dad;
+        let mother  = parents.mom;
+ 
+        let kidnum = randomInt(1, 1);
+        let kids = new Array<Monkey>();
+        while( kids.length < kidnum){
+            let nth = randomInt(0, units.length-1 );
+            let picked = units[nth];
+            let kid : Monkey;
+            if( picked.unitType == UNIT_TYPE.OMU){
+                kid = picked.juvenileLayer[ randomInt(0, picked.juvenileLayer.length-1 )];
+            }else{
+                let num = picked.currentMembers.length;
+                kid = picked.currentMembers[ randomInt(0, num-1) ];
+            }
+            if( allkids.has(kid) ) continue;
+            allkids.add( kid);
+            father.addKid(kid);
+            mother.addKid(kid);
+            // 所有的孩子都用分身表示
+            //console.log("before deepcopy: ",kid.isMirror, kid);
+            kid = kid.deepCopy();
+            //console.log("after deepcopy: ",kid.isMirror, kid);
+            kids.push( kid);
+        }
+
+        // 如果father、mother已经有孩子了，直接将孩子添加到已有的kinship里
+        let t = allKinships.filter(k => k.father.ID == father.ID && k.mother.ID == mother.ID)
+        if( t.length == 0){
+            let ks = new Kinship(father, mother, kids);
+            allKinships.push(ks);
+        }else{
+            let ks = t[0];
+            kids.forEach( k =>{
+                ks.addKid(k);
+            });
+        }
+        
+    }
+
+    return {
+        baseUnits : units,
+        baseMonkeys : monkeys,
+        baseKinships : allKinships,
+    }
+}
+
+export function genSlice(commu : Community, param?:any ){
+    if(!param)  param = {};
+    let deadMax = param.deadMax || 2;   // 死亡的最大数量
+    let emMax = param.emMax || 2;       // 迁出的最大数量
+    let imMax = param.imMax || 4;       // 迁入的最大数量
+    let maleMigrateMax = param.maleMigrateMax || 3;         // 雄性迁移的最大数量
+    let femaleMigrateMax = param.femaleMigrateMax || 3;     // 雌性迁移的最大数量
+    let imHasParentsRate = param.imHasParentsRate || .15;   // 迁入的个体中，其父母在群中的概率
+    let mrRate = param.mrRate || .8;    // 挑战主雄成功的概率
+
     let vanished;
     let newUnits = new Array<Unit>(); 
     let enterCommu = new Array();
@@ -114,8 +200,8 @@ export function genSlice(commu : Community){
     let migrates = new Array();
     let newKinships = new Array();
     // 从社群中消失的猴子的数量
-    let deadNum = genNum('D', 2);
-    let outNum = genNum('EM', 2);
+    let deadNum = genNum('D', deadMax);
+    let outNum = genNum('EM', emMax);
     let dead = new Array();
     let outCommu = new Array();
     // 注意！！！monkey死亡或者离群时有可能是主雄，所以frame中需要记录！
@@ -146,10 +232,10 @@ export function genSlice(commu : Community){
         enterMonkeys.add( tmp[i]);
     }
     // 未知的猴子进入社群
-    let _IMNum = genNum('_IM', 3);
-    for(let i = 0; i < _IMNum; i++){
+    let IMNum = genNum('IM', imMax);
+    for(let i = 0; i < IMNum; i++){
         let monkey  = genMonkey("unknown"+i);
-        if(Math.random() < .1){
+        if(Math.random() < imHasParentsRate){
             // 未知的猴子的父母在社群中
             let parents = genParents(commu.allunits);
             // //console.log("进入社群的Monkey", monkey, "找到父母：", parents);
@@ -160,7 +246,15 @@ export function genSlice(commu : Community){
     }
     // 为进入社群的猴子分配单元
     enterMonkeys.forEach(m =>{
-        if(Math.random() < .4){
+        if(Math.random() < .3 && m.genda == GENDA.MALE && m.ageLevel == AGE_LEVEL.ADULT){
+            let omu = new OMU(10, m);
+            enterCommu.push({monkey: m, unit: omu});
+            newUnits.push(omu);
+        } else if( Math.random() < .3 && m.genda == GENDA.MALE){
+            let amu = new AMU(8);
+            enterCommu.push({monkey: m, unit: amu} );
+            newUnits.push(amu);
+        } else if(Math.random() < .4){
             let fiu = new FIU(8); 
             // 通过frame来完成
             enterCommu.push({monkey: m, unit: fiu} );
@@ -171,7 +265,7 @@ export function genSlice(commu : Community){
             // 通过frame来完成
             enterCommu.push({monkey: m, unit: picked});
             //console.log("进入社群的Monkey：", m, " 进入单元", picked.name);
-            if(picked instanceof OMU && m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.MALE  && Math.random() < .8){
+            if(picked instanceof OMU && m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.MALE  && Math.random() < mrRate){
                 // m 挑战主雄成功
                 // 通过frame来完成
                 challengeMainMale.push({unit: picked, winner: m, loser: picked.mainMale });
@@ -184,15 +278,15 @@ export function genSlice(commu : Community){
     })
     
     // 成年雌、雄性的迁移
-    let migrateMaleNum = genNum('M', 3);
-    let migrateFemaleNum = genNum('M', 3);
+    let migrateMaleNum = genNum('M', maleMigrateMax);
+    let migrateFemaleNum = genNum('M', femaleMigrateMax);
     let migrated = new Array<Monkey>();
     for(let i = 0; i < migrateMaleNum; i++){
         let temp = commu.commuAliveMonkeys().filter(e => e.ageLevel == AGE_LEVEL.ADULT && e.genda == GENDA.MALE && !e.isMainMale && !migrated.includes(e) && !dead.includes(e) );
         //console.log("\n\n可挑选迁移的成年雄性:", temp, "\n\n");
         if(temp.length == 0) break;
         let picked = temp[ randomInt(0, temp.length-1) ];
-        let toUnits = commu.allunits.filter( u => u != picked.unit );
+        let toUnits = commu.allunits.filter( u => u != picked.unit ).concat(newUnits);
         let tarUnit = toUnits[randomInt(0, toUnits.length-1) ];
         migrated.push(picked);
         // 通过frame来完成
@@ -203,7 +297,7 @@ export function genSlice(commu : Community){
         //console.log("\n\n可挑选迁移的成年雌性:", temp, "\n\n");
         if(temp.length == 0) break;
         let picked = temp[ randomInt(0, temp.length-1) ];
-        let toUnits = commu.allunits.filter( u => u != picked.unit );
+        let toUnits = commu.allunits.filter( u => u != picked.unit ).concat(newUnits);
         let tarUnit = toUnits[randomInt(0, toUnits.length-1) ];
         migrated.push(picked);
         // 通过frame来完成
@@ -241,4 +335,233 @@ export function genSlice(commu : Community){
 
     return frame;
 }
+
+
+    
+
+
+function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
+    let monkeyHead = monkeyData[0]; //[	'ID', 'genda', 'name', 'ageLevel', 'father', 'mother', 'unit', 'dead' , 'year']
+    // let idxID = monkeyHead.indexOf('ID');
+    // let idxGenda = monkeyHead.indexOf('geanda');
+    // let idxName = monkeyHead.indexOf('name');
+    // let idxAgeLevel = monkeyHead.indexOf('ageLevel');
+    // let idxFather = monkeyHead.indexOf('father');
+    // let idxMother = monkeyHead.indexOf('mother');
+    // let idxUnit = monkeyHead.indexOf('unit');
+    // let idxDead = monkeyHead.indexOf('dead');
+    // let idxYear = monkeyHead.indexOf('year');
+
+    let pre = null;
+    let cur = null;
+    let ticks = Array.from( new Set( monkeyData.map(e => e.year)) ).sort(function(a,b){return a-b} );
+    let monkeyIDs = Array.from(new Set(monkeyData.map(e => e.ID) ) ).sort(function(a,b){return a-b} );
+    let unitIDs = Array.from(new Set( unitData.map(e => e.ID ) ) ).sort(function(a,b) {return a-b} );
+    let tickMap = new Map();
+    let monkeyIDMap = new Map();
+    let unitIDMap = new Map();
+
+    ticks.forEach((e, idx) => tickMap.set(idx, e) );
+    monkeyIDs.forEach( (e,idx) => monkeyIDMap.set(idx, e) );
+    unitIDs.forEach( (e, idx) => unitIDMap.set(idx, e) );
+    
+
+    let _baseMembers = monkeyData.filter(e => e.year == ticks[0] );
+    let _baseUnits = unitData.filter(e => e.year == ticks[0] );
+    let _baseKids = _baseMembers.filter(e => e.father || e.mother );
+    let baseMonkeys:Array<Monkey>;
+    let baseUnits:Array<Unit>;
+    let baseKinships:Array<Kinship>;
+
+    let baseData = {
+        baseUnits : baseUnits,
+        baseMonkeys : baseMonkeys,
+        baseKinships : baseKinships,
+    }
+    
+    _baseMembers.forEach(e => {
+        let m;
+        if(e.genda == 'male'){
+            m = new Male(MONKEY_GEN_ID(), e.name, null);
+        }else{
+            m = new Female(MONKEY_GEN_ID(), e.name, null);
+        }
+        switch(e.ageLevel){
+            case 'ADU': m.ageLevel = AGE_LEVEL.ADULT; break;
+            case 'YOU': m.ageLevel = AGE_LEVEL.YOUNG; break;
+            case 'JUV': m.ageLevel = AGE_LEVEL.JUVENILE; break;
+        }
+        monkeyIDMap.set(m.ID, e.ID );
+        baseMonkeys.push(m);
+    })
+
+
+    _baseUnits.forEach(e => {
+        let u;
+        switch(e.type){
+            case 'omu':
+                u = new OMU(12, baseMonkeys.filter(ee => ee.ID == e.mainMale)[0] );  
+                break;
+            case 'amu':
+                u = new AMU(10);
+                break;
+            case 'fiu':
+                u = new FIU(10);
+                break;
+        }
+        unitIDMap.set(u.ID, e.ID);
+        baseUnits.push(u);
+    })
+
+    for(let i = 0; i < baseMonkeys.length; i++){
+        let u = baseUnits.filter(e => unitIDMap.get(e.ID) == _baseMembers[i].unit)[0];
+        baseMonkeys[i].enterUnit(u, ticks[0] );
+    }
+    for(let i = 0; i < baseUnits.length; i++){
+        if( baseUnits[i] instanceof OMU){
+            let m = baseMonkeys.filter( e => monkeyIDMap.get(e.ID) == _baseUnits[i].mainMale)[0];
+            baseUnits[i].mainMale = m;
+        }
+    }
+    _baseKids.forEach( e => {
+        let kid = baseMonkeys.filter(ee => monkeyIDMap.get(ee.ID) == e.ID)[0];
+        let dad = baseMonkeys.filter(ee => monkeyIDMap.get(ee.ID) == e.father)[0];
+        let mom = baseMonkeys.filter(ee => monkeyIDMap.get(ee.ID) == e.mother)[0];
+        dad.addKid(kid);
+        mom.addKid(kid);
+        let tmp = baseKinships.filter( ee => ee.father.ID == dad.ID && ee.mother.ID == mom.ID);
+        if(tmp.length == 0){
+            let k = new Kinship(dad, mom, [kid]);
+            baseKinships.push(k);
+        } else {
+            tmp[0].addKid(kid);
+        }
+
+    })
+    SET_COMMUNITY(baseData);
+    let community = GET_COMMUNITY();
+    community.layout();
+
+
+    for(let i = 1; i < ticks.length; i++){
+        TICK_NEXT();
+        let tickMembers = monkeyData.filter(e => e.year == tickMap.get(i) );
+        let tickUnits = unitData.filter(e => e.year == tickMap.get(i) );
+        let dead = tickMembers.filter( e => e.dead == 'T' ).map(e => e.ID);
+        let prevMembers = new Set(monkeyData.filter(e => e.year == tickMap.get(i-1) && !dead.includes(e) ).map(e => e.ID) );
+        let curtMembers = new Set(tickMembers.filter(e => !dead.includes(e.ID)  ).map( e => e.ID ) );
+        let prevUnits = unitData.filter(e => e.year == tickMap.get(i-1) );
+        let curtUnits = tickUnits;
+        let enterMonkeys = new Array();
+        let IM = new Array<{monkey: Monkey, unit: Unit}>();
+        let outMonkeys = new Array();
+        let EM = new Array<{monkey: Monkey, isMainMale: boolean}>();
+        let D = new Array<{monkey: Monkey, isMainMale: boolean}>();
+        let NB = new Array();
+        let newKinships = new Array<{kid: Monkey, parents:{dad:Male, mom:Female}}>();
+        let MR = new Array<{unit:Unit, winner:Monkey, loser:Monkey}>();
+        let NU = new Array();
+        let M = new Array<{monkey:Monkey, originUnit:Unit, targetUnit:Unit}>();
+        let union = new Array();
+        curtMembers.forEach( e => {
+            if(prevMembers.has(e) ){
+                let info = tickMembers.filter( ee => ee.ID == e)[0];
+                let m;
+                if(info.genda = 'male'){
+                    m = new Male(MONKEY_GEN_ID(), info.name, null);
+                } else{
+                    m = new Female(MONKEY_GEN_ID(), info.name, null);
+                }
+                monkeyIDMap.set(m.ID, e);
+                m.ageLevel = info.ageLevel;
+                enterMonkeys.push(m);
+            }
+            else    union.push(e);
+        })
+
+        curtUnits.forEach( e => {
+            if(prevUnits.filter(ee => ee.ID == e).length == 0 ){
+                let info = tickUnits.filter(ee => ee.ID == e)[0];
+                let u;
+                switch(info.type){
+                    case 'omu':
+                    u = new OMU(12, community.commuAliveMonkeys().concat(enterMonkeys).filter(ee => monkeyIDMap.get(ee.ID) == info.mainMale)[0] );  
+                    break;
+                case 'amu':
+                    u = new AMU(10);
+                    break;
+                case 'fiu':
+                    u = new FIU(10);
+                    break;
+                }
+                unitIDMap.set(u.ID, e);
+                NU.push(u);
+            }
+        })
+        enterMonkeys.forEach( e => {
+            let info = tickMembers.filter( ee => ee.ID == monkeyIDMap.get(e.ID) )[0];
+            IM.push({ monkey: e, unit: community.allunits.concat().filter(ee => unitIDMap.get(ee.ID) == info.unit )[0] } );
+        })
+        dead.forEach(e => {
+            let m = community.commuAliveMonkeys().filter(ee => monkeyIDMap.get(ee.ID) == e)[0];
+            D.push({monkey: m, isMainMale: m.isMainMale });
+        })
+
+        community.allunits.forEach(e => {
+            if( e instanceof OMU ){
+                let oriID = prevUnits.filter(ee => ee.ID == unitIDMap.get(e.ID) )[0].mainMale;
+                let tarID = curtUnits.filter(ee => ee.ID == unitIDMap.get(e.ID) )[0].mainMale;
+                if( oriID != tarID ){
+                    MR.push({unit: e, winner: community.commuAliveMonkeys().concat().filter(ee => monkeyIDMap.get(ee.ID) == tarID )[0] ,
+                            loser: community.commuAliveMonkeys().filter(ee => monkeyIDMap.get(ee.ID) == oriID)[0] })
+                }
+            }
+        })
+        NB = enterMonkeys.filter(e => e.father || e.mother);
+        NB.forEach(e => {
+            let m = enterMonkeys.filter(ee => monkeyIDMap.get(ee.ID) == e)[0];
+            let info = tickMembers.filter(ee => ee.ID == e)[0];
+            let dad = community.commuAliveMonkeys().concat(enterMonkeys).filter(ee => monkeyIDMap.get(ee.ID) == info.father)[0];
+            let mom = community.commuAliveMonkeys().concat(enterMonkeys).filter(ee => monkeyIDMap.get(ee.ID) == info.mother)[0];
+            newKinships.push({kid:m, parents:{dad:dad, mom:mom}} );
+        })
+
+
+        prevMembers.forEach( e => {
+            if(!curtMembers.has(e))     outMonkeys.push(community.findRealMonkeyByID(e) );
+        })
+
+        union.forEach( e => {
+            let m = community.commuAliveMonkeys().filter(ee => monkeyIDMap.get(ee.ID) == e)[0];
+            let tarInfo = tickMembers.filter(ee => ee.ID == monkeyIDMap.get(e) )[0];
+            if(tarInfo.unit != m.unit.ID){
+                let oriUnit = community.allunits.filter(ee => ee.ID == m.unit.ID)[0];
+                let tarUnit = community.allunits.concat().filter(ee => unitIDMap.get(ee.ID) == tarInfo.unit)[0];
+                M.push({monkey:m, originUnit: oriUnit, targetUnit: tarUnit}) ;
+            }
+        })
+        let para = {
+            vanished: {
+                dead:D,
+                outCommu: EM,
+            },
+            newUnits: NU,
+            enterCommu: IM,
+            challengeMainMale: MR,
+            migrates: M,
+            newKinships: newKinships,
+            tick: GET_TICK(),
+        }
+        let frame = new Frame(para);
+        community.addFrame(frame);
+        community.forward();
+        community.layout();
+        let logStr = logFrame(frame,community.frames.indexOf(frame));
+        community.logInfo.push(logStr);
+        console.log( logStr );
+        
+    }
+
+}
+
 

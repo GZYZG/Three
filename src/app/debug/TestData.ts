@@ -45,13 +45,13 @@ export class Community extends THREE.Object3D{
 
     public logInfo: Array<string>;
 
-    constructor(baseUnitNum: number = 12){
+    constructor(baseUnitNum: number = 5, baseData?:any){
         super();
 
         this.allunits = new Array<Unit>();
         this.allkinships = new Array<Kinship>();
         // 获得社群的起点
-        let base = baseCommunity(baseUnitNum);
+        let base = baseData || baseCommunity(baseUnitNum);
         this.allunits = base.baseUnits;
         this.allkinships = base.baseKinships;
 
@@ -127,7 +127,7 @@ export class Community extends THREE.Object3D{
     }
 
     public commuAliveMonkeys() : Monkey[]{
-        // 返回社群中还活着的monkey
+        // 返回社群中还活着的monkey的真身
         let tmp = this.allmonkeys.filter( m => !m.isMirror && m.isAlive && m.inCommu);
         // let s = new Set<number>();
         // tmp.forEach( t => s.add(t.ID));
@@ -1703,6 +1703,7 @@ function baseCommunity(unitNum : number){
 
 export function genFrame(commu : Community){
     TICK_NEXT();
+
     let vanished;
     let newUnits = new Array<Unit>(); 
     let enterCommu = new Array();
@@ -1737,8 +1738,6 @@ export function genFrame(commu : Community){
         outCommu: outCommu,
     }
 
-    
-
     // 进入社群的monkey
     let tmp = commu.outCommuMonkeys();
     // 以前消失的猴子重回社群
@@ -1750,34 +1749,28 @@ export function genFrame(commu : Community){
     // 未知的猴子进入社群
     for(let i = randomInt(0, 2); i > 0; i--){
         let monkey  = genMonkey("unknown"+i);
-        if(Math.random() < .1){
+        if(Math.random() < .2){
             // 未知的猴子的父母在社群中
             let parents = genParents(commu.allunits);
-            // parents.dad.addKid(monkey);
-            // parents.mom.addKid(monkey);
-            // //console.log("进入社群的Monkey", monkey, "找到父母：", parents);
-            // let kid = monkey.deepCopy();
-            
-            // let t = commu.findKinshipByParents(parents.dad, parents.mom);
-            // if( t == null){
-            //     let ks = new Kinship(parents.dad, parents.mom, new Array<Monkey>(kid));
-            //     commu.allkinships.push(ks);
-            // }else{
-            //     t.addKid(kid);
-            // }
 
             // 通过frame来完成
             newKinships.push({kid: monkey, parents: parents});
+            console.log(`\n\n${monkey.name} (${monkey.ID}) 在社群中找到父母！\n`);
         } 
         enterMonkeys.add(monkey);
     }
     // 为进入社群的猴子分配单元
     enterMonkeys.forEach(m =>{
-        if(Math.random() < .4){
+        if(Math.random() < .25 && m.genda == GENDA.MALE && m.ageLevel == AGE_LEVEL.ADULT){
+            let omu = new OMU(10, m);
+            enterCommu.push({monkey: m, unit: omu});
+            newUnits.push(omu);
+        } else if( Math.random() < .25 && m.genda == GENDA.MALE){
+            let amu = new AMU(8);
+            enterCommu.push({monkey: m, unit: amu} );
+            newUnits.push(amu);
+        } else if(Math.random() < .4){
             let fiu = new FIU(8); 
-            // m.enterUnit(fiu);
-            // commu.addUnit(fiu);
-
             // 通过frame来完成
             enterCommu.push({monkey: m, unit: fiu} );
             newUnits.push(fiu);
@@ -1810,7 +1803,7 @@ export function genFrame(commu : Community){
         //console.log("\n\n可挑选迁移的成年雄性:", temp, "\n\n");
         if(temp.length == 0) break;
         let picked = temp[ randomInt(0, temp.length-1) ];
-        let toUnits = commu.allunits.filter( u => u != picked.unit );
+        let toUnits = commu.allunits.filter( u => u != picked.unit ).concat(newUnits);
         let tarUnit = toUnits[randomInt(0, toUnits.length-1) ];
         migrated.push(picked);
         // 通过frame来完成
@@ -1823,7 +1816,7 @@ export function genFrame(commu : Community){
         //console.log("\n\n可挑选迁移的成年雌性:", temp, "\n\n");
         if(temp.length == 0) break;
         let picked = temp[ randomInt(0, temp.length-1) ];
-        let toUnits = commu.allunits.filter( u => u != picked.unit );
+        let toUnits = commu.allunits.filter( u => u != picked.unit ).concat(newUnits);
         let tarUnit = toUnits[randomInt(0, toUnits.length-1) ];
         migrated.push(picked);
         // 通过frame来完成
@@ -1854,19 +1847,6 @@ export function genFrame(commu : Community){
         enterCommu.push( {monkey: kid, unit: unit});
         newKinships.push({kid: kid, parents: parents});
 
-        // parents.mom.addKid(kid);
-        // parents.dad.addKid(kid);
-        //console.log("新生的Monkey：", kid, "并进入单元：", unit.name, " parents: ", parents);
-        // kid = kid.deepCopy();
-        // let t = commu.allkinships.filter(k => k.father == parents.dad && k.mother == parents.mom)
-        // if( t.length == 0){
-        //     let ks = new Kinship(parents.dad, parents.mom, new Array<Monkey>(kid));
-        //     commu.addKinship(ks);
-        // }else{
-        //     let ks = t[0];
-        //     ks.addKid(kid);
-        // }
-
     }
     console.log("消失的: ", vanished,"\n新增的单元: ", newUnits, "\n进入社群的: ", enterCommu, "\n挑战家长成功的: ", challengeMainMale,  "\n迁移的: ", migrates, "\n新增的亲缘关系: ", newKinships);
     let para = {
@@ -1879,24 +1859,23 @@ export function genFrame(commu : Community){
         tick: GET_TICK(),
     }
     let frame = new Frame(para);
-    commu.addFrame(frame);
-    commu.forward();
-    //commu.tickNext();
-    commu.layout();
-    // 因为增加了一个TICK，在这过程中可能会改变TICK_MODE，需要根据当前模式将当前TICK之前的亲缘关系可见性进行设置。
-    commu.changeTickMode(GET_TICK_MODE() );
-    addGroupIds2Dropdown(commu);
-    addMonkeyIds2Selecter(commu);
-    //window.graph = commu.getJsonData();
-    addTick2Dropdown();
-    $('#tickDropdown button').get()[0].textContent = ""+GET_TICK();
-    console.log("Tick 之后的Community：", commu);
-    let logStr = logFrame(frame,commu.frames.indexOf(frame));
-    commu.logInfo.push(logStr);
-    console.log( logStr );
+    return frame;
+    // commu.addFrame(frame);
+    // commu.forward();
+    // //commu.tickNext();
+    // commu.layout();
+    // // 因为增加了一个TICK，在这过程中可能会改变TICK_MODE，需要根据当前模式将当前TICK之前的亲缘关系可见性进行设置。
+    // commu.changeTickMode(GET_TICK_MODE() );
+    // addGroupIds2Dropdown(commu);
+    // addMonkeyIds2Selecter(commu);
+    // //window.graph = commu.getJsonData();
+    // addTick2Dropdown();
+    // $('#tickDropdown button').get()[0].textContent = ""+GET_TICK();
+    // console.log("Tick 之后的Community：", commu);
+    // let logStr = logFrame(frame,commu.frames.indexOf(frame));
+    // commu.logInfo.push(logStr);
+    // console.log( logStr );
     
-    //var blob = new Blob([logStr], {type: "text/plain;charset=utf-8"});
-    //FileSaver.saveAs(blob, "hello world.txt");
 }
 
 
