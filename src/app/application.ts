@@ -17,7 +17,7 @@ import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
 import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown, showUnitTickList, showCommunityTickList, addMonkeyIds2Selecter, addTick2Dropdown} from './commons/Dom';
 import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, TICK_NEXT, GET_TICK_MODE, GET_COMMUNITY, logFrame } from './commons/basis';
 import { bindTickRangeStruc } from './commons/BindEvent';
-import { genSlice } from './debug/Benchmark';
+import { genSlice, resolve2Frame } from './debug/Benchmark';
 
 
 var FileSaver = require('file-saver');
@@ -37,6 +37,7 @@ var self : any;
 var rendererContainer : any;
 
 window.genSlice = genSlice;
+window.resolve2Frame = resolve2Frame;
 //var COMMUNITY : Community = new Community(5);
 var COMMUNITY = GET_COMMUNITY();
 // 为元素绑定事件

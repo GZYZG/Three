@@ -558,8 +558,10 @@ function importFile(obj){//1.onchange事件绑定方法出发
         //wb.Sheets[Sheet名]获取第一个Sheet的数据
         console.log("workbook:",wb)
         var j_data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
-        //10.在终端输出查看结果
-        console.log(j_data)
+        wb.SheetNames.forEach( ee => {
+          let j_data = XLSX.utils.sheet_to_json(wb.Sheets[ee] );
+          console.log(`${ee} : `, j_data);
+        })
     }
     //6.使用reader对象以二进制读取文件对象f，
     reader.readAsBinaryString(f)

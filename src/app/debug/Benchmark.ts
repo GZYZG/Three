@@ -5,6 +5,7 @@ import { Frame} from '../commons/Dynamics';
 import { Kinship} from '../commons/Kinship';
 import { randomInt, AGE_LEVEL, GENDA, logFrame, MONKEY_GEN_ID, UNIT_TYPE, SET_COMMUNITY, GET_COMMUNITY, TICK_NEXT, GET_TICK} from '../commons/basis';
 import { SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG } from 'constants';
+import { stringify } from 'querystring';
 
 
 function genName(nameLen:number=4){
@@ -340,7 +341,7 @@ export function genSlice(commu : Community, param?:any ){
     
 
 
-function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
+export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
     let monkeyHead = monkeyData[0]; //[	'ID', 'genda', 'name', 'ageLevel', 'father', 'mother', 'unit', 'dead' , 'year']
     // let idxID = monkeyHead.indexOf('ID');
     // let idxGenda = monkeyHead.indexOf('geanda');
@@ -369,9 +370,9 @@ function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
     let _baseMembers = monkeyData.filter(e => e.year == ticks[0] );
     let _baseUnits = unitData.filter(e => e.year == ticks[0] );
     let _baseKids = _baseMembers.filter(e => e.father || e.mother );
-    let baseMonkeys:Array<Monkey>;
-    let baseUnits:Array<Unit>;
-    let baseKinships:Array<Kinship>;
+    let baseMonkeys = Array<Monkey>();
+    let baseUnits = Array<Unit>();
+    let baseKinships = Array<Kinship>();
 
     let baseData = {
         baseUnits : baseUnits,
@@ -398,7 +399,7 @@ function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
 
     _baseUnits.forEach(e => {
         let u;
-        switch(e.type){
+        switch(e.type.toLowerCase()){
             case 'omu':
                 u = new OMU(12, baseMonkeys.filter(ee => ee.ID == e.mainMale)[0] );  
                 break;
@@ -480,10 +481,10 @@ function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
         })
 
         curtUnits.forEach( e => {
-            if(prevUnits.filter(ee => ee.ID == e).length == 0 ){
+            if(prevUnits.filter(ee => ee.ID == e.ID).length == 0 ){
                 let info = tickUnits.filter(ee => ee.ID == e)[0];
                 let u;
-                switch(info.type){
+                switch( info.type.toLowerCase()){
                     case 'omu':
                     u = new OMU(12, community.commuAliveMonkeys().concat(enterMonkeys).filter(ee => monkeyIDMap.get(ee.ID) == info.mainMale)[0] );  
                     break;
@@ -533,7 +534,7 @@ function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
 
         union.forEach( e => {
             let m = community.commuAliveMonkeys().filter(ee => monkeyIDMap.get(ee.ID) == e)[0];
-            let tarInfo = tickMembers.filter(ee => ee.ID == monkeyIDMap.get(e) )[0];
+            let tarInfo = tickMembers.filter(ee => ee.ID == e )[0];
             if(tarInfo.unit != m.unit.ID){
                 let oriUnit = community.allunits.filter(ee => ee.ID == m.unit.ID)[0];
                 let tarUnit = community.allunits.concat().filter(ee => unitIDMap.get(ee.ID) == tarInfo.unit)[0];
