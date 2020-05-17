@@ -39,7 +39,7 @@ var rendererContainer : any;
 window.genSlice = genSlice;
 window.resolve2Frame = resolve2Frame;
 //var COMMUNITY : Community = new Community(5);
-var COMMUNITY = GET_COMMUNITY();
+var COMMUNITY : Community;// = GET_COMMUNITY();
 // 为元素绑定事件
 bindEvents();
 
@@ -90,12 +90,12 @@ export class Application{
         //console.log( info );
 
         this.initHelpers();
-        var commu = COMMUNITY ;
-        this.scene.add(commu);
-        commu.layout();
-        //addId2Dropdown( commu );
-        addGroupIds2Dropdown(commu);
-        addMonkeyIds2Selecter(commu);
+        // var commu = COMMUNITY ;
+        // this.scene.add(commu);
+        // commu.layout();
+        // //addId2Dropdown( commu );
+        // addGroupIds2Dropdown(commu);
+        // addMonkeyIds2Selecter(commu);
         
         this.labelRenderer.domElement.addEventListener( 'mouseup', this.pickObject);
         
@@ -339,6 +339,7 @@ export class Application{
             
             selected.selected();
             fillBlanks(selected);
+            let COMMUNITY = GET_COMMUNITY();
             $("#monkeyLifeInfo").treeview({ 
                 data: COMMUNITY.monkeyLifeTreeData(selected.ID),
                 levels: 5,
@@ -358,9 +359,17 @@ export class Application{
 function bindEvents(){
     var btn = $("#next")[0];
     btn.onclick = function(){
-        //let frame = genFrame(COMMUNITY);
-        let frame = genSlice(COMMUNITY);
+        if(!COMMUNITY){
+            var commu = COMMUNITY = GET_COMMUNITY();
+            scene.add(commu);
+            commu.layout();
+            //addId2Dropdown( commu );
+            addMonkeyIds2Selecter(commu);
+            return;
+        }
         TICK_NEXT();
+        let frame = genSlice(COMMUNITY);
+        
         frame.tick = GET_TICK();
 
         COMMUNITY.addFrame(frame);
@@ -378,9 +387,6 @@ function bindEvents(){
         let logStr = logFrame(frame,COMMUNITY.frames.indexOf(frame));
         COMMUNITY.logInfo.push(logStr);
         console.log( logStr );
-
-
-
 
         $('#tickRange').slider({max:GET_TICK()})
         $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:GET_TICK(), GET_TICK()]);
@@ -405,30 +411,6 @@ function bindEvents(){
         
     }
 
-    $("#idDropdown").on('hidden.bs.dropdown',function(e){
-
-        let id = +e.clickEvent.target.textContent;
-        if( !isNumber(id))  return;
-        let monkey = COMMUNITY.findMonkeyByID(id)[0];
-        if(!monkey)     return;
-        if( selected  ){
-            selected.unselected();
-        }
-        console.log("intersected : ", monkey)
-        selected = monkey;
-        // 看向选中的Monkey，首先计算相机的位置，然后设置相机看向的位置
-        let pos = calcMonkeyCommunityPos(monkey);
-        let dist = pos.distanceTo(new THREE.Vector3(0, 0, 0));
-        let cosAlpha = dist !=0 ? pos.x / dist : 1;
-        // let cosBeta = dist !=0 ? pos.y / dist : 1;   // 为了保持相机在被观察物体的上方，所以不再y 方向上乘以步长
-        let cosTheta = dist !=0 ? pos.z / dist : 1;
-        camera.position.set(pos.x + cosAlpha * 60, pos.y +  60, pos.z + cosTheta * 60);
-        camera.lookAt( pos);
-        selected.selected();
-        fillBlanks(selected);
-        e.relatedTarget.textContent=e.clickEvent.target.textContent; //你点击的那个选项值：Value1或Value2
-    });
-
     $('#monkeySelecter').on('hide.bs.select', function(e){
         if( !$("#monkeySelecter").val() || $("#monkeySelecter").val().length == 0 ){
             return;
@@ -436,6 +418,9 @@ function bindEvents(){
         console.log($("#monkeySelecter").val())
         let id = +$("#monkeySelecter").val();
         if( !isNumber(id))  return;
+        if(!COMMUNITY){
+            COMMUNITY = GET_COMMUNITY();
+        }
         let monkey = COMMUNITY.findMonkeyByID(id)[0];
         if(!monkey)     return;
         if( selected  ){
@@ -455,31 +440,6 @@ function bindEvents(){
         fillBlanks(selected);
     });
 
-    // 为时间选择列表绑定事件
-    $("#tickDropdown").on('hidden.bs.dropdown',function(e){
-        let tick = +e.clickEvent.target.textContent;
-        let prev = +e.relatedTarget.textContent;
-        if( !isNumber(tick) )   return;
-        if( !isNumber(prev) )   return;
-        
-        console.log("从 Tick-" + prev +" => Tick-"+ tick);
-        e.relatedTarget.textContent = e.clickEvent.target.textContent; //你点击的那个选项值：Value1或Value2
-        if( prev >= tick){
-            // 进行回退
-            COMMUNITY.back(prev-tick);
-            COMMUNITY.changeTickMode(GET_TICK_MODE());
-        } else {
-            // 前进
-            COMMUNITY.forward(tick-prev);
-            COMMUNITY.changeTickMode(GET_TICK_MODE());
-        }
-        // 改变时刻后要及时更新ID列表
-        addGroupIds2Dropdown(COMMUNITY);
-        addMonkeyIds2Selecter(COMMUNITY);
-        $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:tick, tick]);
-        $("#tickRange").slider('refresh', { useCurrentValue: true });
-        
-    });
 
     // 时间模式单选框，单独/累积
     // 当时间模式改变时才出发，所以可以根据触发的模式来推断上一个模式
@@ -503,20 +463,6 @@ function bindEvents(){
         $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:high, high]);
     })
 
-    $("#file").on("click", e => {
-        console.log(e);
-        let file = e.target.files[0];
-        if(!file)   return;
-        let name = file.name;//读取选中文件的文件名
-        let size = file.size;//读取选中文件的大小
-        console.log("文件名:"+name+"大小："+size);
-        var reader = new FileReader();//这里是核心！！！读取操作就是由它完成的。
-        reader.readAsText(file);//读取文件的内容
-
-        reader.onload = function(){
-            console.log(this.result);//当读取完成之后会回调这个函数，然后此时文件的内容存储到了result中。直接操作即可。
-        };
-    })
 
     $("#saveLog").on("click", e => {
         let tmp = new Array<string>();
@@ -540,6 +486,9 @@ function bindEvents(){
         //当滚动时触发，可能有重复
         //console.info("slideEvt:", slideEvt);
     }).on('change', e => {
+        if(!COMMUNITY){
+            COMMUNITY = GET_COMMUNITY();
+        }
         //当值发生改变的时候触发
         //console.info("changeEvt:", e);
         //获取旧值和新值
@@ -555,7 +504,6 @@ function bindEvents(){
         COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
         COMMUNITY.showRangeCommunityChange(v1[0], v1[1]);
         COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
-        $("#tickDropdown button")[0].textContent = ""+e.value.newValue[1];
         // 改变时刻后要及时更新ID列表
         //addGroupIds2Dropdown(COMMUNITY);
         //addMonkeyIds2Selecter(COMMUNITY);
@@ -565,7 +513,7 @@ function bindEvents(){
     bindTickRangeStruc();
 
     window.onload=  function(){
-        $(".label").on("click", e => {
+        $("1.label").on("click", e => {
             let unitID = parseInt(e.target.getAttribute("unitID") );
             let unit = COMMUNITY.allunits.filter( e => e.ID == unitID)[0];
             let blanks = $("#unit_info li");
@@ -577,5 +525,43 @@ function bindEvents(){
             $("#collapseTwo").collapse("show");
         })
     }
+
+    $('#showData').on('click', e => {
+        let COMMUNITY = GET_COMMUNITY();
+        
+        console.log('SHOW COMMUNITY');
+        if(!COMMUNITY){
+
+        } else{
+            scene.children.forEach(ee => {
+                if(ee instanceof Community) {
+                    scene.remove(ee);
+                }
+            })
+        }
+
+        $('#tickRange').slider({max:GET_TICK()})
+        $("#tickRange").slider("setValue", [0, GET_TICK()]);
+        //$("#tickLow").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
+        $("#tickHigh").html(GET_TICK() + " / " + GET_TICK());
+        // 要进行刷新
+        $("#tickRange").slider('refresh', { useCurrentValue: true });
+
+        $('#tickRangeStruc').slider({max:GET_TICK()})
+        $("#tickRangeStruc").slider("setValue", [0, GET_TICK()]);
+        //$("#tickLowStruc").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
+        $("#tickHighStruc").html(GET_TICK() + " / " + GET_TICK());
+        // 要进行刷新
+        $("#tickRangeStruc").slider('refresh', { useCurrentValue: true });
+
+        // 显示社群的历史变更信息，增加一个年份的信息
+        showCommunityTickList();
+        if($("#unit_info > li:nth-child(1)").attr("unitID") ){
+            let unitID =  +$("#unit_info > li:nth-child(1)").attr("unitID");
+            showUnitTickList(unitID );
+        }
+        scene.add(COMMUNITY);
+
+    })
 
 }

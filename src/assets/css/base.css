@@ -20,8 +20,8 @@ body{
    float: top;
    white-space: nowrap;
    background-color:rgb(81, 82, 85);
-   /* padding-top: 5px; */
-   /* padding-left: 15%; */
+   padding-top: 5px; 
+   /* padding-left: 25px; */
 }
 .footer{
    width : 100%;

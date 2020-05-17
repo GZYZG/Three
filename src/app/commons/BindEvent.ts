@@ -29,7 +29,6 @@ export function bindTickRangeStruc(){
         COMMUNITY.showRangeCommunityChange(e.value.newValue[0], e.value.newValue[1] );
         COMMUNITY.showRangeKinship(v1[0], v1[1]);
         // 改变时刻后要及时更新ID列表
-        addGroupIds2Dropdown(COMMUNITY);
         addMonkeyIds2Selecter(COMMUNITY);
     });
 }

@@ -38,48 +38,16 @@
 
    <div class="box">
     <div id="mountNode" style="display: none;"></div>
-    <div class="header">
+    <div class="header row">
         <!-- <input type="color" value="#2D9900"/> -->
-        <!-- <div style="display: inline;">
-          <input type="file" />
-        </div> -->
-        <div style="display: inline; height: 30px;">
-          <label style="color: white;">根据ID选择Monkey</label>
+        <div class="col col-xl-2"  style="display: inline; height: 30px;white-space: nowrap; ">
+          <label style="color: white;">选择Monkey</label>
           <!-- 如果需要多选，则可以在select 中添加 multiple -->
-          <select class="selectpicker" data-live-search="true" id="monkeySelecter"  data-style="btn-info" data-none-selected-text="选择Monkey的ID" title="选择Monkey的ID"  data-actions-box="true">
-            
+          <select class="selectpicker" data-live-search="true" id="monkeySelecter" title="根据ID选择金丝猴" data-style="btn-info" data-none-selected-text="选择Monkey的ID"  data-actions-box="true">
           </select>
         </div>
-        
-        
-        
-        <div class="dropdown" id="idDropdown" style="align-self: center; margin-left: 10%; white-space: nowrap; display: none;">
-                <label style="color: white;">根据ID选择Monkey</label>
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  选择Monkey 的 ID
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow-y: auto; max-height:600px;">
-                </div>
-        </div>
-        <div id="mode" style="display: inline;height: 30px; white-space: nowrap;">
-            <!--使用时间范围选择替代时间模式和时可选择-->
-            <div class="custom-control custom-radio custom-control-inline" style="display: none;">
-                <input type="radio" id="isolateTick" name="custom" class="custom-control-input">
-                <label class="custom-control-label" for="isolateTick">当前时间产生的亲缘关系</label>
-            </div>
-            <div class="custom-control custom-radio custom-control-inline" style="display: none;">
-                <input type="radio" id="accumulateTick" name="custom" class="custom-control-input" checked>
-                <label class="custom-control-label" for="accumulateTick">累积时间单位亲缘关系</label>
-            </div>
 
-            <div class="dropdown" id="tickDropdown" style="align-self: center; white-space: nowrap; display: none;">
-                <label style="color: white;">当前时间：</label>
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  选择时间
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow-y: auto;min-height: 50px;">
-                </div>
-            </div>
+        <div class="col col-xl-6" id="mode" style="display: inline;height: 30px; white-space: nowrap;margin-left: 20px;">
             <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline; width: 20%;">
                 <!-- <input id="tickRangeToggle" type="checkbox" checked/> Enabled -->
                 <label>选择亲缘关系时间范围：</label>
@@ -96,10 +64,22 @@
               &nbsp;&nbsp;<b id="tickHighStruc">0</b>
             </div>
 
-          <div id="tickRange"></div>
-          <div id="tickRangeStruc"></div>
-          
+            <div id="tickRange"></div>
+            <div id="tickRangeStruc"></div>
+            
         </div>
+        
+        <div class="dropdown dropleft col col-xl-1">
+          <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            菜单
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+            <button class="btn btn-info" onclick="$('#data').click()" style="text-align: center; width: 95%; margin: 2px 2px 0 2px;">导入金丝猴社群数据</button><br>
+            <button class="btn btn-info" onclick="exportCommunityData()" style="text-align: center; width: 95%; margin: 2px 2px 0 2px;">导出社群数据</button><br>
+          </div>
+        </div>
+        
+
         <!-- 可定制的要素 -->
         <div style="align-self: center; white-space: nowrap; display: inline-block; width: 100%;margin: 0; padding: 0; text-align: center;">
           <div id="customKeyDiv" style="width: 100%; margin: 0; padding: 0; text-align: center;">
@@ -114,20 +94,6 @@
           </div>
         </div>
 
-        <!-- <div class="card" style="align-self: center; white-space: nowrap; display: inline-block; margin: 0; padding: 0; text-align: center;">
-          <div class="card-header" id="test">
-              <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTest" aria-expanded="false" aria-controls="collapseTest">
-                信息
-              </button>
-          </div>
-          <div id="collapseTest" class="collapse" aria-labelledby="test" data-parent="#test">
-            <div class="card-body" style="white-space:normal; word-break:break-all;overflow:hidden;">
-                123
-                123
-            </div>
-          </div>
-        </div> -->
-
     </div>
     <div class="main">
         <div class="left">left</div>
@@ -135,9 +101,6 @@
         </div>
 
         <div class="right" style="display: flex;">
-            <!-- <div id="hideRightSide" data-toggle="tooltip" data-placement="top" title="收缩"
-            style="width: 8px; background: black; height: 30%; white-space: nowrap; display: inline; border-radius: 5px; margin-top: 75%; ">
-            </div> -->
             <div style="flex: 1; width: auto;">
               <div class="accordion" id="accordionExample"  >
                 <div class="card">
@@ -146,7 +109,7 @@
                         被选中的金丝猴的信息
                       </button>
                   </div>
-                  <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#headingOne">
+                  <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#headingOne">
                     <div class="card-body" style="white-space:normal; word-break:break-all;overflow:hidden;">
                         <ul class="list-group" id="monkey_info" style="white-space: normal; font-family:Consolas; ">
                             <li class="list-group-item list-group-item-success" value="ID">ID: </li>
@@ -216,10 +179,11 @@
                   <!--button type="button" class="btn btn-danger" id="prev"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="回退一个时间单位的亲缘关系">TICK-BACK</button>
                   <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button-->
                   
-                  <button type="button" class="btn btn-danger" id="next"  style="width: 80%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: inline;" 
-                  data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">生成下一时刻亲缘关系</button> <br>
-                  <input type="file" id="data"><br>
-                  <button class="btn btn-info" onclick="exportCommunityData()">导出社群数据</button>
+                  <button type="button" class="btn btn-danger" id="next"  style="width: 80%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" 
+                  data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">生成下一时刻亲缘关系</button> 
+                  
+                  <input type="file" id="data" title="选择金丝猴社群数据" style="display: none;">
+                  <button class="btn btn-info" id='showData' style="margin-top: 5px;">SHOW</button>
               </div>
             </div>
             
@@ -567,7 +531,7 @@ function importFile(obj){//1.onchange事件绑定方法出发
     reader.readAsBinaryString(f)
 }
 
-$("#data").change(function(e){
+$("#11data").change(function(e){
   importFile(e);
 })
 

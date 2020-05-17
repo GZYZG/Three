@@ -1,10 +1,11 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt, MONKEY_GEN_ID, UNIT_GEN_ID, GEN_UNIT_COLOR, GET_TICK }from './basis';
+import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt, MONKEY_GEN_ID, UNIT_GEN_ID, GEN_UNIT_COLOR, GET_TICK, GET_COMMUNITY }from './basis';
 import { Monkey, Male, Female } from './Monkey';
 import { Kinship} from './Kinship';
 import { MeshNormalMaterial } from '../threelibs/three';
 import { MOUSE } from 'three';
 import { CSS2DObject, CSS2DRenderer } from '../threelibs/CSS2DRenderer';
+import { showUnitTickList } from './Dom';
 
 
 
@@ -44,10 +45,19 @@ export abstract class Unit extends THREE.Group {
         laberDiv.className = 'label';
         laberDiv.setAttribute("unitID", ""+this.ID);
         // let self = this;
-        // laberDiv.onclick = function(e){
-        //     console.log(self," : ", e);
-            
-        // }
+        laberDiv.onclick = function(e){
+            let COMMUNITY = GET_COMMUNITY();
+            console.log(COMMUNITY," : ", e);
+            let unitID = parseInt(e.target.getAttribute("unitID") );
+            let unit = COMMUNITY.allunits.filter( e => e.ID == unitID)[0];
+            let blanks = $("#unit_info li");
+            blanks[0].innerText =  "ID: " + unit.ID;
+            blanks[0].setAttribute("unitID", unitID+"");
+            blanks[1].innerText = "name: " + unit.name;
+            blanks[2].innerText = "创建时间: Tick-" + unit.createTick;
+            showUnitTickList(unitID);
+            $("#collapseTwo").collapse("show");
+        }
 
         laberDiv.textContent = this.name;
         laberDiv.style.marginTop = '-1em';

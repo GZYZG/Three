@@ -363,10 +363,9 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
     let unitIDMap = new Map();
 
     ticks.forEach((e, idx) => tickMap.set(idx, e) );
-    monkeyIDs.forEach( (e,idx) => monkeyIDMap.set(idx, e) );
-    unitIDs.forEach( (e, idx) => unitIDMap.set(idx, e) );
+    // monkeyIDs.forEach( (e,idx) => monkeyIDMap.set(idx, e) );
+    // unitIDs.forEach( (e, idx) => unitIDMap.set(idx, e) );
     
-
     let _baseMembers = monkeyData.filter(e => e.year == ticks[0] );
     let _baseUnits = unitData.filter(e => e.year == ticks[0] );
     let _baseKids = _baseMembers.filter(e => e.father || e.mother );
@@ -465,10 +464,10 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
         let M = new Array<{monkey:Monkey, originUnit:Unit, targetUnit:Unit}>();
         let union = new Array();
         curtMembers.forEach( e => {
-            if(prevMembers.has(e) ){
+            if(!prevMembers.has(e) ){
                 let info = tickMembers.filter( ee => ee.ID == e)[0];
                 let m;
-                if(info.genda = 'male'){
+                if(info.genda == 'male'){
                     m = new Male(MONKEY_GEN_ID(), info.name, null);
                 } else{
                     m = new Female(MONKEY_GEN_ID(), info.name, null);
@@ -476,13 +475,16 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
                 monkeyIDMap.set(m.ID, e);
                 m.ageLevel = info.ageLevel;
                 enterMonkeys.push(m);
+                if(info.father || info.mother){
+                    NB.push(e);
+                }
             }
             else    union.push(e);
         })
 
         curtUnits.forEach( e => {
             if(prevUnits.filter(ee => ee.ID == e.ID).length == 0 ){
-                let info = tickUnits.filter(ee => ee.ID == e)[0];
+                let info = tickUnits.filter(ee => ee.ID == e.ID)[0];
                 let u;
                 switch( info.type.toLowerCase()){
                     case 'omu':
@@ -495,13 +497,13 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
                     u = new FIU(10);
                     break;
                 }
-                unitIDMap.set(u.ID, e);
+                unitIDMap.set(u.ID, e.ID);
                 NU.push(u);
             }
         })
         enterMonkeys.forEach( e => {
             let info = tickMembers.filter( ee => ee.ID == monkeyIDMap.get(e.ID) )[0];
-            IM.push({ monkey: e, unit: community.allunits.concat().filter(ee => unitIDMap.get(ee.ID) == info.unit )[0] } );
+            IM.push({ monkey: e, unit: community.allunits.concat(NU).filter(ee => unitIDMap.get(ee.ID) == info.unit )[0] } );
         })
         dead.forEach(e => {
             let m = community.commuAliveMonkeys().filter(ee => monkeyIDMap.get(ee.ID) == e)[0];
@@ -518,12 +520,15 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
                 }
             }
         })
-        NB = enterMonkeys.filter(e => e.father || e.mother);
+        //NB = curtMembers.filter(e => e.father || e.mother);
         NB.forEach(e => {
             let m = enterMonkeys.filter(ee => monkeyIDMap.get(ee.ID) == e)[0];
             let info = tickMembers.filter(ee => ee.ID == e)[0];
             let dad = community.commuAliveMonkeys().concat(enterMonkeys).filter(ee => monkeyIDMap.get(ee.ID) == info.father)[0];
             let mom = community.commuAliveMonkeys().concat(enterMonkeys).filter(ee => monkeyIDMap.get(ee.ID) == info.mother)[0];
+            if(i == 2){
+                info;
+            }
             newKinships.push({kid:m, parents:{dad:dad, mom:mom}} );
         })
 
@@ -535,9 +540,9 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
         union.forEach( e => {
             let m = community.commuAliveMonkeys().filter(ee => monkeyIDMap.get(ee.ID) == e)[0];
             let tarInfo = tickMembers.filter(ee => ee.ID == e )[0];
-            if(tarInfo.unit != m.unit.ID){
+            if(tarInfo.unit != unitIDMap.get( m.unit.ID ) ){
                 let oriUnit = community.allunits.filter(ee => ee.ID == m.unit.ID)[0];
-                let tarUnit = community.allunits.concat().filter(ee => unitIDMap.get(ee.ID) == tarInfo.unit)[0];
+                let tarUnit = community.allunits.concat(NU).filter(ee => unitIDMap.get(ee.ID) == tarInfo.unit)[0];
                 M.push({monkey:m, originUnit: oriUnit, targetUnit: tarUnit}) ;
             }
         })
@@ -554,12 +559,13 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
             tick: GET_TICK(),
         }
         let frame = new Frame(para);
+        console.log(`${i}-------\n`,frame);
         community.addFrame(frame);
         community.forward();
         community.layout();
         let logStr = logFrame(frame,community.frames.indexOf(frame));
         community.logInfo.push(logStr);
-        console.log( logStr );
+        console.log( `----------TOUCH----------\n${logStr}` );
         
     }
 

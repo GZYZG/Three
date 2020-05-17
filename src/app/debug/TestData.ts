@@ -209,7 +209,7 @@ export class Community extends THREE.Object3D{
                     break;
             }
             // 统计每个单元此刻的成员
-            if(!u.tickMembers.get(GET_TICK() ){
+            if(!u.tickMembers.get(GET_TICK() ) ) {
                 let tickMember = u.allMembers.filter( ee => !ee.isMirror &&  ee.visible).map( ee => ee.ID);
                 u.tickMembers.set( GET_TICK(), tickMember);
                 if( u instanceof OMU){
@@ -1339,7 +1339,7 @@ export class Community extends THREE.Object3D{
         }
         let allTickData = new Array();
         life.tickChanges.forEach( e => {
-            allTickData.push( this.oneTickUnitTreeData(e) )
+            allTickData.push( this.oneTickUnitTreeData(e) );
         })
         
         return allTickData;

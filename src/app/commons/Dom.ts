@@ -3,6 +3,11 @@ import { genFrame, Community} from "../debug/TestData";
 //import $ = require("jquery");
 import { GET_TICK, GET_COMMUNITY } from "./basis";
 import { Unit } from "./Unit";
+import { importFile } from './EXIM';
+
+$("#data").change(function(e){
+    importFile(e);
+  })
 
 export function fillBlanks(monkey : Monkey){
     //console.log("fill blanks for: ", monkey);
@@ -151,9 +156,11 @@ export function addTick2Dropdown(tick?:number){
 export function showUnitTickList(id: number){
     var COMMUNITY = GET_COMMUNITY();
     let allTickData = COMMUNITY.unitLifeTreeData(id);
+    let unit = COMMUNITY.allunits.filter(e => e.ID == id)[0];
+
     console.log("allTickData:", allTickData );
     $("#unitTickList").empty();
-    for(let i = 0; i <= GET_TICK(); i++){
+    for(let i = unit.createTick; i <= GET_TICK(); i++){
         if($("#unitTick_"+i).length != 0){
             continue;
         }
@@ -175,7 +182,7 @@ export function showUnitTickList(id: number){
             id: "unitTick_"+i,
         });
         tree.treeview({ 
-            data: allTickData[i],
+            data: allTickData[i-unit.createTick],
             levels: 5,
             expandIcon: "glyphicon glyphicon-plus",
             
@@ -215,3 +222,4 @@ export function showCommunityTickList(commu:Community=GET_COMMUNITY(), tick: num
 export function selectMonkeyID(){
 
 }
+
