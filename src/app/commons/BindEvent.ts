@@ -1,4 +1,4 @@
-import { GET_COMMUNITY, GET_TICK } from "./basis";
+import { GET_COMMUNITY, GET_TICK, GET_TICKMAP } from "./basis";
 import { addGroupIds2Dropdown, addMonkeyIds2Selecter } from "./Dom";
 
 
@@ -16,10 +16,10 @@ export function bindTickRangeStruc(){
         //获取旧值和新值
         let COMMUNITY = GET_COMMUNITY();
         console.info("tickRangeStruc:", e.value.oldValue + '--' + e.value.newValue);
-        $("#tickLowStruc").html(e.value.newValue[0]);
-        $("#tickHighStruc").html(e.value.newValue[1] + " / " + GET_TICK());
+        $("#tickLowStruc").html( GET_TICKMAP().get( e.value.newValue[0] ) );
+        $("#tickHighStruc").html( GET_TICKMAP().get( e.value.newValue[1] ) + " / " + GET_TICKMAP().get( GET_TICK() ) );
         if( e.value.oldValue[1] < e.value.newValue[1]){
-            COMMUNITY.forward(e.value.newValue[1] - e.value.oldValue[1] )
+            COMMUNITY.forward(e.value.newValue[1] - e.value.oldValue[1] );
             // 按照显示要素显示(e.value.oldValue[1], e.value.newValue[1] ] 中的个体
         } else{
             COMMUNITY.back(e.value.oldValue[1] - e.value.newValue[1]);

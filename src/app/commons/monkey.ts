@@ -42,6 +42,9 @@ export interface Selectable {
 
 export abstract class Monkey extends THREE.Mesh implements Selectable{
     private _ID : number;
+
+    public EID : any;
+
     public _name : string;
     private _genda: GENDA;
     readonly isMonkey : boolean;
@@ -210,7 +213,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
 
     public deepCopy(){
         // 每一个Monkey共享的信息有：
-        // 1) ID;
+        // 1) ID、EID;
         // 2) father、mother;
         // 3) kids;
         // 4) mirror;
@@ -226,6 +229,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         // 4) isMainMale，表示该分身在分身单元内是否为主雄
         let ret = this.clone();
         ret._ID = this.ID;
+        ret.EID = this.EID;
         ret.unit = this.unit;
         ret.father = this.father;
         ret.mother = this.mother;

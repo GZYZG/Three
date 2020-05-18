@@ -193,6 +193,8 @@ export class Kinship extends THREE.Group {
             kid.visible = true;
             kid.father.visible = true;
             kid.mother.visible = true;
+            if(!kid.mother.unit.visible)    kid.mother.unit.visible = true;
+            if(!kid.father.unit.visible)    kid.father.unit.visible = true;
             if( kid.kidKinshipLink)
                 kid.kidKinshipLink.visible = true;
         }

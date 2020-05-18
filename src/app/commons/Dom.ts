@@ -1,7 +1,7 @@
 import {Monkey} from "./Monkey";
 import { genFrame, Community} from "../debug/TestData";
 //import $ = require("jquery");
-import { GET_TICK, GET_COMMUNITY } from "./basis";
+import { GET_TICK, GET_COMMUNITY, GET_MONKEYIDMAP } from "./basis";
 import { Unit } from "./Unit";
 import { importFile } from './EXIM';
 
@@ -14,7 +14,7 @@ export function fillBlanks(monkey : Monkey){
     let blanks = $("#monkey_info li");//document.getElementById("monkey_info").children;
     let info = new Array();
 
-    info.push("ID: " + monkey.ID);
+    info.push("ID: " + GET_MONKEYIDMAP().get( monkey.ID ) );
     info.push("NAME: " + monkey.name.replace("-cloned", ""));
     info.push("GENDA: " + monkey.genda);
     info.push("入群时间: Tick-" + monkey.migrateTable[0].tick);
@@ -26,13 +26,13 @@ export function fillBlanks(monkey : Monkey){
     let kids = monkey.kids;
     let kids_names = "";
     kids.forEach( k =>{
-        kids_names += k.ID+"  ";
+        kids_names += GET_MONKEYIDMAP().get( k.ID )+"  ";
     })
     kids_names = kids_names == "" ? "无" : kids_names;
     info.push("孩子: " + kids_names);
-    let dad = monkey.father == null ? "unknown" : monkey.father.name.replace("-cloned", "")+" "+monkey.father.ID;
+    let dad = monkey.father == null ? "unknown" : monkey.father.name.replace("-cloned", "")+" "+ GET_MONKEYIDMAP().get( monkey.father.ID );
     info.push("父亲: " + dad );
-    let mom = monkey.mother == null ? "unknown" : monkey.mother.name.replace("-cloned", "")+" "+monkey.mother.ID;
+    let mom = monkey.mother == null ? "unknown" : monkey.mother.name.replace("-cloned", "")+" "+ GET_MONKEYIDMAP().get( monkey.mother.ID );
     info.push("母亲: " + mom);
     info.push("isAlive: "+ monkey.isAlive );
     info.push("inCommu: "+ monkey.inCommu );
@@ -68,9 +68,9 @@ export function addMonkeyIds2Selecter( commu: Community){
         selecter.append(optGroup);
         t.value[1].forEach( e => {
             let item = $("<option>", {
-                "class":"sepcial"
+                "class":"sepcial",
                 label: `${e.ID}`,
-                text: `${e.ID}`,
+                text: `${GET_MONKEYIDMAP().get( e.ID )}`,
                 monkeyID: ""+e.ID,
             }).attr({
                 "data-subtext": `${e.name}`
@@ -94,10 +94,10 @@ export function addGroupIds2Dropdown( commu : Community){
     let groups = new Map();
     commu.allunits.forEach( e => {
         let realMonkeys = e.allMembers.filter( ee => !ee.isMirror &&  ee.visible);
-        groups.set(e.name, realMonkeys.map(e => e.ID));
+        groups.set(e.name, realMonkeys.map(e => GET_MONKEYIDMAP().get( e.ID ) ));
     })
     
-    groups.set("死亡or离群", Array.from( new Set(commu.vanishedMonkeys().filter(e => e.visible).map( e => e.ID) ) ) );
+    groups.set("死亡or离群", Array.from( new Set(commu.vanishedMonkeys().filter(e => e.visible).map( e => GET_MONKEYIDMAP().get( e.ID ) ) ) ) );
 
     let menu = $("#idDropdown .dropdown-menu").empty()[0];
     

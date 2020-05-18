@@ -11,6 +11,8 @@ import { showUnitTickList } from './Dom';
 
 export abstract class Unit extends THREE.Group {
     private _ID : number;
+    public EID : any;
+
     readonly _unitType : UNIT_TYPE;
     private _name : string;
     private _radius : number;

@@ -3,9 +3,10 @@ import {Unit, OMU, AMU, FIU} from './../commons/Unit';
 import { Monkey, Male, Female} from '../commons/Monkey';
 import { Frame} from '../commons/Dynamics';
 import { Kinship} from '../commons/Kinship';
-import { randomInt, AGE_LEVEL, GENDA, logFrame, MONKEY_GEN_ID, UNIT_TYPE, SET_COMMUNITY, GET_COMMUNITY, TICK_NEXT, GET_TICK} from '../commons/basis';
+import { randomInt, AGE_LEVEL, GENDA, logFrame, MONKEY_GEN_ID, UNIT_TYPE, SET_COMMUNITY, GET_COMMUNITY, TICK_NEXT, GET_TICK, GET_TICKMAP, GET_MONKEYIDMAP, GET_UNITIDMAP} from '../commons/basis';
 import { SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG } from 'constants';
 import { stringify } from 'querystring';
+import { showCommunityTickList } from '../commons/Dom';
 
 
 function genName(nameLen:number=4){
@@ -358,9 +359,9 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
     let ticks = Array.from( new Set( monkeyData.map(e => e.year)) ).sort(function(a,b){return a-b} );
     let monkeyIDs = Array.from(new Set(monkeyData.map(e => e.ID) ) ).sort(function(a,b){return a-b} );
     let unitIDs = Array.from(new Set( unitData.map(e => e.ID ) ) ).sort(function(a,b) {return a-b} );
-    let tickMap = new Map();
-    let monkeyIDMap = new Map();
-    let unitIDMap = new Map();
+    let tickMap = GET_TICKMAP();// new Map();
+    let monkeyIDMap = GET_MONKEYIDMAP();// new Map();
+    let unitIDMap = GET_UNITIDMAP();// new Map();
 
     ticks.forEach((e, idx) => tickMap.set(idx, e) );
     // monkeyIDs.forEach( (e,idx) => monkeyIDMap.set(idx, e) );
@@ -391,6 +392,7 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
             case 'YOU': m.ageLevel = AGE_LEVEL.YOUNG; break;
             case 'JUV': m.ageLevel = AGE_LEVEL.JUVENILE; break;
         }
+        m.EID = e.ID;
         monkeyIDMap.set(m.ID, e.ID );
         baseMonkeys.push(m);
     })
@@ -409,6 +411,7 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
                 u = new FIU(10);
                 break;
         }
+        u.EID = e.ID;
         unitIDMap.set(u.ID, e.ID);
         baseUnits.push(u);
     })
@@ -472,6 +475,7 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
                 } else{
                     m = new Female(MONKEY_GEN_ID(), info.name, null);
                 }
+                m.EID = e;
                 monkeyIDMap.set(m.ID, e);
                 m.ageLevel = info.ageLevel;
                 enterMonkeys.push(m);
@@ -497,6 +501,7 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
                     u = new FIU(10);
                     break;
                 }
+                u.EID = e.ID;
                 unitIDMap.set(u.ID, e.ID);
                 NU.push(u);
             }
@@ -566,6 +571,7 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
         let logStr = logFrame(frame,community.frames.indexOf(frame));
         community.logInfo.push(logStr);
         console.log( `----------TOUCH----------\n${logStr}` );
+        showCommunityTickList();
         
     }
 

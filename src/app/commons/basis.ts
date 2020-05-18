@@ -141,6 +141,31 @@ export function GET_COMMUNITY(){
     return COM;
 }
 
+var TICKMAP : Map<number, any>;// = new Map();
+var MONKEYIDMAP : Map<number, any>;// = new Map();
+var UNITIDMAP : Map<number, any>;// = new Map();
+
+export function GET_TICKMAP() : Map<number, any>{
+    if( !TICKMAP ){
+        TICKMAP = new Map<number, any>();
+    }
+    return TICKMAP;
+}
+export function GET_MONKEYIDMAP() : Map<number, any>{
+    if( !MONKEYIDMAP ){
+        MONKEYIDMAP = new Map<number, any>();
+    }
+    return MONKEYIDMAP;
+}
+
+export function GET_UNITIDMAP() : Map<number, any>{
+    if( !UNITIDMAP ){
+        UNITIDMAP = new Map<number, any>();
+    }
+    return UNITIDMAP;
+}
+
+
 
 
 // 川金丝猴年龄分界

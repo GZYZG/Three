@@ -12,7 +12,7 @@
 //  5        gsz         MALE        1961/12/30       -1           -1        1
 //  6        sjm         FEMALE      1974/1/1         -1           -1        1
 import { Unit, OMU, AMU, FIU } from "../commons/Unit";
-import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, GET_TICK_MODE, TICK_MODE, logFrame, logBase, Slice, OMUSlice, AMUSlice } from "../commons/basis";
+import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, GET_TICK_MODE, TICK_MODE, logFrame, logBase, Slice, OMUSlice, AMUSlice, GET_MONKEYIDMAP, GET_UNITIDMAP } from "../commons/basis";
 import { Kinship } from "../commons/Kinship";
 import { Monkey, Male, Female } from "../commons/Monkey";
 import { unitsLayout, OMULayout, AMULayout, FIULayout } from "../commons/PositionCalc";
@@ -45,8 +45,13 @@ export class Community extends THREE.Object3D{
 
     public logInfo: Array<string>;
 
+
+
+    public layoutRecords : Map<number, Map<Unit, any>>;
+
     constructor(baseUnitNum: number = 5, baseData?:any){
         super();
+        this.layoutRecords = new Map<number, Map<Unit, any>>();
 
         this.allunits = new Array<Unit>();
         this.allkinships = new Array<Kinship>();
@@ -192,7 +197,7 @@ export class Community extends THREE.Object3D{
         return tmp[0];
     }
 
-    public layout() {
+    public layout(tick?:number) {
         // 先对单元进行总体布局
         unitsLayout(this.allunits);
         // 再对每个单元内的层进行布局
@@ -217,12 +222,30 @@ export class Community extends THREE.Object3D{
                 }
             }
         });
-        this.G6Layout("dagre");
+
+        if( !this.layoutRecords.get(this.tick) && !tick ){
+            this.G6Layout("dagre");
+        } else {
+            let tickLay = this.layoutRecords.get(tick);
+            let entries = tickLay.entries();
+            let t;
+            while( !(t = entries.next()).done ){
+                t.value[0].position.set(t.value[1].x, t.value[1].y, t.value[1].z );
+            }
+        }
+        
+        var tmp = new Map<Unit, any>();
+        
+        this.allunits.forEach( e => {
+            tmp.set(e, new THREE.Vector3(e.position.x, e.position.y, e.position.z ) );
+        })
+        this.layoutRecords.set(this.tick, tmp);
 
         // 再对亲缘关系进行布局
         this.allkinships.forEach(k => {
             k.layout();
         })
+        
 
       
         
@@ -706,6 +729,7 @@ export class Community extends THREE.Object3D{
 
         if(viewkeys["strucKey"]["newUnit"]){
             this.showNewUnit(start, end);
+            
         } else {
             this.maskNewUnit(start, end);
         }
@@ -1203,7 +1227,7 @@ export class Community extends THREE.Object3D{
                 text += "不在社群中"; 
             } else {
                 let unit = this.allunits.filter(e => e.ID == life.belongTo[i])[0];
-                text += unit.name + "(" + unit.ID + ")";
+                text += unit.name + "(" + unit.EID + ")";
             }
             belong.nodes.push( {
                 text: text,
@@ -1390,30 +1414,30 @@ export class Community extends THREE.Object3D{
         slice.tickMembers.forEach( e => {
             let tmp = this.findMonkeyByID(e);
             members.nodes.push( {
-                text: e + "\t" + ( tmp.length == 0? "" : tmp[0].name),
+                text: GET_MONKEYIDMAP().get( e ) + "\t" + ( tmp.length == 0? "" : tmp[0].name),
             })
         }) 
         slice.enterUnit.forEach( e =>{
             let tmp = this.findUnitByID(e.origin);
             enterUnit.nodes.push({
-                text: e.monkey + "\t" + " from " + (tmp? tmp.name + "(" + tmp.ID + ")" : " 社群外 "),
+                text: GET_MONKEYIDMAP().get( e.monkey ) + "\t" + " from " + (tmp? tmp.name + "(" + GET_UNITIDMAP().get( tmp.ID ) + ")" : " 社群外 "),
             })
         })
         slice.leaveUnit.forEach( e => {
             let tmp = this.findUnitByID(e.target);
             leaveUnit.nodes.push( {
-                text: e.monkey + "\t" + " to " + (tmp ? tmp.name + "(" + tmp.ID + ")" : "社群外"),
+                text: GET_MONKEYIDMAP().get( e.monkey ) + "\t" + " to " + (tmp ? tmp.name + "(" + GET_UNITIDMAP().get( tmp.ID ) + ")" : "社群外"),
             })
         })
         slice.newBabes.forEach( e => {
             newBabes.nodes.push( {
-                text: "孩子: " + e.monkey + "\t父亲: " + e.father.ID + "\t母亲:" + e.mother.ID,
+                text: "孩子: " + GET_MONKEYIDMAP().get( e.monkey ) + "\t父亲: " +  GET_MONKEYIDMAP().get( e.father.ID )+ "\t母亲:" +  GET_MONKEYIDMAP().get( e.mother.ID ),
             })
         })
         slice.dead.forEach( e => {
             let tmp = this.findMonkeyByID(e.monkey);
             dead.nodes.push( {
-                text: e.monkey + "\t" + ( tmp.length == 0? "" : tmp[0].name)
+                text:  GET_MONKEYIDMAP().get( e.monkey ) + "\t" + ( tmp.length == 0? "" : tmp[0].name)
             })
         })
 
@@ -1490,12 +1514,12 @@ export class Community extends THREE.Object3D{
             commu.basekids.forEach( e => {
                 newBabe.nodes.push({
                     id: e.ID,
-                    text: e.ID + "父亲: " + e.father.ID + "母亲: " + e.father.ID,
+                    text:  e.EID  + "父亲: " +   e.father.EID  + "母亲: " +  e.father.EID,
                 })
             })
             commu.baseunits.forEach( e => {
                 newUnit.nodes.push({
-                    text: e.name + "(" + e.ID + ")",
+                    text: e.name + "(" + e.EID + ")",
                 })
             })
             return data
@@ -1504,48 +1528,48 @@ export class Community extends THREE.Object3D{
         f.vanished.dead.forEach(e => {
             dead.nodes.push({
                 id: e.monkey.ID,
-                text: e.monkey.ID + " 在单元 " + e.monkey.unit.ID + "(" + e.monkey.unit.name + ") 中死亡",
+                text: e.monkey.EID + " 在单元 " + e.monkey.unit.EID + "(" + e.monkey.unit.name + ") 中死亡",
             })
         })
     
         f.vanished.outCommu.forEach( e => {
             outCommu.nodes.push( {
                 id: e.monkey.ID,
-                text: e.monkey.ID + " 从单元 "+  e.monkey.unit.ID + "(" + e.monkey.unit.name + ") 离开社群",
+                text: e.monkey.EID + " 从单元 "+  e.monkey.unit.EID + "(" + e.monkey.unit.name + ") 离开社群",
             })
         })
     
         f.enterCommu.forEach( e => {
             enterCommu.nodes.push( {
                 id: e.monkey.ID,
-                text: e.monkey.ID + " 进入单元 " + e.monkey.unit.ID + "(" + e.monkey.unit.name + ")",
+                text: e.monkey.EID + " 进入单元 " + e.monkey.unit.EID + "(" + e.monkey.unit.name + ")",
             })
         })
     
         f.migrates.forEach( e => {
             migrate.nodes.push({
                 id: e.monkey.ID,
-                text: e.monkey.ID + "   " + e.originUnit.ID + "(" + e.originUnit.name + ")  =>  " + e.targetUnit.ID + "(" + e.targetUnit.name + ")",
+                text: e.monkey.EID + "   " + e.originUnit.EID + "(" + e.originUnit.name + ")  =>  " + e.targetUnit.EID + "(" + e.targetUnit.name + ")",
             })
         })
     
         f.challengeMainMale.forEach( e => {
             challengeMainMale.nodes.push( {
                 id: e.unit.ID,
-                text: e.unit.ID + "(" + e.unit.name + ")  winner: " + e.winner.ID + "  loser: " + e.loser? e.loser.ID : "无",
+                text: e.unit.EID + "(" + e.unit.name + ")  winner: " + e.winner.EID + "  loser: " + e.loser? e.loser.EID : "无",
             })
         })
     
         f.newKinships.forEach( e => {
             newBabe.nodes.push( {
                 id: e.kid.ID,
-                text: e.kid.ID + " 父亲: " + e.kid.father.ID + "  母亲: " + e.kid.mother.ID,
+                text: e.kid.EID + " 父亲: " + e.kid.father.EID + "  母亲: " + e.kid.mother.EID,
                 selectable: true,
             })
         })
         f.newUnits.forEach( e => {
             newUnit.nodes.push({
-                text: e.name + "(" + e.ID + ")",
+                text: e.name + "(" + e.EID + ")",
             })
         })
         return data;
@@ -1690,8 +1714,8 @@ function baseCommunity(unitNum : number){
         
     }
     
-    addTick2Dropdown();
-    $('#tickDropdown button').get()[0].textContent =  ""+GET_TICK();
+    // addTick2Dropdown();
+    // $('#tickDropdown button').get()[0].textContent =  ""+GET_TICK();
 
     return {
         baseUnits : units,

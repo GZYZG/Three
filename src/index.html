@@ -40,27 +40,27 @@
     <div id="mountNode" style="display: none;"></div>
     <div class="header row">
         <!-- <input type="color" value="#2D9900"/> -->
-        <div class="col col-xl-2"  style="display: inline; height: 30px;white-space: nowrap; ">
-          <label style="color: white;">选择Monkey</label>
+        <div class="col col-xl-2"  style="display: inline; height: 30px;white-space: nowrap; margin-left: 80px;">
+          <!-- <label style="color: white;">选择Monkey</label> -->
           <!-- 如果需要多选，则可以在select 中添加 multiple -->
-          <select class="selectpicker" data-live-search="true" id="monkeySelecter" title="根据ID选择金丝猴" data-style="btn-info" data-none-selected-text="选择Monkey的ID"  data-actions-box="true">
+          <select class="selectpicker" data-live-search="true"   id="monkeySelecter" title="根据ID选择金丝猴" data-style="btn-info" data-none-selected-text="选择Monkey的ID"  data-actions-box="true">
           </select>
         </div>
 
-        <div class="col col-xl-6" id="mode" style="display: inline;height: 30px; white-space: nowrap;margin-left: 20px;">
-            <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline; width: 20%;">
+        <div class="col col-xl-8" id="mode" style="display: inline;height: 30px; white-space: nowrap;margin-left: 20px;">
+            <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline; ">
                 <!-- <input id="tickRangeToggle" type="checkbox" checked/> Enabled -->
-                <label>选择亲缘关系时间范围：</label>
+                <label>亲缘关系时间范围：</label>
                 <b id="tickLow">0</b>&nbsp;&nbsp;
-                <input id="tickRange" type="text" class="span2" style="width: 10%;" value="" data-slider-id="slider" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
+                <input id="tickRange" type="text" class="span2" style="width: 15%;" value="" data-slider-id="slider" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
                 &nbsp;&nbsp;<b id="tickHigh">0</b>
             </div>&nbsp;&nbsp;&nbsp;
 
-            <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline; width: 20%;">
+            <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline;">
               <!-- <input id="tickRangeStrucToggle" type="checkbox" checked/> Enabled -->
-              <label>选择社会组成时间范围：</label>
+              <label>社会组成时间范围：</label>
               <b id="tickLowStruc">0</b>&nbsp;&nbsp;
-              <input id="tickRangeStruc" type="text" class="span2" style="width: 10%;" value="" data-slider-id="sliderStruc" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
+              <input id="tickRangeStruc" type="text" class="span2" style="width: 15%;" value="" data-slider-id="sliderStruc" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
               &nbsp;&nbsp;<b id="tickHighStruc">0</b>
             </div>
 
@@ -305,14 +305,14 @@
     state: {
       checked: true,
     }
-  },*/{
+  },{
     text: "未采样个体",
     nodeKey: "unSampled",
     selectable: false,
     state: {
           checked: window.VIEW_KEYS["unSampled"]
     },
-  }
+  }*/
 ];
 
 

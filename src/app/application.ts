@@ -15,7 +15,7 @@ import { Kinship } from './commons/Kinship';
 import { Community, genFrame } from './debug/TestData';
 import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
 import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown, showUnitTickList, showCommunityTickList, addMonkeyIds2Selecter, addTick2Dropdown} from './commons/Dom';
-import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, TICK_NEXT, GET_TICK_MODE, GET_COMMUNITY, logFrame } from './commons/basis';
+import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, TICK_NEXT, GET_TICK_MODE, GET_COMMUNITY, logFrame, GET_TICKMAP } from './commons/basis';
 import { bindTickRangeStruc } from './commons/BindEvent';
 import { genSlice, resolve2Frame } from './debug/Benchmark';
 
@@ -493,17 +493,26 @@ function bindEvents(){
         //console.info("changeEvt:", e);
         //获取旧值和新值
         console.info(e.value.oldValue + '--' + e.value.newValue);
-        $("#tickLow").html(e.value.newValue[0]);
-        $("#tickHigh").html(e.value.newValue[1] + " / " + GET_TICK());
-        if( e.value.oldValue[1] < e.value.newValue[1]){
-            //COMMUNITY.forward(e.value.newValue[1] - e.value.oldValue[1] )
-        } else{
-            //COMMUNITY.back(e.value.oldValue[1] - e.value.newValue[1]);
+        //$("#tickLow").html(e.value.newValue[0]);
+        $("#tickLow").html( GET_TICKMAP().get( e.value.newValue[0] ) );
+        //$("#tickHigh").html(e.value.newValue[1] + " / " + GET_TICK());
+        $("#tickHigh").html( GET_TICKMAP().get( e.value.newValue[1] ) + " / " + GET_TICKMAP().get( GET_TICK() ) );
+        if( e.value.oldValue[1] != e.value.newValue[1] ){
+            console.log("重布局！");
+            COMMUNITY.layout(e.value.newValue[1]);
         }
+
         let v1 = $("#tickRangeStruc").slider("getValue");
         COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
         COMMUNITY.showRangeCommunityChange(v1[0], v1[1]);
         COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
+
+        if(!window.VIEW_KEYS['kinship']){
+            COMMUNITY.maskKinship();
+            COMMUNITY.showRangeCommunityChange( v1[0], v1[1] );
+        }
+        //COMMUNITY.maskNewUnit(Math.max(e.value.newValue[1], v1[1]), GET_TICK() );
+
         // 改变时刻后要及时更新ID列表
         //addGroupIds2Dropdown(COMMUNITY);
         //addMonkeyIds2Selecter(COMMUNITY);
@@ -550,7 +559,7 @@ function bindEvents(){
         $('#tickRangeStruc').slider({max:GET_TICK()})
         $("#tickRangeStruc").slider("setValue", [0, GET_TICK()]);
         //$("#tickLowStruc").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
-        $("#tickHighStruc").html(GET_TICK() + " / " + GET_TICK());
+        $("#tickHighStruc").html( GET_TICKMAP().get( GET_TICK() ) + " / " + GET_TICKMAP().get( GET_TICK() ) );
         // 要进行刷新
         $("#tickRangeStruc").slider('refresh', { useCurrentValue: true });
 

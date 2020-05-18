@@ -63,3 +63,7 @@ a.dropdown-item:hover{
 .dropdown .bootstrap-select .show-tick .selectpicker {
     width: 10%;
 }
+
+.bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn)  {
+    width: 185px;
+}
