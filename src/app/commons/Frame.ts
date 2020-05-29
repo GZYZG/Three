@@ -1,6 +1,6 @@
 import { Unit, OMU} from './Unit';
 import { Monkey } from './Monkey';
-import { GET_TICK } from './basis';
+import { GET_TICK } from '../utils/basis';
 
 export class Frame {
     public ID : number;

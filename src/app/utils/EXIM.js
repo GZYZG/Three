@@ -1,6 +1,6 @@
 import { resolve2Frame } from "../debug/Benchmark";
 import { GET_COMMUNITY } from "./basis";
-import { addMonkeyIds2Selecter } from "./Dom";
+import { addMonkeyIds2Selecter } from "../commons/Dom";
 
 export function importFile(obj){//1.onchange事件绑定方法出发
     //2.如果没有选中文件则取消

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA, MALE_GEMOMETRY, FEMALE_GEOMETRY, MONKEY_GEN_ID, GET_TICK, MONKEY_COLOR } from './basis';
+import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA, MALE_GEMOMETRY, FEMALE_GEOMETRY, MONKEY_GEN_ID, GET_TICK, MONKEY_COLOR } from '../utils/basis';
 import { Unit, OMU} from './Unit';
 import { Kinship } from './Kinship';
 import { KidKinshipNodeLink } from './LineFactory';
@@ -85,6 +85,7 @@ export abstract class Monkey extends THREE.Mesh implements Selectable{
         this.name = name;
         // this.unit = unit;
         this._ID = id;
+        this.EID = this.ID;
         if( birthDate ){
             this._birthDate = birthDate;
         } else {

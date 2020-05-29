@@ -1,11 +1,9 @@
-import {Community} from './TestData';
+import {Community} from '../commons/Community';
 import {Unit, OMU, AMU, FIU} from './../commons/Unit';
 import { Monkey, Male, Female} from '../commons/Monkey';
-import { Frame} from '../commons/Dynamics';
+import { Frame} from '../commons/Frame';
 import { Kinship} from '../commons/Kinship';
-import { randomInt, AGE_LEVEL, GENDA, logFrame, MONKEY_GEN_ID, UNIT_TYPE, SET_COMMUNITY, GET_COMMUNITY, TICK_NEXT, GET_TICK, GET_TICKMAP, GET_MONKEYIDMAP, GET_UNITIDMAP} from '../commons/basis';
-import { SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG } from 'constants';
-import { stringify } from 'querystring';
+import { randomInt, AGE_LEVEL, GENDA, logFrame, MONKEY_GEN_ID, UNIT_TYPE, SET_COMMUNITY, GET_COMMUNITY, TICK_NEXT, GET_TICK, GET_TICKMAP, GET_MONKEYIDMAP, GET_UNITIDMAP} from '../utils/basis';
 import { showCommunityTickList } from '../commons/Dom';
 
 
@@ -24,8 +22,9 @@ function genNum(type:string, max:number){
     switch(type) {
         case 'NB':
             // 生成的孩子的数目
-            if(Math.random() < .85){
-                ret = randomInt(2, 6);
+            if(Math.random() < 1.85){
+                //ret = randomInt(2, 6);
+                ret = randomInt(1,4);
             } else if ( Math.random() < .96){
                 ret = randomInt(7, 12);
             } else{
@@ -328,12 +327,12 @@ export function genSlice(commu : Community, param?:any ){
         challengeMainMale: challengeMainMale,
         migrates: migrates,
         newKinships: newKinships,
-        tick: -1,
+        tick: GET_TICK(),
     }
     let frame = new Frame(para);
-    let logStr = logFrame(frame,commu.frames.indexOf(frame));
+    //let logStr = logFrame(frame,commu.frames.indexOf(frame));
     // commu.logInfo.push(logStr);
-    console.log( logStr );
+    //console.log( logStr );
 
     return frame;
 }
@@ -343,7 +342,7 @@ export function genSlice(commu : Community, param?:any ){
 
 
 export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
-    let monkeyHead = monkeyData[0]; //[	'ID', 'genda', 'name', 'ageLevel', 'father', 'mother', 'unit', 'dead' , 'year']
+    // let monkeyHead = monkeyData[0]; //[	'ID', 'genda', 'name', 'ageLevel', 'father', 'mother', 'unit', 'dead' , 'year']
     // let idxID = monkeyHead.indexOf('ID');
     // let idxGenda = monkeyHead.indexOf('geanda');
     // let idxName = monkeyHead.indexOf('name');

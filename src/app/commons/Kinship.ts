@@ -5,7 +5,7 @@ import { Colors } from 'three';
 import { LineGeometry } from '../threelibs/LineGeometry';
 import { LineMaterial } from '../threelibs/LineMaterial';
 import { Line2 } from '../threelibs/Line2';
-import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos, cleanCache, MONKEY_COLOR } from './basis';
+import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos, cleanCache, MONKEY_COLOR } from '../utils/basis';
 
 export class KinshipNode extends THREE.Mesh {
     public kpNodeLink : KPNodeLink;

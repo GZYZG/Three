@@ -13,7 +13,7 @@
 
     <!--引入bootstrap-slider 样式文件-->
     <link href="./assets/css/bootstrap-slider.css" rel="stylesheet" />
-    <title>川金丝猴亲缘结构可视化V1</title>
+    <title>川金丝猴亲缘结构可视化</title>
     <style>
         body{margin: 0;overflow: hidden;}
     </style>
@@ -31,7 +31,8 @@
     <script type="text/javascript" src="./assets/js/bootstrap-treeview.js"></script>
     <script type="text/javascript" src="./assets/js/bootstrap-select.min.js"></script>
     <!-- 引入读取 .xlxs 格式的文件 -->
-    <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.15.6/xlsx.full.min.js"></script>
+    <!-- <script type="text/javascript" src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.15.6/xlsx.full.min.js"></script> -->
+    <script type="text/javascript" src="./assets/js/xlsx.full.min.js"></script>
     
     <!--script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.0/build/g6.js"></script-->
 
@@ -49,7 +50,6 @@
 
         <div class="col col-xl-8" id="mode" style="display: inline;height: 30px; white-space: nowrap;margin-left: 20px;">
             <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline; ">
-                <!-- <input id="tickRangeToggle" type="checkbox" checked/> Enabled -->
                 <label>亲缘关系时间范围：</label>
                 <b id="tickLow">0</b>&nbsp;&nbsp;
                 <input id="tickRange" type="text" class="span2" style="width: 15%;" value="" data-slider-id="slider" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
@@ -57,7 +57,6 @@
             </div>&nbsp;&nbsp;&nbsp;
 
             <div class="tick-range" style="align-self: center; white-space: nowrap; display: inline;">
-              <!-- <input id="tickRangeStrucToggle" type="checkbox" checked/> Enabled -->
               <label>社会组成时间范围：</label>
               <b id="tickLowStruc">0</b>&nbsp;&nbsp;
               <input id="tickRangeStruc" type="text" class="span2" style="width: 15%;" value="" data-slider-id="sliderStruc" data-slider-min="0" data-slider-max="0" data-slider-step="1" data-slider-value="[0,0]"/>
@@ -76,6 +75,8 @@
           <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
             <button class="btn btn-info" onclick="$('#data').click()" style="text-align: center; width: 95%; margin: 2px 2px 0 2px;">导入金丝猴社群数据</button><br>
             <button class="btn btn-info" onclick="exportCommunityData()" style="text-align: center; width: 95%; margin: 2px 2px 0 2px;">导出社群数据</button><br>
+            <button class="btn btn-info" onclick="exportFrameData()" style="text-align: center; width: 95%; margin: 2px 2px 0 2px;">导出社群时间切片数据</button><br>
+            <input type="file" id="data" title="选择金丝猴社群数据" style="display: none;">
           </div>
         </div>
         
@@ -125,7 +126,6 @@
                             <li class="list-group-item list-group-item-success" value="isAlive" data-toggle="tooltip" data-placement="top" title="是否存活">isAlive: </li>
                             <li class="list-group-item list-group-item-success" value="inCommu" data-toggle="tooltip" data-placement="top" title="是否在社群中">inCommu: </li>
                             <li class="list-group-item list-group-item-success" value="isMirror" data-toggle="tooltip" data-placement="top" title="是否是分身">isMirror: </li>
-                            <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button>
                         </ul>
                         <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#monkeyLifeInfo" aria-expanded="false" aria-controls="monkeyLifeInfo"
                         style="width: 90%; margin: 3px 0 1.5px 5%; display: inline;">显示生平信息</button>
@@ -179,11 +179,9 @@
                   <!--button type="button" class="btn btn-danger" id="prev"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="回退一个时间单位的亲缘关系">TICK-BACK</button>
                   <button type="button" class="btn btn-danger" id="saveLog"  style="width: 40%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" data-toggle="tooltip" data-placement="top" title="保存日志">save log</button-->
                   
-                  <button type="button" class="btn btn-danger" id="next"  style="width: 80%; align-self: center;margin: .5em 0 0 .5em; font-size: medium; display: none;" 
-                  data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">生成下一时刻亲缘关系</button> 
-                  
-                  <input type="file" id="data" title="选择金丝猴社群数据" style="display: none;">
-                  <button class="btn btn-info" id='showData' style="margin-top: 5px;">SHOW</button>
+                  <button type="button" class="btn btn-danger" id="next"  style="width: 80%; align-self: center;margin: .5em 0 0 ; font-size: medium; display: block;" 
+                  data-toggle="tooltip" data-placement="top" title="增加一个时间单位的亲缘关系">社群演变至下一时刻</button> 
+                  <button class="btn btn-info" id='showData' style="width: 80%; margin-top: 5px; display: block;">SHOW</button>
               </div>
             </div>
             
@@ -193,212 +191,12 @@
     <div class="footer"></div>
 </div>
 <script src="../tsdist/bundle.js"> </script>
+<script src="./app/utils/UI.js"></script>
 <script>
     $("#stats > div").css({
         top: $("div.header").css("height"),
         margin: "1.5px 0px 0px 1.5px",
     })
-    $('#tickRangeStruc').slider({
-        formatter: function (value) {
-            return  value;
-        },
-        tooltip_split: true,
-        tooltip: "always",
-        tooltip_position: "bottom",
-    })
-    $("#tickRangeToggle").click(function() {
-      if(this.checked) {
-        $("#tickRange").slider("enable");
-      }
-      else {
-        $("#tickRange").slider("disable");
-      }
-    });
-    $("#tickRangeStrucToggle").click(function() {
-      if(this.checked) {
-        $("#tickRangeStruc").slider("enable");
-      }
-      else {
-        $("#tickRangeStruc").slider("disable");
-      }
-    });
-    var tree = [
-  {
-    text: "社会变动要素",
-    selectable: false,
-    selectedIcon: "",
-    nodeKey: "strucKey",
-    state: {
-          checked: true,
-    },
-    nodes: [
-      {
-        text: "入群",
-        nodeKey: "enterCommu",
-        selectable: false,
-        state: {
-          checked: window.VIEW_KEYS["strucKey"]["enterCommu"]
-        },
-      }, {
-        text: "退群",
-        nodeKey: "outCommu",
-        selectable: false,
-        state: {
-          checked: window.VIEW_KEYS["strucKey"]["outCommu"]
-        },
-      }, {
-        text: "迁移",
-        nodeKey: "migrate",
-        selectable: false,
-        state: {
-          checked: window.VIEW_KEYS["strucKey"]["migrate"]
-        },
-      }, {
-        text: "主雄变更",
-        nodeKey: "mainMaleChange",
-        selectable: false,
-        state: {
-          checked: window.VIEW_KEYS["strucKey"]["mainMaleChange"]
-        },
-      }, {
-        text: "新增单元",
-        nodeKey: "newUnit",
-        selectable: false,
-        state: {
-          checked: window.VIEW_KEYS["strucKey"]["newUnit"]
-        },
-      }, {
-        text: "死亡",
-        nodeKey: "dead",
-        selectable: false,
-        state: {
-          checked: window.VIEW_KEYS["strucKey"]["dead"]
-        },
-      }, {
-        text: "其他分身",
-        nodeKey: "involvedMirror",
-        selectable: false,
-        state: {
-          checked: window.VIEW_KEYS["strucKey"]["involvedMirror"]
-        }
-      }
-      
-    ]
-  }, {
-    text: "亲缘关系",
-    nodeKey:"kinship",
-    selectable: false,
-    state: {
-          checked: window.VIEW_KEYS["kinship"]
-    },
-  },  {
-    text: "未涉及个体",
-    nodeKey: "uninvolved",
-    selectable: false,
-    state: {
-          checked: window.VIEW_KEYS["uninvolved"],
-    },
-  },/* {
-    text: "所有分身",
-    nodeKey: "allmirror",
-    selectable: false,
-    state: {
-      checked: true,
-    }
-  },{
-    text: "未采样个体",
-    nodeKey: "unSampled",
-    selectable: false,
-    state: {
-          checked: window.VIEW_KEYS["unSampled"]
-    },
-  }*/
-];
-
-
-$('#customKeyCollapse').treeview({
-  data: tree,         // data is not optional
-  levels: 5,
-  backColor: 'green',
-  multiSelect: true,
-  checkedIcon: "glyphicon glyphicon-check",
-  //selectedIcon: "glyphicon glyphicon-check",
-  showCheckbox: true,
-});
-
-$('#customKeyCollapse').on('nodeChecked',function(event, data){
-     console.log(" data:", data);
-     let tree = $('#customKeyCollapse');
-     // 判断被check的node是否有子节点
-     if(!data.nodes) {
-        // 判断被被check的node是否有父节点
-        if(data.parentId != undefined){
-          window.VIEW_KEYS[tree.treeview("getNode", data.parentId).nodeKey][data.nodeKey] = true;
-          // 如果某个结点的子节点都被check，则该结点也被check
-          let siblings = tree.treeview("getSiblings", data.nodeId).map( e => e.state.checked ? 1: 0).reduce((a, b) =>  a+b);
-          if( siblings == tree.treeview("getSiblings", data.nodeId).length ){
-            tree.treeview("checkNode", [ data.parentId, {silent: true} ]);
-          }
-        } else {
-          window.VIEW_KEYS[data.nodeKey] = true;
-        }
-      } else{
-        data.nodes.forEach( e => {
-          tree.treeview('checkNode', [ e.nodeId, { silent: true } ]);
-          window.VIEW_KEYS[data.nodeKey][e.nodeKey] = true;
-        })
-      }
-     
-    console.log("显示要素发生变化!", window.VIEW_KEYS)
-    let v = $("#tickRangeStruc").slider("getValue");
-    
-    window.community.showRangeCommunityChange( v[0], v[1] );
-    
-
-    //if(data.nodeKey = "kinship" ){
-      let v1 = $("#tickRange").slider("getValue");
-      window.community.showRangeKinship(v1[0], v1[1] );
-      if(!window.VIEW_KEYS['kinship']){
-        window.community.maskKinship();
-      }
-    //}
-})
-
-$('#customKeyCollapse').on('nodeUnchecked',function(event, data){
-     console.log( " data:", data);
-     let tree = $('#customKeyCollapse');
-     if(!data.nodes) {
-        if(data.parentId != undefined){
-            window.VIEW_KEYS[tree.treeview("getNode", data.parentId).nodeKey][data.nodeKey] = false;
-            tree.treeview("uncheckNode", [ data.parentId, {silent: true} ]);
-        } else {
-            window.VIEW_KEYS[data.nodeKey] = false;
-        }
-        
-     } else {
-      data.nodes.forEach( e => {
-        tree.treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
-        window.VIEW_KEYS[data.nodeKey][e.nodeKey] = false;
-      })
-     }
-     
-    let v = $("#tickRangeStruc").slider("getValue");
-    let v1 = $("#tickRange").slider("getValue");
-    window.community.showRangeCommunityChange( v[0], v[1] );
-    if(data.nodeKey == "kinship" || !window.VIEW_KEYS['kinship']){
-      window.community.maskKinship();
-      window.community.showRangeCommunityChange( v[0], v[1] );
-    } else {
-      window.community.showRangeCommunityChange( v[0], v[1] );
-      window.community.showRangeKinship(v1[0], v1[1] );
-    }
-    
-})
-
-$("#hideRightSide").on("click", e => {
-  console.log("123",$("#hideRightSide").next().width() );
-  $("#hideRightSide").next().width(0);
-})
 
 
 // 将一个sheet转成最终的excel文件的blob对象，然后利用URL.createObjectURL下载
@@ -431,13 +229,12 @@ function sheet2blob(sheets, sheetNames) {
 }
 
 /**
- * 通用的打开下载对话框方法，没有测试过具体兼容性
+ * 打开下载对话框方法
  * @param url 下载地址，也可以是一个blob对象，必选
  * @param saveName 保存文件名，可选
  */
  function openDownloadDialog(url, saveName){
-	if(typeof url == 'object' && url instanceof Blob)
-	{
+	if(typeof url == 'object' && url instanceof Blob){
 		url = URL.createObjectURL(url); // 创建blob地址
 	}
 	var aLink = document.createElement('a');
@@ -500,40 +297,21 @@ function exportCommunityData(){
   openDownloadDialog(sheet2blob([monkeySheet, unitSheet], ['金丝猴数据', '单元数据']), '金丝猴社群数据.xlsx');
 }
 
+function exportFrameData(){
 
-function importFile(obj){//1.onchange事件绑定方法出发
-    //2.如果没有选中文件则取消
-    console.log(obj);
-    if (!obj.target.files){
-        return
-    }
-    //3.获得选择的文件对象
-    var f = obj.target.files[0]
-    //4.初始化新的文件读取对象，浏览器自带，不用导入
-    var reader = new FileReader();
-    //5.绑定FileReader对象读取文件对象时的触发方法
-    reader.onload = function(e){
-        //7.获取文件二进制数据流
-        var data = e.currentTarget.result;
-        //8.利用XLSX解析二进制文件为xlsx对象
-        var wb = XLSX.read(data,{type:'binary'})
-        //9.利用XLSX把wb第一个sheet转换成JSON对象
-        //wb.SheetNames[0]是获取Sheets中第一个Sheet的名字
-        //wb.Sheets[Sheet名]获取第一个Sheet的数据
-        console.log("workbook:",wb)
-        var j_data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
-        wb.SheetNames.forEach( ee => {
-          let j_data = XLSX.utils.sheet_to_json(wb.Sheets[ee] );
-          console.log(`${ee} : `, j_data);
-        })
-    }
-    //6.使用reader对象以二进制读取文件对象f，
-    reader.readAsBinaryString(f)
+  var content = "";
+  window.community.logInfo.forEach( e => {
+    content += `${e}\n`;
+  })
+  // any kind of extension (.txt,.cpp,.cs,.bat)
+  var filename = "时间切片数据.txt";
+  
+  var blob = new Blob([content], {
+  type: "text/plain;charset=utf-8"
+  });
+ 
+  openDownloadDialog(blob, filename);
 }
-
-$("#11data").change(function(e){
-  importFile(e);
-})
 
 </script>
 

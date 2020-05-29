@@ -1,8 +1,8 @@
-import { Monkey, Male, Female } from "./Monkey";
-import { ParentsNode, KinshipNode} from './Kinship';
+import { Monkey, Male, Female } from "../commons/Monkey";
+import { ParentsNode, KinshipNode} from '../commons/Kinship';
 import * as THREE from 'three'
-import { Community } from "../debug/TestData";
-import { Frame } from "./Dynamics";
+import { Community } from "../commons/Community";
+import { Frame } from "../commons/Frame";
 //import fse = require("fs-extra");
 
 // 用于产生的ID
@@ -12,7 +12,6 @@ function GEN_ID(){
         let t = ID++;
         return t;
     }
-    
 }
 
 // TICK 与ID的性质不同，需要设置读取函数和增加函数，因为同一个TICK值可能需要被多次读取。同样性质的还有TICK_MODE
@@ -49,20 +48,6 @@ export var UNIT_GEN_ID = GEN_ID();
 // 用于产生猴子的ID
 export var MONKEY_GEN_ID = GEN_ID();
 
-// 
-export const enum TICK_MODE {
-    ACCUMULATE = "accumulate",
-    ISOLATE = "isolate",
-}
-export var NOW_TICK_MODE = TICK_MODE.ACCUMULATE;
-export var SET_TICK_MODE = function(mode:TICK_MODE){
-    NOW_TICK_MODE = mode;
-};
-
-export var GET_TICK_MODE = function(){
-    return NOW_TICK_MODE;
-}
-
 export const enum UNIT_TYPE {
     OMU="OMU",
     AMU="AMU",
@@ -97,10 +82,7 @@ function randomColor(){
         return color; 
     }
     
-
     return genUnitColor;
-
-
 }
 
 export var GEN_UNIT_COLOR = randomColor();
@@ -141,6 +123,7 @@ export function GET_COMMUNITY(){
     return COM;
 }
 
+// 用于输入文件中的ID与系统内部的ID进行映射
 var TICKMAP : Map<number, any>;// = new Map();
 var MONKEYIDMAP : Map<number, any>;// = new Map();
 var UNITIDMAP : Map<number, any>;// = new Map();
@@ -295,8 +278,6 @@ ParentsLink、ParentsNode、KinshipNode、KPNodeLink，其中KinshipNode通过ad
 包含KidKinshipNodeLink。则单元、ParentsLink、ParentsNode、KinshipNode、KPNodeLink的position均为相对于社群的相对位置，KidKinshipNodeLink的position为相对KinshipNode的相对位置，Monkey的position为相对于Unit的相对位置。
 
 本次完成了KinshipNode的位置的计算，使其与father、mother位于同一平面内。
-
-
 */
 export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, type:string="xz") : THREE.Vector3{
     // if(  kid.father.unit != kid.mother.unit || kid.unit != kid.father.unit ){
@@ -351,47 +332,59 @@ export function cleanCache( obj : any ){
 }
 
 export function logFrame(frame: Frame, idx: number){
-    let logFilName = "./demo0/src/app/debug/log.txt";
- 
-    let logStr = "Tick-"+frame.tick+ "  frameIdx: "+ idx+ "\n";
-    logStr += "------------vanished-------------\n";
+    //let logFilName = "./demo0/src/app/debug/log.txt";
+    let tmp = ""
+    let logStr = `++++++++++ 时刻-${GET_TICKMAP().get(frame.tick) ? GET_TICKMAP().get(frame.tick) : frame.tick } ++++++++++`//+ "  frameIdx: "+ idx+ "\n";
+    logStr += "\n===>离开社群的猴子<===\n";
+    logStr += "ID     name     单元     是否主雄\n"
     frame.vanished.dead.forEach( e => {
-        let tmp = "Monkey[ ID: "+ e.monkey.ID + ", name: "+ e.monkey.name+ ", isMainMale:"+ e.isMainMale+ " ]"+ " dead in Unit[ "+ e.monkey.unit.name+ " ]\n";
+        tmp = `${e.monkey.EID}     ${e.monkey.name}     ${e.monkey.unit.EID}     ${e.isMainMale? 'T' : 'F'}\n`;
         logStr += tmp;
     })
+
+    logStr += "\n===>死亡的猴子<===\n";
+    logStr += "ID     name     单元     是否主雄\n"
     frame.vanished.outCommu.forEach( e => {
-        let tmp = "Monkey[ ID: "+ e.monkey.ID + ", name: "+ e.monkey.name+ ", isMainMale:"+ e.isMainMale+ " ]"+
-                  " leave community from Unit[ "+ e.monkey.unit.name+ " ]\n"
+        tmp = `${e.monkey.EID}     ${e.monkey.name}     ${e.monkey.unit.EID}     ${e.isMainMale? 'T' : 'F'}\n`;
         logStr += tmp;
     })
-    logStr += "------------newUnits-------------\n";
+
+    logStr += "\n===>新增单元<===n";
+    logStr += "单元ID     单元类型     创建时刻     成员数量\n"
     frame.newUnits.forEach( e => {
-        let tmp = "新增单元："+ e.name+ "\n";
+        tmp = `${e.EID}     ${e.unitType}     ${e.createTick}     ${e.tickMembers.get(frame.tick).length}\n`;
         logStr += tmp;
     })
-    logStr += "------------enterCommu-------------\n";
+
+    logStr += "\n===>进入社群<===\n";
+    logStr += "ID     name     性别     父ID     母ID     单元\n";
     frame.enterCommu.forEach( e => {
-        let tmp = "Monkey[ ID: "+ e.monkey.ID + ", name: "+ e.monkey.name+ " ] 进入了单元："+ e.unit.name+ "\n";
+        tmp = `${e.monkey.EID}     ${e.monkey.name}     ${e.monkey.genda}     ${e.monkey.father?e.monkey.father.EID : '---'}     ${e.monkey.mother? e.monkey.mother.EID : '---'}     ${e.unit.EID}\n`;
         logStr += tmp;
     })
-    logStr += "------------挑战主雄成功-------------\n";
+
+    logStr += "\n===>挑战主雄成功<===\n";
+    logStr += "单元     原主雄     现主雄你\n";
     frame.challengeMainMale.forEach( e => {
-        let tmp = "单元："+ e.unit.name+ " winner: [ ID: "+ e.winner.ID + ", name: "+ e.winner.name+ " ]  loser: [ ID: "+ (e.loser?e.loser.ID: "-1"+ ", name: " ) + (e.loser?e.loser.name:"") + " ]\n";
+        tmp = `${e.unit.EID}     ${e.loser? e.loser.EID : '---'}     ${e.winner.EID}\n`;
         logStr += tmp;
     })
-    logStr += "------------迁移-------------\n";
+
+    logStr += "\n===>迁移<===\n";
+    logStr += "ID     name     原单元     现单元\n";
     frame.migrates.forEach( e => {
-        let tmp = "Monkey[ ID: "+ e.monkey.ID+ ", name: "+ e.monkey.name+ " ]  "+ e.originUnit.name+ " ===> "+ e.targetUnit.name+ "\n";
+        tmp = `${e.monkey.EID}     ${e.monkey.name}     ${e.originUnit.EID}     ${e.targetUnit.EID}\n`;
         logStr += tmp;
     })
-    logStr += "------------newKinships-------------\n";
+
+    logStr += "\n===>newKinships<===\n";
+    logStr += "ID     name     性别     父ID     母ID     单元\n";
     frame.newKinships.forEach( e => {
-        let tmp = "Kid: [ ID: "+ e.kid.ID+ ", name: "+ e.kid.name+ " unit: "+ e.parents.mom.unit.name+ " ]  "+ 
-                  "Dad: [ ID: "+ e.parents.dad.ID+ ", name: "+ e.parents.dad.name+ " unit: "+ e.parents.dad.unit.name+ " ]  "+ 
-                  "Mom: [ ID: "+ e.parents.mom.ID+ ", name: "+ e.parents.mom.name+ " unit: "+ e.parents.mom.unit.name+ " ] \n"
+        tmp =  tmp = `${e.kid.EID}     ${e.kid.name}     ${e.kid.genda}     ${e.parents.dad?e.parents.dad.EID : '---'}     ${e.parents.mom? e.parents.mom.EID : '---'}     ${e.kid.unit.EID}\n`;
         logStr += tmp;
     })
-    logStr += "------------------------------------\n\n\n";
+    
+    logStr += "==============================\n\n";
 
     // fse.writeFile(logFilName, logStr, (err) => {
     //     if (err) throw err;
@@ -402,15 +395,34 @@ export function logFrame(frame: Frame, idx: number){
 }
 
 export function logBase(comm: Community){
-    let logStr = "----------社群的起始信息----------\n";
-    let tmp = comm.basekids;
-    tmp.forEach( e => {
-        let tmp = "Kid: [ ID: "+ e.ID+ ", name: "+ e.name+ " unit: "+ e.unit.name+ " ]  "+ 
-                  "Dad: [ ID: "+ e.father.ID+ ", name: "+ e.father.name+ " unit: "+ e.father.unit.name+ " ]  "+ 
-                  "Mom: [ ID: "+ e.mother.ID+ ", name: "+ e.mother.name+ " unit: "+ e.mother.unit.name+ " ] \n"
+    let logStr = "++++++++++社群的起始信息++++++++++\n";
+    let tmp = "";
+    let tmpKids = comm.basekids;
+    let tmpMembers = comm.basemember;
+    let tmpUnits = comm.baseunits;
+    logStr += "===>起始时刻的亲缘关系<===\n"
+    logStr += "ID     name     性别     父ID     母ID     单元\n";
+    tmpKids.forEach( e => {
+        tmp =  tmp = `${e.EID}     ${e.name}     ${e.genda}     ${e.father?e.father.EID : '---'}     ${e.mother? e.mother.EID : '---'}     ${e.unit.EID}\n`;
         logStr += tmp;
     })
-    logStr += "------------------------------------\n\n\n";
+    
+    
+    logStr += "\n===>起始时刻的单元<===\n";
+    logStr += "单元ID     单元类型     创建时刻     成员数量\n"
+    tmpUnits.forEach( e => {
+        tmp = `${e.EID}     ${e.unitType}     ${e.createTick}     ${tmpMembers.filter(ee => ee.unit.ID == e.ID).length}\n`;
+        logStr += tmp;
+    })
+
+    
+    logStr += "\n===>起始时刻的社群成员<===\n";
+    logStr += "ID     name     性别     父ID     母ID     单元     是否死亡\n";
+    tmpMembers.forEach( e => {
+        tmp = `${e.EID}     ${e.name}     ${e.genda}     ${e.father?e.father.EID : '---'}     ${e.mother? e.mother.EID : '---'}     ${e.unit.EID}     ${e.isAlive?'F' : 'T'}\n`;
+        logStr += tmp;
+    })
+    logStr += "==============================\n\n";
     return logStr;
 }
 

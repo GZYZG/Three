@@ -1,13 +1,10 @@
 import {Monkey} from "./Monkey";
-import { genFrame, Community} from "../debug/TestData";
-//import $ = require("jquery");
-import { GET_TICK, GET_COMMUNITY, GET_MONKEYIDMAP } from "./basis";
+import { Community} from "./Community";
+import { GET_TICK, GET_COMMUNITY, GET_MONKEYIDMAP } from "../utils/basis";
 import { Unit } from "./Unit";
-import { importFile } from './EXIM';
+import { importFile } from '../utils/EXIM';
 
-$("#data").change(function(e){
-    importFile(e);
-  })
+
 
 export function fillBlanks(monkey : Monkey){
     //console.log("fill blanks for: ", monkey);
@@ -52,7 +49,7 @@ export function addMonkeyIds2Selecter( commu: Community){
     })
     
     groups.set("死亡or离群", Array.from( new Set(commu.vanishedMonkeys().filter(e => e.visible) ) ) );
-    console.log("\ngroup:", groups);
+    //console.log("\ngroup:", groups);
     let selecter = $("#monkeySelecter").empty();
     
     let entries = groups.entries();
@@ -89,69 +86,6 @@ export function addMonkeyIds2Selecter( commu: Community){
     }
     selecter.selectpicker("refresh");
 }
-
-export function addGroupIds2Dropdown( commu : Community){
-    let groups = new Map();
-    commu.allunits.forEach( e => {
-        let realMonkeys = e.allMembers.filter( ee => !ee.isMirror &&  ee.visible);
-        groups.set(e.name, realMonkeys.map(e => GET_MONKEYIDMAP().get( e.ID ) ));
-    })
-    
-    groups.set("死亡or离群", Array.from( new Set(commu.vanishedMonkeys().filter(e => e.visible).map( e => GET_MONKEYIDMAP().get( e.ID ) ) ) ) );
-
-    let menu = $("#idDropdown .dropdown-menu").empty()[0];
-    
-    let entries = groups.entries();
-    let t;
-    while( !(t = entries.next()).done){
-        let item = document.createElement("button");
-        item.className = "dropdown-item disabled";
-        item.type="button"
-        item.textContent = ""+t.value[0]+ "( "+t.value[1].length+ ")";
-        menu.append(item);
-        t.value[1].forEach( e => {
-            let item = document.createElement("button");
-            item.className = "dropdown-item";
-            item.type="button"
-            item.textContent = ""+e;
-            menu.append(item);
-        })
-    }
-   
-
-}
-
-export function addId2Dropdown(commu: Community){
-    let tmp = commu.allmonkeys;
-    let ids = new Set();
-    tmp.forEach( e => {
-        ids.add(e.ID);
-    })
-
-    // 清空原来的列表，并获得menu菜单
-    let menu = $("#idDropdown .dropdown-menu").empty()[0];
-    let ida = Array.from(ids);
-    ida.sort(function(a:number, b:number){return a - b})
-    ida.forEach( e => {
-        let item = document.createElement("button");
-        item.className = "dropdown-item";
-        item.type="button"
-        item.textContent = ""+e;
-        menu.appendChild(item);
-    })
-}
-
-export function addTick2Dropdown(tick?:number){
-    let menu = $("#tickDropdown .dropdown-menu");
-    if( !tick)  tick = GET_TICK();
-    let item = $('<button></button>', {
-        "class": "dropdown-item",
-        type: "button",
-        html: ""+tick,
-    }).appendTo(menu);
-
-}
-
 
 export function showUnitTickList(id: number){
     var COMMUNITY = GET_COMMUNITY();
@@ -219,7 +153,4 @@ export function showCommunityTickList(commu:Community=GET_COMMUNITY(), tick: num
     t.after( tree )
 }
 
-export function selectMonkeyID(){
-
-}
 

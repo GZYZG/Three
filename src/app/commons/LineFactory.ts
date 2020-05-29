@@ -4,9 +4,7 @@ import { Line2 } from '../threelibs/Line2';
 import * as THREE from 'three';
 import { Male, Female, Monkey } from './Monkey';
 import { ParentsNode, KinshipNode} from './Kinship';
-import { Line } from '../threelibs/three';
-import { LineSegments } from '../threelibs/three.module';
-import { KID_SHIP_NODE_LINK_WIDTH, SHIP_PARENTS_NODE_LINK_WIDTH, PARENTS_LINK_WIDTH, calcMonkeyCommunityPos } from './basis';
+import { KID_SHIP_NODE_LINK_WIDTH, SHIP_PARENTS_NODE_LINK_WIDTH, PARENTS_LINK_WIDTH, calcMonkeyCommunityPos } from '../utils/basis';
 
 
 
@@ -112,9 +110,6 @@ export class KPNodeLink extends Line2 {
 
         this.geometry = geo;
         this.material = mat;
-
-        
-
     }
 
     public lineTypeGeometry() {
@@ -176,7 +171,6 @@ export class KidKinshipNodeLink extends Line2{
         });
         mat.resolution.set(window.innerWidth, window.innerHeight);
 
-        
         this.geometry = geo;
         this.material = mat;
     }

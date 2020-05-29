@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt, MONKEY_GEN_ID, UNIT_GEN_ID, GEN_UNIT_COLOR, GET_TICK, GET_COMMUNITY }from './basis';
+import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt, MONKEY_GEN_ID, UNIT_GEN_ID, GEN_UNIT_COLOR, GET_TICK, GET_COMMUNITY }from '../utils/basis';
 import { Monkey, Male, Female } from './Monkey';
 import { Kinship} from './Kinship';
 import { MeshNormalMaterial } from '../threelibs/three';
@@ -41,6 +41,7 @@ export abstract class Unit extends THREE.Group {
         }
         this._unitType = unitType;
         this.ID = UNIT_GEN_ID();
+        this.EID = this.ID;
         let container = document.getElementsByClassName('center')[0];
 
         let laberDiv = document.createElement('div');//创建div容器

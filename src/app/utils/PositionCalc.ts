@@ -3,10 +3,10 @@
 // 间接或直接计算出来的，所以不需要单独去计算
 // 单元的位置也需要单独计算
 import * as THREE from 'three';
-import { Unit, OMU, AMU, FIU } from "./Unit";
-import { Monkey, Male, Female } from './Monkey';
+import { Unit, OMU, AMU, FIU } from "../commons/Unit";
+import { Monkey, Male, Female } from '../commons/Monkey';
 import { UNIT_RING, UNITNUM_ON_RING, STARTRADIUS, RINGWIDTH, AGE_LEVEL, LAYER_COLOR } from "./basis";
-import { Kinship } from './Kinship';
+import { Kinship } from '../commons/Kinship';
 
 export function unitsLayout(units : Array<Unit>){
     // 按照环带对 Unit 进行布局

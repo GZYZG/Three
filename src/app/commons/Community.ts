@@ -1,35 +1,16 @@
-// 用于测试的数据
-// 以一年内的社群的数据为一份，每一份内为一个表，每一行为一直猴子的数据， 每一列为一个猴子的所有属性值
-// 除了以上这个表，还有一个表，用于记录所有单元的信息
-// 每一只猴子的属性有：ID、name、genda、birthDate、father、mother
-// 其中father、mother 均用父、母的ID表示
-// 示例：某一个年份的猴子信息
-// ID       name        genda       birthDate       father      mother      unit
-//  1        zq          FEMALE      1998/7/23         1           4         1
-//  2        gzy         MALE        1997/2/5          5           6         2
-//  3        zrq         MALE        1974/1/1         -1           -1        2
-//  4        yhj         FEMALE      1975/1/1         -1           -1        2
-//  5        gsz         MALE        1961/12/30       -1           -1        1
-//  6        sjm         FEMALE      1974/1/1         -1           -1        1
-import { Unit, OMU, AMU, FIU } from "../commons/Unit";
-import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, GET_TICK_MODE, TICK_MODE, logFrame, logBase, Slice, OMUSlice, AMUSlice, GET_MONKEYIDMAP, GET_UNITIDMAP } from "../commons/basis";
-import { Kinship } from "../commons/Kinship";
-import { Monkey, Male, Female } from "../commons/Monkey";
-import { unitsLayout, OMULayout, AMULayout, FIULayout } from "../commons/PositionCalc";
+import { Unit, OMU, AMU, FIU } from "./Unit";
+import { GENDA, UNIT_TYPE, randomInt, MONKEY_GEN_ID, AGE_LEVEL, GET_TICK, TICK_NEXT, logBase, Slice, OMUSlice, AMUSlice, GET_MONKEYIDMAP, GET_UNITIDMAP } from "../utils/basis";
+import { Kinship } from "./Kinship";
+import { Monkey, Male, Female } from "./Monkey";
+import { unitsLayout, OMULayout, AMULayout, FIULayout } from "../utils/PositionCalc";
 import * as THREE from "three";
-import { Frame} from "../commons/Dynamics";
-import { TextGeometry } from "../threelibs/three";
+import { Frame} from "./Frame";
 
 import FruchtermanLayout from  "@antv/g6/lib/layout/fruchterman";
 import DagreLayout from "@antv/g6/lib/layout/dagre";
 import  ForceLayout from "@antv/g6/lib/layout/force";
-import { addId2Dropdown, addGroupIds2Dropdown, addTick2Dropdown, showCommunityTickList, addMonkeyIds2Selecter } from "../commons/Dom";
-import { KidKinshipNodeLink } from "../commons/LineFactory";
-import {genSlice} from './Benchmark';
-
-var FileSaver = require('file-saver');
-
-
+import { showCommunityTickList } from "./Dom";
+import {genSlice} from '../debug/Benchmark';
 
 export class Community extends THREE.Object3D{
     public allunits : Array<Unit>;
@@ -45,11 +26,9 @@ export class Community extends THREE.Object3D{
 
     public logInfo: Array<string>;
 
-
-
     public layoutRecords : Map<number, Map<Unit, any>>;
 
-    constructor(baseUnitNum: number = 5, baseData?:any){
+    constructor(baseUnitNum: number = 5, baseData?:{ baseUnits : Array<Unit>, baseMonkeys : Array<Monkey>, baseKinships : Array<Kinship>,}) {
         super();
         this.layoutRecords = new Map<number, Map<Unit, any>>();
 
@@ -104,8 +83,6 @@ export class Community extends THREE.Object3D{
         return tmp;
     }
 
-
-
     public addFrame(frame: Frame){
         this.frames.push(frame);
     }
@@ -141,13 +118,6 @@ export class Community extends THREE.Object3D{
         return tmp;
     }
 
-    // public adultCommuAliveMonkeys(){
-    //     let tmp = this.commuAliveMonkeys();
-    //     let ret = new Array();
-
-
-    // }
-
     public vanishedMonkeys(){
         return this.allmonkeys.filter( m => !m.inCommu  );
     }
@@ -170,7 +140,6 @@ export class Community extends THREE.Object3D{
         let tmp = this.findMonkeyByID(id).filter(m => !m.isMirror);
         if( tmp.length == 0)    return null;
         return tmp[0];
-
     }
 
     public findKinshipByFather( father : Male){
@@ -197,9 +166,9 @@ export class Community extends THREE.Object3D{
         return tmp[0];
     }
 
-    public layout(tick?:number) {
+    public layout(tick?:number, type:string="dagre") {
         // 先对单元进行总体布局
-        unitsLayout(this.allunits);
+        // unitsLayout(this.allunits);
         // 再对每个单元内的层进行布局
         this.allunits.forEach( u =>{
             switch( u.unitType ){
@@ -223,8 +192,10 @@ export class Community extends THREE.Object3D{
             }
         });
 
-        if( !this.layoutRecords.get(this.tick) && !tick ){
-            this.G6Layout("dagre");
+        //if( !this.layoutRecords.get(this.tick) && !tick ){
+        if( !tick ){
+            //this.G6Layout("dagre");
+            this.G6Layout(type);
         } else {
             let tickLay = this.layoutRecords.get(tick);
             let entries = tickLay.entries();
@@ -244,19 +215,15 @@ export class Community extends THREE.Object3D{
         // 再对亲缘关系进行布局
         this.allkinships.forEach(k => {
             k.layout();
-        })
-        
-
-      
-        
+        })  
     }
 
     // 使用G6的图布局算法计算单元坐标
     public G6Layout(type:string = "dagre"){
-        let scene = document.getElementsByClassName('center')[0];
+        //let scene = document.getElementsByClassName('center')[0];
         //let w = scene.offsetWidth, h = scene.offsetHeight;
-        let w = window.innerWidth, h = window.innerHeight;
-        var layoutCfg = {
+        //let w = window.innerWidth, h = window.innerHeight;
+        /*var layoutCfg = {
             force:{
               type: 'force', // 设置布局算法为 force， 可选 random mds force fruchterman circular radial dagre concentric grid 
               preventOverlap: true, // 设置防止重叠
@@ -328,7 +295,7 @@ export class Community extends THREE.Object3D{
                 nodeSep: 30,
                 rankSep: 100,
            },
-          }
+          }*/
 
         switch(type){
             case "dagre":
@@ -367,8 +334,9 @@ export class Community extends THREE.Object3D{
     }
 
     public dagreLayout(){
+        // Dagre 是一种针对有向图的布局算法，致力于给出一个可读的、分层的、复合一定美学原则的有向图布局
         let scene = document.getElementsByClassName('center')[0];
-        let w = scene.offsetWidth, h = scene.offsetHeight;
+        // let w = scene.offsetWidth, h = scene.offsetHeight;
         let myData = this.getJsonData();
         let pos = new Array();
         let dagre = new DagreLayout();
@@ -441,21 +409,9 @@ export class Community extends THREE.Object3D{
     }
 
     public forward(step:number=1){ 
-        console.log("进入forward，community.tick: ", this.tick);
+        //console.log("进入forward，community.tick: ", this.tick);
         if(step <= 0)   return;
         // 向前步进一个时刻，在当前的基础上执行 this.frames[this.tick] 即可到达下一时刻，再更新this.tick
-        let tickMode = GET_TICK_MODE();
-        switch(tickMode){
-            case TICK_MODE.ACCUMULATE:
-                //显示累积的亲缘关系
-                break;
-            case TICK_MODE.ISOLATE:
-                //显示当前年份的亲缘关系
-                break;
-            default:
-                //显示累积的亲缘关系
-                break;
-        }
 
         let frame = this.frames[this.tick];
         if(!frame)   return;
@@ -523,28 +479,10 @@ export class Community extends THREE.Object3D{
     }
 
     public back(step:number=1){
-        console.log("进入back!", "community.tick: ", this.tick);
+        //console.log("进入back!", "community.tick: ", this.tick);
         if( this.tick == 0)     return;
         if(step <= 0)   return;
         // 显示回退的亲缘关系
-        // 进行回退或者前进之前，不仅与 选择的TICK_MODE 有关，还和当前的 TICK_MODE 有关，
-        // 1) 如果当前的mode和之前的mode一致，则不需要重新之前的frame
-        // 2) 如果不一致，则需要执行一些操作，
-        // 也可以不管mode，先进行回退后，再统一设置亲缘关系的可见性
-        // 此时，只需要将需要取消的frame的成员变动取消即可
-        let tickMode = GET_TICK_MODE();
-        switch(tickMode){
-            case TICK_MODE.ACCUMULATE:
-                //显示累积的亲缘关系
-                break;
-            case TICK_MODE.ISOLATE:
-                //显示当前年份的亲缘关系
-                break;
-            default:
-                //显示累积的亲缘关系
-                break;
-        }
-        
         // 当 this.tick == 0时，this.frames 是空的
         // 所以当执行回退一个tick时，需要把 this.frames[this.tick-1]的frame回退，所以执行回退后要进行this.tick减1
         
@@ -697,8 +635,6 @@ export class Community extends THREE.Object3D{
         
     }
 
-    
-
     public showRangeCommunityChange(start: number, end: number){
         this.maskMember();
         let viewkeys = window.VIEW_KEYS;
@@ -750,8 +686,6 @@ export class Community extends THREE.Object3D{
         }
         
     }
-
-    
 
     public showEnterCommu(start: number, end: number, involvedMirror: boolean){
         if( start == 0){
@@ -1034,71 +968,6 @@ export class Community extends THREE.Object3D{
                     // });
                 })
             }
-        })
-    }
-
-    public showUnsampled(start: number, end: number, mirror: boolean = true) {
-
-    }
-
-
-    public changeTickMode(tarMode: TICK_MODE, t?:number) {
-        //根据时间模式改变从起始时刻到this.tick 的亲缘关系的可见性
-        let tick: number;
-        if(!t){
-            tick = this.tick;   // 获取当前社群的tick
-        } else{
-            tick = t;
-        }
-        
-        console.log("TICK-", tick, "  TICK_MODE: ", tarMode);
-        let visible : boolean;
-        let baseVis : boolean;
-        // 访问各个frame中的newkinships，找到其中的孩子，设置其在kinship中的可见性，
-        // 而不是设置在单元中的可见性，因为时间模式的切换不影响tick之前的成员变动的可见性
-        if( tarMode == TICK_MODE.ACCUMULATE) {
-            visible = true;
-            // 从isolate => accumulate，则需要把frames[0]~frames[tick-2]的亲缘关系都设置为可见
-            // 需要特别处理的是其实时刻的亲缘关系， 因为其实时刻不是通过frame生成的，但是记录了起始时刻的孩子
-            // 再执行frame中的亲缘的可见性
-            
-        } else {
-            visible = false;
-            // 从accumulate => isolate。则需要把非frames[tick-1]的亲缘关系都设置为不可见 0~tick-2
-            // 类似if 中的情况，需要单独处理起始时刻的kid
-        }
-
-        if( tick == 0 && tarMode == TICK_MODE.ISOLATE){
-            baseVis = true;
-        } else{
-            baseVis = visible;
-        }
-
-        this.basekids.forEach( e => {
-            let ks = this.findKinshipByParents( e.father, e.mother );
-            ks.changeKidVisible( e.ID, baseVis);
-            console.log("\t在起始时刻的kid: ", e, " 被设置为", baseVis? "可": "不可", "见！");
-        })
-        for(let i = 0; i < tick-1; i++){
-            let f = this.frames[i];
-            let newKin = f.newKinships;
-            newKin.forEach( e => {
-                let ks = this.findKinshipByParents( e.parents.dad, e.parents.mom );
-                ks.changeKidVisible( e.kid.ID, visible);
-                let tmp = ks.kids.filter( ee => ee.ID == e.kid.ID);
-                console.log("\t在 Tick-"+ tick+ " 在frames["+ i+ "] 中，kid: ", tmp[0], " 被设置为",  visible? "可": "不可", "见！");   
-            })
-        }
-
-        // 要将当前时刻的kinship设置为可见
-        let f = this.frames[tick-1];
-        if(!f)  return;
-        let newKin = f.newKinships;
-        newKin.forEach( e => {
-            let ks = this.findKinshipByParents( e.parents.dad, e.parents.mom );
-            ks.changeKidVisible( e.kid.ID, true);
-            let tmp = ks.kids.filter( ee => ee.ID == e.kid.ID);
-            console.log("\t在 Tick-"+ tick+ " 在frames["+ i+ "] 中，kid: ", tmp[0], " 被设置为可见！");   
         })
     }
 
@@ -1575,9 +1444,6 @@ export class Community extends THREE.Object3D{
         return data;
     
     }
-
-    
-
 }
 
 function genParents(units : Array<Unit>){
@@ -1625,28 +1491,11 @@ function genParents(units : Array<Unit>){
     }
 }
 
-function genMonkey(name?:string, unit?: Unit, ageLevel?: AGE_LEVEL){
-    let monkey;
-    if(!ageLevel){
-        let rate = Math.random();
-        if(rate < .33)  ageLevel = AGE_LEVEL.JUVENILE;
-        else if(rate < .67) ageLevel = AGE_LEVEL.YOUNG;
-        else   ageLevel = AGE_LEVEL.ADULT;
-    } 
-
-    if(Math.random() < .5){
-        monkey = new Male(MONKEY_GEN_ID(),  name ? name : "unknown-"+ageLevel+"-Tick-"+GET_TICK(), unit? unit:null);
-    } else {
-        monkey = new Female(MONKEY_GEN_ID(), name ? name : "unknown-"+ageLevel+"-Tick-"+GET_TICK(), unit? unit:null);
-    }
-    
-    monkey.ageLevel = ageLevel;
-
-    return monkey;
-
-}
-
-function baseCommunity(unitNum : number){
+function baseCommunity(unitNum : number) : {
+    baseUnits : Array<Unit>,
+    baseMonkeys : Array<Monkey>,
+    baseKinships :  Array<Kinship>,
+}{
     var units = new Array<Unit>();
     var monkeys = new Array<Monkey>();
     var unit:Unit;
@@ -1713,9 +1562,6 @@ function baseCommunity(unitNum : number){
         }
         
     }
-    
-    // addTick2Dropdown();
-    // $('#tickDropdown button').get()[0].textContent =  ""+GET_TICK();
 
     return {
         baseUnits : units,
@@ -1723,189 +1569,3 @@ function baseCommunity(unitNum : number){
         baseKinships : allKinships,
     }
 }
-
-
-export function genFrame(commu : Community){
-    TICK_NEXT();
-
-    let vanished;
-    let newUnits = new Array<Unit>(); 
-    let enterCommu = new Array();
-    let challengeMainMale = new Array();
-    let migrates = new Array();
-    let newKinships = new Array();
-    // 从社群中消失的猴子的数量
-    let vainshNum  = randomInt(0, 2);
-    let dead = new Array();
-    let outCommu = new Array();
-    // 注意！！！monkey死亡或者离群时有可能是主雄，所以frame中需要记录！
-    for(let i = 0; i < vainshNum; i++){
-        let monkey;
-        let temp = commu.commuAliveMonkeys();//allmonkeys.filter( m => m.inCommu && m.isAlive);
-        monkey = temp[randomInt(0, temp.length-1) ];
-        if(Math.random() < .2){
-            // monkey 死亡
-            //console.log("死亡的Monkey：", monkey, "在", monkey.realunit.name , " 死亡！");
-            //monkey.die();
-            dead.push({monkey: monkey, isMainMale: monkey.isMainMale});
-        } else{
-            // monkey 离开单元并且不进入任一单元，则表示离开社群
-            //console.log("离群的Monkey：", monkey, "从", monkey.realunit.name , " 离群！");
-            //monkey.leaveUnit();
-            outCommu.push({monkey: monkey, isMainMale: monkey.isMainMale });
-        }
-        
-    }
-    // 通过frame来完成
-    vanished = {
-        dead: dead,
-        outCommu: outCommu,
-    }
-
-    // 进入社群的monkey
-    let tmp = commu.outCommuMonkeys();
-    // 以前消失的猴子重回社群
-    let reenterNum = randomInt(0, tmp.length);
-    let enterMonkeys = new Set<Monkey>();
-    for(let i = 0; i < reenterNum; i++){
-        enterMonkeys.add( tmp[i]);
-    }
-    // 未知的猴子进入社群
-    for(let i = randomInt(0, 2); i > 0; i--){
-        let monkey  = genMonkey("unknown"+i);
-        if(Math.random() < .2){
-            // 未知的猴子的父母在社群中
-            let parents = genParents(commu.allunits);
-
-            // 通过frame来完成
-            newKinships.push({kid: monkey, parents: parents});
-            console.log(`\n\n${monkey.name} (${monkey.ID}) 在社群中找到父母！\n`);
-        } 
-        enterMonkeys.add(monkey);
-    }
-    // 为进入社群的猴子分配单元
-    enterMonkeys.forEach(m =>{
-        if(Math.random() < .25 && m.genda == GENDA.MALE && m.ageLevel == AGE_LEVEL.ADULT){
-            let omu = new OMU(10, m);
-            enterCommu.push({monkey: m, unit: omu});
-            newUnits.push(omu);
-        } else if( Math.random() < .25 && m.genda == GENDA.MALE){
-            let amu = new AMU(8);
-            enterCommu.push({monkey: m, unit: amu} );
-            newUnits.push(amu);
-        } else if(Math.random() < .4){
-            let fiu = new FIU(8); 
-            // 通过frame来完成
-            enterCommu.push({monkey: m, unit: fiu} );
-            newUnits.push(fiu);
-            //console.log("进入社群的Monkey：", m, " 建立新FIU并进入", fiu.name);
-        } else{
-            let picked = commu.allunits[ randomInt(0, commu.allunits.length-1) ];
-            // 通过frame来完成
-            enterCommu.push({monkey: m, unit: picked});
-
-            //m.enterUnit( picked );
-            //console.log("进入社群的Monkey：", m, " 进入单元", picked.name);
-            if(picked instanceof OMU && m.ageLevel == AGE_LEVEL.ADULT && m.genda == GENDA.MALE  && Math.random() < .8){
-                // m 挑战主雄成功
-                // 通过frame来完成
-                challengeMainMale.push({unit: picked, winner: m, loser: picked.mainMale });
-                console.log("挑战成功！"," unit:", picked.name, "  winner:", m)
-                //picked.mainMale = m;
-            } else{
-                console.log("挑战失败！"," unitType:", picked.unitType, " ageLevel:", m.ageLevel, " genda:", m.genda)
-            }
-        }
-    })
-    
-    // 成年雌、雄性的迁移
-    let migrateMaleNum = randomInt(0, 2);
-    let migrateFemaleNum = randomInt(0, 2);
-    let migrated = new Array<Monkey>();
-    for(let i = 0; i < migrateMaleNum; i++){
-        let temp = commu.commuAliveMonkeys().filter(e => e.ageLevel == AGE_LEVEL.ADULT && e.genda == GENDA.MALE && !e.isMainMale && !migrated.includes(e) );
-        //console.log("\n\n可挑选迁移的成年雄性:", temp, "\n\n");
-        if(temp.length == 0) break;
-        let picked = temp[ randomInt(0, temp.length-1) ];
-        let toUnits = commu.allunits.filter( u => u != picked.unit ).concat(newUnits);
-        let tarUnit = toUnits[randomInt(0, toUnits.length-1) ];
-        migrated.push(picked);
-        // 通过frame来完成
-        migrates.push({monkey: picked, originUnit: picked.realunit, targetUnit: tarUnit});
-        // picked.leaveUnit();
-        // picked.enterUnit( tarUnit );
-    }
-    for(let i = 0; i < migrateFemaleNum; i++){
-        let temp = commu.commuAliveMonkeys().filter(e => e.ageLevel == AGE_LEVEL.ADULT && e.genda == GENDA.FEMALE && !migrated.includes(e) );
-        //console.log("\n\n可挑选迁移的成年雌性:", temp, "\n\n");
-        if(temp.length == 0) break;
-        let picked = temp[ randomInt(0, temp.length-1) ];
-        let toUnits = commu.allunits.filter( u => u != picked.unit ).concat(newUnits);
-        let tarUnit = toUnits[randomInt(0, toUnits.length-1) ];
-        migrated.push(picked);
-        // 通过frame来完成
-        migrates.push({monkey: picked, originUnit: picked.realunit, targetUnit: tarUnit});
-        // picked.leaveUnit();
-        // picked.enterUnit( tarUnit );
-    }
-
-    // 生成的孩子的数目
-    let babeNum : number;
-    if(Math.random() < 1.95){
-        babeNum = randomInt(2,2);//randomInt(4, 8);
-    } else if ( Math.random() < .99){
-        babeNum = randomInt(4, 5);//randomInt(9, 15);
-    } else{
-        babeNum = randomInt(6,7);//randomInt(16, 20);
-    }
-
-    // 挑选 babeNum 对parents
-    //let newBabes = new Array();
-    for(let i = 0; i < babeNum; i++){
-        let parents = genParents(commu.allunits);
-        let kid : Monkey;
-        let unit = parents.mom.unit;
-        kid = genMonkey(unit.name+'.'+AGE_LEVEL.JUVENILE+'.'+unit.juvenileLayer.length.toString()+"-new", unit, AGE_LEVEL.JUVENILE);
-        //kid.enterUnit(unit);
-        // 通过frame来完成
-        enterCommu.push( {monkey: kid, unit: unit});
-        newKinships.push({kid: kid, parents: parents});
-
-    }
-    console.log("消失的: ", vanished,"\n新增的单元: ", newUnits, "\n进入社群的: ", enterCommu, "\n挑战家长成功的: ", challengeMainMale,  "\n迁移的: ", migrates, "\n新增的亲缘关系: ", newKinships);
-    let para = {
-        vanished: vanished,
-        newUnits: newUnits,
-        enterCommu: enterCommu,
-        challengeMainMale: challengeMainMale,
-        migrates: migrates,
-        newKinships: newKinships,
-        tick: GET_TICK(),
-    }
-    let frame = new Frame(para);
-    return frame;
-    // commu.addFrame(frame);
-    // commu.forward();
-    // //commu.tickNext();
-    // commu.layout();
-    // // 因为增加了一个TICK，在这过程中可能会改变TICK_MODE，需要根据当前模式将当前TICK之前的亲缘关系可见性进行设置。
-    // commu.changeTickMode(GET_TICK_MODE() );
-    // addGroupIds2Dropdown(commu);
-    // addMonkeyIds2Selecter(commu);
-    // //window.graph = commu.getJsonData();
-    // addTick2Dropdown();
-    // $('#tickDropdown button').get()[0].textContent = ""+GET_TICK();
-    // console.log("Tick 之后的Community：", commu);
-    // let logStr = logFrame(frame,commu.frames.indexOf(frame));
-    // commu.logInfo.push(logStr);
-    // console.log( logStr );
-    
-}
-
-
-
-
-
-
-
-

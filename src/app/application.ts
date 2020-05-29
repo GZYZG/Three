@@ -4,35 +4,22 @@ import { DragControls } from './controls/DragControls';
 import { TransformControls } from './controls/TransformControls';
 import { TrackballControls } from './controls/TrackballControls';
 import { Stats } from './debug/stats.module';
-import { OMU, AMU, FIU, Unit } from './commons/Unit';
 import { Monkey } from './commons/Monkey';
-import { LineGeometry} from './threelibs/LineGeometry'
-import { LineMaterial} from './threelibs/LineMaterial';
-import { Line2} from './threelibs/Line2';
 import { GUI } from './threelibs/dat.gui.module';
-import { unitsLayout, OMULayout, AMULayout, FIULayout } from './commons/PositionCalc';
-import { Kinship } from './commons/Kinship';
-import { Community, genFrame } from './debug/TestData';
-import { CSS2DObject, CSS2DRenderer} from "./threelibs/CSS2DRenderer";
-import { fillBlanks, addId2Dropdown, addGroupIds2Dropdown, showUnitTickList, showCommunityTickList, addMonkeyIds2Selecter, addTick2Dropdown} from './commons/Dom';
-import { isNumber, calcMonkeyCommunityPos, TICK_MODE, SET_TICK_MODE, GET_TICK, TICK_NEXT, GET_TICK_MODE, GET_COMMUNITY, logFrame, GET_TICKMAP } from './commons/basis';
-import { bindTickRangeStruc } from './commons/BindEvent';
+import { Community } from './commons/Community';
+import { CSS2DRenderer} from "./threelibs/CSS2DRenderer";
+import { fillBlanks, showUnitTickList, showCommunityTickList, addMonkeyIds2Selecter} from './commons/Dom';
+import { isNumber, calcMonkeyCommunityPos, GET_TICK, TICK_NEXT, GET_COMMUNITY, logFrame, GET_TICKMAP } from './utils/basis';
+import { bindStrucTickRange, bindNextSlice, bindKinshipTickRange, bindShow } from './commons/Event';
 import { genSlice, resolve2Frame } from './debug/Benchmark';
+import { importFile } from './utils/EXIM';
 
-
-var FileSaver = require('file-saver');
-
-var monkeys = new Array<Monkey>();
 var camera : THREE.PerspectiveCamera;
 var scene : THREE.Scene;
 var renderer : THREE.WebGLRenderer;
 var selected : Monkey;
 var raycaster = new THREE.Raycaster();
 var states : any;
-var matLineUnDashed = new LineMaterial({
-    linewidth: 2, // in pixels
-    vertexColors: true
-});
 var self : any;
 var rendererContainer : any;
 
@@ -66,6 +53,7 @@ export class Application{
         renderer = this.renderer = new THREE.WebGLRenderer( { antialias: true , alpha: true } );
         camera = this.camera = new THREE.PerspectiveCamera(60, renderer.domElement.width / renderer.domElement.height, 1, 5000);
         scene = this.scene = new THREE.Scene();
+        window.scene = scene;
         this.camera.position.set(100, 100, 100);
         this.camera.lookAt(0, 0, 0);
         
@@ -104,6 +92,7 @@ export class Application{
         self = this;
 
         this.animate();
+        
     }
 
     private initLabelRenderer() {
@@ -357,65 +346,17 @@ export class Application{
 }
 
 function bindEvents(){
-    var btn = $("#next")[0];
-    btn.onclick = function(){
-        if(!COMMUNITY){
-            var commu = COMMUNITY = GET_COMMUNITY();
-            scene.add(commu);
-            commu.layout();
-            //addId2Dropdown( commu );
-            addMonkeyIds2Selecter(commu);
-            return;
-        }
-        TICK_NEXT();
-        let frame = genSlice(COMMUNITY);
-        
-        frame.tick = GET_TICK();
 
-        COMMUNITY.addFrame(frame);
-        COMMUNITY.forward();
-        //commu.tickNext();
-        COMMUNITY.layout();
-        // 因为增加了一个TICK，在这过程中可能会改变TICK_MODE，需要根据当前模式将当前TICK之前的亲缘关系可见性进行设置。
-        COMMUNITY.changeTickMode(GET_TICK_MODE() );
-        addGroupIds2Dropdown(COMMUNITY);
-        addMonkeyIds2Selecter(COMMUNITY);
-        //window.graph = commu.getJsonData();
-        addTick2Dropdown();
-        $('#tickDropdown button').get()[0].textContent = ""+GET_TICK();
-        console.log("Tick 之后的Community：", COMMUNITY);
-        let logStr = logFrame(frame,COMMUNITY.frames.indexOf(frame));
-        COMMUNITY.logInfo.push(logStr);
-        console.log( logStr );
-
-        $('#tickRange').slider({max:GET_TICK()})
-        $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:GET_TICK(), GET_TICK()]);
-        //$("#tickLow").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
-        $("#tickHigh").html(GET_TICK() + " / " + GET_TICK());
-        // 要进行刷新
-        $("#tickRange").slider('refresh', { useCurrentValue: true });
-
-        $('#tickRangeStruc').slider({max:GET_TICK()})
-        $("#tickRangeStruc").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:GET_TICK(), GET_TICK()]);
-        //$("#tickLowStruc").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
-        $("#tickHighStruc").html(GET_TICK() + " / " + GET_TICK());
-        // 要进行刷新
-        $("#tickRangeStruc").slider('refresh', { useCurrentValue: true });
-
-        // 显示社群的历史变更信息，增加一个年份的信息
-        showCommunityTickList();
-        if($("#unit_info > li:nth-child(1)").attr("unitID") ){
-            let unitID =  +$("#unit_info > li:nth-child(1)").attr("unitID");
-            showUnitTickList(unitID );
-        }
-        
-    }
+    $("#data").change(function(e){
+        importFile(e);
+    })
+    bindNextSlice();
 
     $('#monkeySelecter').on('hide.bs.select', function(e){
         if( !$("#monkeySelecter").val() || $("#monkeySelecter").val().length == 0 ){
             return;
         }
-        console.log($("#monkeySelecter").val())
+        //console.log($("#monkeySelecter").val())
         let id = +$("#monkeySelecter").val();
         if( !isNumber(id))  return;
         if(!COMMUNITY){
@@ -426,7 +367,7 @@ function bindEvents(){
         if( selected  ){
             selected.unselected();
         }
-        console.log("intersected : ", monkey)
+        //console.log("intersected : ", monkey)
         selected = monkey;
         // 看向选中的Monkey，首先计算相机的位置，然后设置相机看向的位置
         let pos = calcMonkeyCommunityPos(monkey);
@@ -440,137 +381,11 @@ function bindEvents(){
         fillBlanks(selected);
     });
 
-
-    // 时间模式单选框，单独/累积
-    // 当时间模式改变时才出发，所以可以根据触发的模式来推断上一个模式
-    $('#mode input[type="radio"]').on('change', function(e){
-        console.log(e.target)
-        let prevMode = GET_TICK_MODE();
-        let high = $("#tickRange").slider("getValue")[1];
-        switch( e.target.id){
-            case "isolateTick":
-                SET_TICK_MODE(TICK_MODE.ISOLATE);
-               break;
-            case "accumulateTick":
-                SET_TICK_MODE(TICK_MODE.ACCUMULATE);
-                break;
-            default:
-                SET_TICK_MODE(TICK_MODE.ACCUMULATE);    break;
-        }
-        console.log("从时间模式 " + prevMode + " => " + GET_TICK_MODE() );
-        COMMUNITY.changeTickMode(GET_TICK_MODE() );
-        $("#tickLow").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE? 0+"" : high+"" );
-        $("#tickRange").slider("setValue", [GET_TICK_MODE()==TICK_MODE.ACCUMULATE?0:high, high]);
-    })
-
-
-    $("#saveLog").on("click", e => {
-        let tmp = new Array<string>();
-        COMMUNITY.logInfo.forEach( ee => {
-            tmp.push(ee);
-            console.log(ee);
-        })
-        // var blob = new Blob(tmp, {type: "text/plain;charset=utf-8"});
-        // FileSaver.saveAs(blob, "log.txt");
-        //console.log(tmp);
-    })
-
-    $('#tickRange').slider({
-        formatter: function (value) {
-            return  value;
-        },
-        tooltip_split: true,
-        tooltip: "always",
-        tooltip_position: "bottom",
-    }).on('slide',  slideEvt => {
-        //当滚动时触发，可能有重复
-        //console.info("slideEvt:", slideEvt);
-    }).on('change', e => {
-        if(!COMMUNITY){
-            COMMUNITY = GET_COMMUNITY();
-        }
-        //当值发生改变的时候触发
-        //console.info("changeEvt:", e);
-        //获取旧值和新值
-        console.info(e.value.oldValue + '--' + e.value.newValue);
-        //$("#tickLow").html(e.value.newValue[0]);
-        $("#tickLow").html( GET_TICKMAP().get( e.value.newValue[0] ) );
-        //$("#tickHigh").html(e.value.newValue[1] + " / " + GET_TICK());
-        $("#tickHigh").html( GET_TICKMAP().get( e.value.newValue[1] ) + " / " + GET_TICKMAP().get( GET_TICK() ) );
-        if( e.value.oldValue[1] != e.value.newValue[1] ){
-            console.log("重布局！");
-            COMMUNITY.layout(e.value.newValue[1]);
-        }
-
-        let v1 = $("#tickRangeStruc").slider("getValue");
-        COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
-        COMMUNITY.showRangeCommunityChange(v1[0], v1[1]);
-        COMMUNITY.showRangeKinship(e.value.newValue[0], e.value.newValue[1]);
-
-        if(!window.VIEW_KEYS['kinship']){
-            COMMUNITY.maskKinship();
-            COMMUNITY.showRangeCommunityChange( v1[0], v1[1] );
-        }
-        //COMMUNITY.maskNewUnit(Math.max(e.value.newValue[1], v1[1]), GET_TICK() );
-
-        // 改变时刻后要及时更新ID列表
-        //addGroupIds2Dropdown(COMMUNITY);
-        //addMonkeyIds2Selecter(COMMUNITY);
-    });
-
+    
+    bindKinshipTickRange();
     // 为社会变动时间范围选择器绑定事件
-    bindTickRangeStruc();
+    bindStrucTickRange();
 
-    window.onload=  function(){
-        $("1.label").on("click", e => {
-            let unitID = parseInt(e.target.getAttribute("unitID") );
-            let unit = COMMUNITY.allunits.filter( e => e.ID == unitID)[0];
-            let blanks = $("#unit_info li");
-            blanks[0].innerText =  "ID: " + unit.ID;
-            blanks[0].setAttribute("unitID", unitID+"");
-            blanks[1].innerText = "name: " + unit.name;
-            blanks[2].innerText = "创建时间: Tick-" + unit.createTick;
-            showUnitTickList(unitID);
-            $("#collapseTwo").collapse("show");
-        })
-    }
-
-    $('#showData').on('click', e => {
-        let COMMUNITY = GET_COMMUNITY();
-        
-        console.log('SHOW COMMUNITY');
-        if(!COMMUNITY){
-
-        } else{
-            scene.children.forEach(ee => {
-                if(ee instanceof Community) {
-                    scene.remove(ee);
-                }
-            })
-        }
-
-        $('#tickRange').slider({max:GET_TICK()})
-        $("#tickRange").slider("setValue", [0, GET_TICK()]);
-        //$("#tickLow").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
-        $("#tickHigh").html(GET_TICK() + " / " + GET_TICK());
-        // 要进行刷新
-        $("#tickRange").slider('refresh', { useCurrentValue: true });
-
-        $('#tickRangeStruc').slider({max:GET_TICK()})
-        $("#tickRangeStruc").slider("setValue", [0, GET_TICK()]);
-        //$("#tickLowStruc").html(GET_TICK_MODE()==TICK_MODE.ACCUMULATE?"0":""+GET_TICK());
-        $("#tickHighStruc").html( GET_TICKMAP().get( GET_TICK() ) + " / " + GET_TICKMAP().get( GET_TICK() ) );
-        // 要进行刷新
-        $("#tickRangeStruc").slider('refresh', { useCurrentValue: true });
-
-        // 显示社群的历史变更信息，增加一个年份的信息
-        showCommunityTickList();
-        if($("#unit_info > li:nth-child(1)").attr("unitID") ){
-            let unitID =  +$("#unit_info > li:nth-child(1)").attr("unitID");
-            showUnitTickList(unitID );
-        }
-        scene.add(COMMUNITY);
-
-    })
+    bindShow();
 
 }
