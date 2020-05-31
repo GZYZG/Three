@@ -349,7 +349,7 @@ export function logFrame(frame: Frame, idx: number){
         logStr += tmp;
     })
 
-    logStr += "\n===>新增单元<===n";
+    logStr += "\n===>新增单元<===\n";
     logStr += "单元ID     单元类型     创建时刻     成员数量\n"
     frame.newUnits.forEach( e => {
         tmp = `${e.EID}     ${e.unitType}     ${e.createTick}     ${e.tickMembers.get(frame.tick).length}\n`;
@@ -364,7 +364,7 @@ export function logFrame(frame: Frame, idx: number){
     })
 
     logStr += "\n===>挑战主雄成功<===\n";
-    logStr += "单元     原主雄     现主雄你\n";
+    logStr += "单元     原主雄     现主雄\n";
     frame.challengeMainMale.forEach( e => {
         tmp = `${e.unit.EID}     ${e.loser? e.loser.EID : '---'}     ${e.winner.EID}\n`;
         logStr += tmp;
@@ -384,7 +384,7 @@ export function logFrame(frame: Frame, idx: number){
         logStr += tmp;
     })
     
-    logStr += "==============================\n\n";
+    logStr += "++++++++++++++++++++\n\n";
 
     // fse.writeFile(logFilName, logStr, (err) => {
     //     if (err) throw err;

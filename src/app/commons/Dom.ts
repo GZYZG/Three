@@ -2,9 +2,6 @@ import {Monkey} from "./Monkey";
 import { Community} from "./Community";
 import { GET_TICK, GET_COMMUNITY, GET_MONKEYIDMAP } from "../utils/basis";
 import { Unit } from "./Unit";
-import { importFile } from '../utils/EXIM';
-
-
 
 export function fillBlanks(monkey : Monkey){
     //console.log("fill blanks for: ", monkey);

@@ -1,10 +1,6 @@
 import { Monkey, Male, Female} from './Monkey';
 import { ParentsLink, KPNodeLink, KidKinshipNodeLink } from './LineFactory';
 import * as THREE from 'three';
-import { Colors } from 'three';
-import { LineGeometry } from '../threelibs/LineGeometry';
-import { LineMaterial } from '../threelibs/LineMaterial';
-import { Line2 } from '../threelibs/Line2';
 import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos, cleanCache, MONKEY_COLOR } from '../utils/basis';
 
 export class KinshipNode extends THREE.Mesh {

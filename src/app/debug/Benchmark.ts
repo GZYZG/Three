@@ -270,10 +270,10 @@ export function genSlice(commu : Community, param?:any ){
                 // m 挑战主雄成功
                 // 通过frame来完成
                 challengeMainMale.push({unit: picked, winner: m, loser: picked.mainMale });
-                console.log("挑战成功！"," unit:", picked.name, "  winner:", m)
+                //console.log("挑战成功！"," unit:", picked.name, "  winner:", m)
                 //picked.mainMale = m;
             } else{
-                console.log("挑战失败！"," unitType:", picked.unitType, " ageLevel:", m.ageLevel, " genda:", m.genda)
+                //console.log("挑战失败！"," unitType:", picked.unitType, " ageLevel:", m.ageLevel, " genda:", m.genda)
             }
         }
     })

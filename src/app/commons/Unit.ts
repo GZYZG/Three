@@ -1,13 +1,8 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, JUVENILE_AGE, GENDA, MALE_YOUNG_AGE, FEMALE_YOUNG_AGE, randomInt, MONKEY_GEN_ID, UNIT_GEN_ID, GEN_UNIT_COLOR, GET_TICK, GET_COMMUNITY }from '../utils/basis';
+import { UNIT_TYPE, AGE_LEVEL, LAYER_COLOR, randomInt, MONKEY_GEN_ID, UNIT_GEN_ID, GEN_UNIT_COLOR, GET_TICK, GET_COMMUNITY } from '../utils/basis';
 import { Monkey, Male, Female } from './Monkey';
-import { Kinship} from './Kinship';
-import { MeshNormalMaterial } from '../threelibs/three';
-import { MOUSE } from 'three';
-import { CSS2DObject, CSS2DRenderer } from '../threelibs/CSS2DRenderer';
+import { CSS2DObject } from '../threelibs/CSS2DRenderer';
 import { showUnitTickList } from './Dom';
-
-
 
 export abstract class Unit extends THREE.Group {
     private _ID : number;

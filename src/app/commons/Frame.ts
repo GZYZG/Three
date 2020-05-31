@@ -5,8 +5,8 @@ import { GET_TICK } from '../utils/basis';
 export class Frame {
     public ID : number;
     public tick : number;   // Frame 所属的时刻
-    public nextFrame : Frame;
-    public prevFrame : Frame;
+    //public nextFrame : Frame;
+    //public prevFrame : Frame;
     
     public vanished: {dead:Array<{monkey:Monkey, isMainMale: boolean} >, outCommu: Array<{monkey:Monkey, isMainMale: boolean}>};     //消失的猴子，包括进入死亡的和离开社群的猴子
     public newUnits : Array<Unit>;    // 新增单元
@@ -23,7 +23,6 @@ export class Frame {
         let challengeMainMale = parameters.challengeMainMale || new Array<{unit:OMU, winner: Monkey, loser: Monkey}>();
         let migrates = parameters.migrates || new Array<{monkey: Monkey, originUnit: Unit, targetUnit: Unit}>();
         let newKinships = parameters.newKinships || new Array<{kid: Monkey, parents:{dad:Monkey, mom:Monkey} }>();
-        let preFrame = parameters.preFrame || null;
         let tick = parameters.tick || GET_TICK();
 
         this.tick = tick;
@@ -33,8 +32,6 @@ export class Frame {
         this.challengeMainMale = challengeMainMale;
         this.migrates = migrates;
         this.newKinships = newKinships;
-        this.prevFrame = preFrame;
-    
     }
 
 

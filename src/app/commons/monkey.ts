@@ -1,10 +1,8 @@
 import * as THREE from 'three';
-import { UNIT_TYPE, AGE_LEVEL, MALE_CUBE_LENGTH, FEMALE_SPHERE_RADIUS, GENDA, MALE_GEMOMETRY, FEMALE_GEOMETRY, MONKEY_GEN_ID, GET_TICK, MONKEY_COLOR } from '../utils/basis';
+import { AGE_LEVEL, GENDA, MALE_GEMOMETRY, FEMALE_GEOMETRY, GET_TICK, MONKEY_COLOR } from '../utils/basis';
 import { Unit, OMU} from './Unit';
 import { Kinship } from './Kinship';
 import { KidKinshipNodeLink } from './LineFactory';
-import { fillBlanks} from "./Dom";
-
 
 export interface Selectable {
     selected: () => void;
