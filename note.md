@@ -135,14 +135,15 @@ console.log( `Hello! My name is ${name}.` );
 - mother: 猴子的母亲，取值为母亲的ID，若不知道母亲，则为-1
 - year: 观察时刻
 - unit: 猴子在观察时刻的归属单元的ID
+- dead: 猴子在year时是否死亡，若死亡则为T，否则为F或不填
 
 >例如2011年的数据:  
 
-|  ID   | genda  | name  | ageLevel  | father  | mother  | unit | year |
-|  ----  | ----  | ----  | ----  | ----  | ----  | --- | --- |
-| H001  | F | monkey1 | JUVENILE | H002 | H003 | bzt | 2004 |
-| H002  | M | monkey2 | ADULT | -1 | -1 | bzt | 2004 |
-| H003  | F | monkey3 | ADULT | -1 | -1 | bzt | 2004 |
+|  ID   | genda  | name  | ageLevel  | father  | mother  | unit | year | dead |
+|  ----  | ----  | ----  | ----  | ----  | ----  | --- | --- | ---- |
+| H001  | F | monkey1 | JUVENILE | H002 | H003 | bzt | 2004 | F |
+| H002  | M | monkey2 | ADULT | -1 | -1 | bzt | 2004 |  |
+| H003  | F | monkey3 | ADULT | -1 | -1 | bzt | 2004 | T |
 
 <b>单元的数据</b>
 每一个年份的数据都可以作为一张表格，每张表格里每一行都代表一个单元在该年份的数据，每个单元必须的属性如下：
