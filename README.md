@@ -22,14 +22,14 @@
     > 在时刻t，个体x所属的单元中的分身即是x在时刻t的真身。
 - 时间切片
     > 包含社会组成的六种类型的事件。时间切片是相邻时刻的社群的差异，即时刻t+1时刻的社群与t时刻的社群的差异。每个时刻都有对应的时间切片，时刻t+1的切片作用在时刻t的社群上，则社群会演变到时刻t+1。
-
+---
 
 
 #### 开发环境介绍：
 - OS：win10
 - IDE：vscode
 - 包管理器：npm
-- 3D引擎：three.js [three.js官网](https://threejs.org/)
+- 3D引擎：[three.js](https://threejs.org/)
 - 实现技术：Typescript、JavaScript
 - 前端用到的框架：Bootstrap4、Jquery
 - 前端插件：[Bootstrap-slider](https://github.com/seiyria/bootstrap-slider)、[Bootstrap-select](https://developer.snapappointments.com/bootstrap-select/)、[Bootstrap-treeview](https://github.com/jonmiles/bootstrap-treeview)、[xlsx](https://github.com/SheetJS/sheetjs)
