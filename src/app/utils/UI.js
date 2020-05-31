@@ -7,7 +7,9 @@ $('#tickRangeStruc').slider({
     tooltip_position: "bottom",
 })
 
-
+/**
+ * 显示要素面板所需的数据
+ */
 var tree = [
     {
       text: "社会变动要素",

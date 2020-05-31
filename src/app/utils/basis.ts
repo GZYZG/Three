@@ -69,7 +69,6 @@ function randomColor(){
     let num = 0;
     function genUnitColor(){
         if(num < unitColor.length)  {
-            
             return unitColor[num++];
         }
         let color = "0x";
@@ -157,6 +156,7 @@ export const FEMALE_YOUNG_AGE = 4;  // 大于三岁小于等于4岁的为青年�
 export const MALE_YOUNG_AGE = 5;    // 大于三岁小于等于5岁的为青年雄性
 
 
+// 定义雌性球体、雄性立方体和单元的一些几何属性，如边长、半径等
 export const MALE_CUBE_LENGTH = 1.5;
 
 export const FEMALE_SPHERE_RADIUS = 1;
@@ -171,11 +171,12 @@ export const KID_SHIP_NODE_LINK_WIDTH = 2.2;
 
 export const LAYER_COLOR = 0xaaaaaa;
 
+// 所有同性别的金丝猴共享同一个几何体
 export var MALE_GEMOMETRY = new THREE.BoxBufferGeometry(MALE_CUBE_LENGTH, MALE_CUBE_LENGTH, MALE_CUBE_LENGTH);
 export var FEMALE_GEOMETRY = new THREE.SphereBufferGeometry(FEMALE_SPHERE_RADIUS, 8, 8);
 
-// 关于单元在社区内布局的参数，所有单元的球心均位于同一平面
-// 单元分布在一条条环带上
+// 自定义的布局算法，环形布局，不采用
+// 关于单元在社群内布局的参数，所有单元的球心均位于同一平面，单元分布在一条条环带上
 export const STARTRADIUS = 15;      // 起始的不放置单元的环带的周长
 export const RINGWIDTH = 40;        // 每个环带的宽度
 // UNIT_RING[i] = j, 表示第 i 个单元放置在第 j 条环带上，i, j 均从0开始计数
@@ -195,6 +196,7 @@ export const UNITNUM_ON_RING = [UNIT_RING.filter(e => e == 0).length,
                                 UNIT_RING.filter(e => e == 6).length
                             ];
 
+// 可视化要素
 export var VIEW_KEYS = {
     strucKey:{
         enterCommu: true,
@@ -276,7 +278,6 @@ export function calcKinshipNodePos(parentsNode : ParentsNode, type:string="curve
 Kinship通过attach 包含
 ParentsLink、ParentsNode、KinshipNode、KPNodeLink，其中KinshipNode通过add
 包含KidKinshipNodeLink。则单元、ParentsLink、ParentsNode、KinshipNode、KPNodeLink的position均为相对于社群的相对位置，KidKinshipNodeLink的position为相对KinshipNode的相对位置，Monkey的position为相对于Unit的相对位置。
-
 本次完成了KinshipNode的位置的计算，使其与father、mother位于同一平面内。
 */
 export function calcKidPos(kinshipNode : KinshipNode, kid : Monkey, R:number=5, type:string="xz") : THREE.Vector3{
@@ -331,8 +332,12 @@ export function cleanCache( obj : any ){
     obj.material.dispose();
 }
 
-export function logFrame(frame: Frame, idx: number){
-    //let logFilName = "./demo0/src/app/debug/log.txt";
+export function logFrame(frame: Frame ){
+    /**
+     * 以方便阅读的文本形式输出时间切片的变化
+     * @param frame: 时间切片
+     * @return: 时间切片对应的文本
+     */
     let tmp = ""
     let logStr = `++++++++++ 时刻-${GET_TICKMAP().get(frame.tick) ? GET_TICKMAP().get(frame.tick) : frame.tick } ++++++++++`//+ "  frameIdx: "+ idx+ "\n";
     logStr += "\n===>离开社群的猴子<===\n";
@@ -386,15 +391,15 @@ export function logFrame(frame: Frame, idx: number){
     
     logStr += "++++++++++++++++++++\n\n";
 
-    // fse.writeFile(logFilName, logStr, (err) => {
-    //     if (err) throw err;
-    //     console.log('\n\nlog保存出错！\n\n');
-    // });
-
     return logStr;
 }
 
 export function logBase(comm: Community){
+    /** 
+     * 输出初始时刻社群的状态
+     * @param comm: 社群
+     * @return：起始状态对应的文本
+     */
     let logStr = "++++++++++社群的起始信息++++++++++\n";
     let tmp = "";
     let tmpKids = comm.basekids;
@@ -428,6 +433,9 @@ export function logBase(comm: Community){
 
 
 export abstract class Slice{
+    /**
+     * 针对单元的时间切片，与Frame相比，不包含迁移的对象
+     */
     public enterUnit: Array<{ monkey: number, origin: number }>;
     public leaveUnit: Array<{ monkey: number, target: number }>;
     public newBabes: Array<{ monkey: number, father: Male, mother: Female}>;

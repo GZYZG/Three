@@ -34,4 +34,4 @@
 - 3D引擎：[three.js](https://threejs.org/)
 - 实现技术：Typescript、JavaScript
 - 前端用到的框架：Bootstrap4、Jquery
-- 前端插件：[Bootstrap-slider](https://github.com/seiyria/bootstrap-slider)、[Bootstrap-select](https://developer.snapappointments.com/bootstrap-select/)、[Bootstrap-treeview](https://github.com/jonmiles/bootstrap-treeview)、[xlsx](https://github.com/SheetJS/sheetjs)
+- 前端插件：[Bootstrap-slider](https://github.com/seiyria/bootstrap-slider)、[Bootstrap-select](https://developer.snapappointments.com/bootstrap-select/)、[Bootstrap-treeview](https://github.com/jonmiles/bootstrap-treeview)、[xlsx](https://github.com/SheetJS/sheetjs)、[G6](https://g6.antv.vision/)

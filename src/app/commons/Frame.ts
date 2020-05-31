@@ -3,6 +3,9 @@ import { Monkey } from './Monkey';
 import { GET_TICK } from '../utils/basis';
 
 export class Frame {
+    /**
+     * 社群的时间切片
+     */
     public ID : number;
     public tick : number;   // Frame 所属的时刻
     //public nextFrame : Frame;

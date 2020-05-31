@@ -9,6 +9,9 @@ import { KID_SHIP_NODE_LINK_WIDTH, SHIP_PARENTS_NODE_LINK_WIDTH, PARENTS_LINK_WI
 
 
 export class ParentsLink extends Line2 {
+    /**
+     * 用于连接父母的连线
+     */
     public father : Male;
     public mother : Female;
 
@@ -81,6 +84,9 @@ export class ParentsLink extends Line2 {
 }
 
 export class KPNodeLink extends Line2 {
+    /**
+     * 用于连接KinshipNode和ParentsNode相连的线
+     */
     //public parentsLink : ParentsLink;
     public parentsNode : ParentsNode;
     public kinshipNode : KinshipNode;
@@ -147,6 +153,9 @@ export class KPNodeLink extends Line2 {
 }
 
 export class KidKinshipNodeLink extends Line2{
+    /**
+     * 用于连接孩子和KinshipNode结点的连线
+     */
     public kinshipNode : KinshipNode;
 
     constructor( kinshipNode : KinshipNode, kid : Monkey ){

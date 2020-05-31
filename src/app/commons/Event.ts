@@ -5,6 +5,9 @@ import {Community} from "./Community";
 
 
 export function bindKinshipTickRange() {
+    /**
+     * 亲缘关系时间范围发生改变时的事件
+     */
     $('#tickRange').slider({
         formatter: function (value) {
             return  value;
@@ -45,6 +48,9 @@ export function bindKinshipTickRange() {
 
 
 export function bindStrucTickRange(){
+    /**
+     * 社会组成时间范围发生改变时触发的事件
+     */
     $("#tickRangeStruc").slider({
         formatter: function (value) {
             return  value;
@@ -77,6 +83,9 @@ export function bindStrucTickRange(){
 
 
 export function bindNextSlice(){
+    /**
+     * 社群演变至下一时刻时触发的事件
+     */
     $("#next").on("click", e => {
         if(!window.community){
             var commu = GET_COMMUNITY();
@@ -97,7 +106,7 @@ export function bindNextSlice(){
         COMMUNITY.layout();
         addMonkeyIds2Selecter(COMMUNITY);
         //console.log("Tick 之后的Community：", COMMUNITY);
-        let logStr = logFrame(frame,COMMUNITY.frames.indexOf(frame));
+        let logStr = logFrame(frame);
         COMMUNITY.logInfo.push(logStr);
         console.log( logStr );
     
@@ -127,6 +136,9 @@ export function bindNextSlice(){
 }
 
 export function bindShow(){
+    /**
+     * 点击SHOW时触发的事件
+     */
     $('#showData').on('click', e => {
         let COMMUNITY = GET_COMMUNITY();
         

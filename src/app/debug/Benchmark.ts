@@ -185,6 +185,11 @@ function genBase(unitNum:number){
 }
 
 export function genSlice(commu : Community, param?:any ){
+    /**
+     * 传入参数，按照参数随机生成社群的时间切片
+     * @param commu: 已经创建好的社群
+     * @param param: 生成时间切片的参数
+     */
     if(!param)  param = {};
     let deadMax = param.deadMax || 2;   // 死亡的最大数量
     let emMax = param.emMax || 2;       // 迁出的最大数量
@@ -337,34 +342,31 @@ export function genSlice(commu : Community, param?:any ){
     return frame;
 }
 
-
-    
-
-
 export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
-    // let monkeyHead = monkeyData[0]; //[	'ID', 'genda', 'name', 'ageLevel', 'father', 'mother', 'unit', 'dead' , 'year']
-    // let idxID = monkeyHead.indexOf('ID');
-    // let idxGenda = monkeyHead.indexOf('geanda');
-    // let idxName = monkeyHead.indexOf('name');
-    // let idxAgeLevel = monkeyHead.indexOf('ageLevel');
-    // let idxFather = monkeyHead.indexOf('father');
-    // let idxMother = monkeyHead.indexOf('mother');
-    // let idxUnit = monkeyHead.indexOf('unit');
-    // let idxDead = monkeyHead.indexOf('dead');
-    // let idxYear = monkeyHead.indexOf('year');
-
-    let pre = null;
-    let cur = null;
+    /**
+     * 将金丝猴数据和单元数据解析成时间切片，并生成对应的社群
+     * @param monkeyData: 金丝猴数据，数组类型，数组元素的类型为字典，字典应包含这些字段：[	'ID', 'genda', 'name', 'ageLevel', 'father', 'mother', 'unit', 'dead' , 'year']
+     * @param unitData: 单元数据，数组类型，数组元素的类型为字典，字典至少应包含这些字段：['ID', 'type', 'year']
+     */
+    /* let monkeyHead = monkeyData[0]; //[	'ID', 'genda', 'name', 'ageLevel', 'father', 'mother', 'unit', 'dead' , 'year']
+    let idxID = monkeyHead.indexOf('ID');
+    let idxGenda = monkeyHead.indexOf('geanda');
+    let idxName = monkeyHead.indexOf('name');
+    let idxAgeLevel = monkeyHead.indexOf('ageLevel');
+    let idxFather = monkeyHead.indexOf('father');
+    let idxMother = monkeyHead.indexOf('mother');
+    let idxUnit = monkeyHead.indexOf('unit');
+    let idxDead = monkeyHead.indexOf('dead');
+    let idxYear = monkeyHead.indexOf('year');
+    */
     let ticks = Array.from( new Set( monkeyData.map(e => e.year)) ).sort(function(a,b){return a-b} );
-    let monkeyIDs = Array.from(new Set(monkeyData.map(e => e.ID) ) ).sort(function(a,b){return a-b} );
-    let unitIDs = Array.from(new Set( unitData.map(e => e.ID ) ) ).sort(function(a,b) {return a-b} );
+    // let monkeyIDs = Array.from(new Set(monkeyData.map(e => e.ID) ) ).sort(function(a,b){return a-b} );
+    // let unitIDs = Array.from(new Set( unitData.map(e => e.ID ) ) ).sort(function(a,b) {return a-b} );
     let tickMap = GET_TICKMAP();// new Map();
     let monkeyIDMap = GET_MONKEYIDMAP();// new Map();
     let unitIDMap = GET_UNITIDMAP();// new Map();
 
     ticks.forEach((e, idx) => tickMap.set(idx, e) );
-    // monkeyIDs.forEach( (e,idx) => monkeyIDMap.set(idx, e) );
-    // unitIDs.forEach( (e, idx) => unitIDMap.set(idx, e) );
     
     let _baseMembers = monkeyData.filter(e => e.year == ticks[0] );
     let _baseUnits = unitData.filter(e => e.year == ticks[0] );
@@ -567,7 +569,7 @@ export function resolve2Frame( monkeyData:Array<any>, unitData:Array<any>){
         community.addFrame(frame);
         community.forward();
         community.layout();
-        let logStr = logFrame(frame,community.frames.indexOf(frame));
+        let logStr = logFrame(frame);
         community.logInfo.push(logStr);
         console.log( `----------TOUCH----------\n${logStr}` );
         showCommunityTickList();

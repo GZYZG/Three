@@ -39,8 +39,9 @@ export interface Selectable {
 // }
 
 export abstract class Monkey extends THREE.Mesh implements Selectable{
+    // 金丝猴的内部id
     private _ID : number;
-
+    // 金丝猴的外部id
     public EID : any;
 
     public _name : string;

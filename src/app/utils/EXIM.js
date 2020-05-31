@@ -2,7 +2,14 @@ import { resolve2Frame } from "../debug/Benchmark";
 import { GET_COMMUNITY } from "./basis";
 import { addMonkeyIds2Selecter } from "../commons/Dom";
 
-export function importFile(obj){//1.onchange事件绑定方法出发
+export function importFile(obj){
+  /**
+   * 导入文件的触发事件
+   * 读入一个.xlsx文件，该文件应有两个sheet，一个sheet为金丝猴数据，一个sheet为单元数据，导入后会调用时间切片解析函数，创建对应的社群
+   * @param obj: 点击导入文件时触发的事件对象
+   * @return: 无
+   */
+  //1.onchange事件绑定方法出发
     //2.如果没有选中文件则取消
     console.log(obj);
     if (!obj.target.files){

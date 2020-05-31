@@ -4,6 +4,9 @@ import * as THREE from 'three';
 import { SHIP_NODE_RADIUS, calcParentsNodePos, calcKinshipNodePos, calcKidPos, cleanCache, MONKEY_COLOR } from '../utils/basis';
 
 export class KinshipNode extends THREE.Mesh {
+    /**
+     * 所有的孩子通过线连接到KinshipNode上
+     */
     public kpNodeLink : KPNodeLink;
     private _kids : Array<Monkey>;
     constructor () {
@@ -24,6 +27,9 @@ export class KinshipNode extends THREE.Mesh {
 }
 
 export class ParentsNode extends THREE.Mesh {
+    /**
+     * 父母之间的连线上的结点
+     */
     public father : Male;
     public mother : Female;
     constructor (father : Male, mother : Female) {
@@ -36,15 +42,18 @@ export class ParentsNode extends THREE.Mesh {
 }
 
 export class Kinship extends THREE.Group {
-    // 一个Kinship对象代表一对夫妇及其所生的所有孩子
-    public father : Male;
-    public mother : Female;
-    public kids : Array<Monkey>;
-    public kinshipNode : KinshipNode;
-    public parentsLink : ParentsLink;
-    public parentsNode : ParentsNode;
-    public KPNodeLink : KPNodeLink;
-    public kidLinks : Array<object>;
+    /**
+     * 一个Kinship对象代表一对夫妇及其所生的所有孩子
+     * 一个kinship包括父母之间的连线
+     */
+    public father : Male;               // 该亲缘关系中的父亲
+    public mother : Female;             // 该亲缘关系中的母亲
+    public kids : Array<Monkey>;        // 该亲缘关系中的所有孩子
+    public kinshipNode : KinshipNode;   // 用于与所有孩子连线相连的结点
+    public parentsLink : ParentsLink;   // 父母之间的连线
+    public parentsNode : ParentsNode;   // 父母之间的连线上的结点
+    public KPNodeLink : KPNodeLink;     // 用于连接KinshipNode和ParentsNode结点的线
+    public kidLinks : Array<object>;    // 与KinshipNode连接的，用于连接孩子的线
 
     constructor (father : Male, mother : Female, kids : Array<Monkey>) {
         super();

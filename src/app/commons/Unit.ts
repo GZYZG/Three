@@ -5,7 +5,9 @@ import { CSS2DObject } from '../threelibs/CSS2DRenderer';
 import { showUnitTickList } from './Dom';
 
 export abstract class Unit extends THREE.Group {
+    // 单元的内部id
     private _ID : number;
+    // 单元的外部id
     public EID : any;
 
     readonly _unitType : UNIT_TYPE;

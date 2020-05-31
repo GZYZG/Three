@@ -167,10 +167,19 @@ export class Community extends THREE.Object3D{
     }
 
     public layout(tick?:number, type:string="dagre") {
-        // 先对单元进行总体布局
+        /**
+         * 对金丝猴社群进行布局，分为全局布局和局部布局
+         * 全局布局：计算各个单元在社群内的位置，目前是调用G6的一个布局算法
+         * 局部布局：计算单元内的个体在单元内的位置，目前只是简单地放置在相应的层上
+         * @param tick: 若传入tick，则按照tick时社群的状态进行布局，只会对tick时社群中已有的单元进行布局，若某单元在tick时未创建，则不改变它的位置；
+         *              若不传入tick：则按照重新计算各个单元的位置
+         * @param type: 布局算法的类型，默认为dagre
+         */
+        // 我自定义的环形布局算法，可以不调用
         // unitsLayout(this.allunits);
-        // 再对每个单元内的层进行布局
+        // 对每个单元内的层进行布局
         this.allunits.forEach( u =>{
+            // 对单元内的个体进行布局，局部布局
             switch( u.unitType ){
                 case UNIT_TYPE.OMU:
                     OMULayout( u);
@@ -192,7 +201,6 @@ export class Community extends THREE.Object3D{
             }
         });
 
-        //if( !this.layoutRecords.get(this.tick) && !tick ){
         if( !tick ){
             //this.G6Layout("dagre");
             this.G6Layout(type);
@@ -205,8 +213,8 @@ export class Community extends THREE.Object3D{
             }
         }
         
+        // 保存布局结果
         var tmp = new Map<Unit, any>();
-        
         this.allunits.forEach( e => {
             tmp.set(e, new THREE.Vector3(e.position.x, e.position.y, e.position.z ) );
         })
@@ -385,6 +393,10 @@ export class Community extends THREE.Object3D{
     }
 
     public getJsonData(){
+        /**
+         * 将社群抽象为结点和边的图，结点为单元，边为单元间的亲缘关系，该图为json数据格式，作为G6布局算法的输入
+         * @return: 社群的抽象图的json数据
+         */
         let _nodes = new Array();
         let _edges = new Array();
 
@@ -409,6 +421,11 @@ export class Community extends THREE.Object3D{
     }
 
     public forward(step:number=1){ 
+        /**
+         * 另社群在当前基础上前进step个时刻，即执行时间切片，会改变单元、个体、社群的状态
+         * @param step: 前进的时刻数
+         * @return: 无
+         */
         //console.log("进入forward，community.tick: ", this.tick);
         if(step <= 0)   return;
         // 向前步进一个时刻，在当前的基础上执行 this.frames[this.tick] 即可到达下一时刻，再更新this.tick
@@ -479,6 +496,11 @@ export class Community extends THREE.Object3D{
     }
 
     public back(step:number=1){
+        /**
+         * 将社群回退step个时刻，即取消时间切片的执行
+         * @param step: 需要回退的时刻数
+         * @return: 无
+         */
         //console.log("进入back!", "community.tick: ", this.tick);
         if( this.tick == 0)     return;
         if(step <= 0)   return;
@@ -577,6 +599,9 @@ export class Community extends THREE.Object3D{
     }
 
     public maskKinship(){
+        /**
+         * 将所有的亲缘关系设置为不可见
+         */
         this.basekids.forEach( e => {
             let ks = this.findKinshipByParents( e.father, e.mother );
             ks.changeKidVisible( e.ID, false);
@@ -589,19 +614,25 @@ export class Community extends THREE.Object3D{
             newKin.forEach( e => {
                 let ks = this.findKinshipByParents( e.parents.dad, e.parents.mom );
                 ks.changeKidVisible( e.kid.ID, false);
-                let tmp = ks.kids.filter( ee => ee.ID == e.kid.ID);
+                //let tmp = ks.kids.filter( ee => ee.ID == e.kid.ID);
                 //console.log("\t在 Tick-"+ tick+ " 在frames["+ i+ "] 中，kid: ", tmp[0], " 被设置为",  visible? "可": "不可", "见！");   
             })
         }
     }
 
     public showAllMirror(){
+        /**
+         * 显示所有的金丝猴个体
+         */
         this.allmonkeys.forEach( e => {
             e.visible = true;
         })
     }
 
-    public maskMember() {
+    public maskAllMirror() {
+        /**
+         * 将所有的金丝猴个体设置为不可见
+         */
         this.allmonkeys.forEach( e => {
             e.visible = false;
         })
@@ -613,6 +644,12 @@ export class Community extends THREE.Object3D{
     }
 
     public showRangeKinship(start: number, end: number){
+        /**
+         * 显示指定时间区间内的亲缘关系及涉及的对象
+         * @param start: 时间区间的起始，包含在内
+         * @param end: 时间区间的结束时刻，包含在内
+         * @return: 无
+         */
         this.maskKinship();
         if(start==0){
             this.basekids.forEach( e => {
@@ -636,7 +673,12 @@ export class Community extends THREE.Object3D{
     }
 
     public showRangeCommunityChange(start: number, end: number){
-        this.maskMember();
+        /**
+         * 显示指定时间区间的社会组成
+         * @param start: 时间区间的起始时刻，包含在内
+         * @param end: 时间区间的结束时刻，包含在内
+         */
+        this.maskAllMirror();
         let viewkeys = window.VIEW_KEYS;
         let involvedMirror = viewkeys["strucKey"]["involvedMirror"];
         if(viewkeys["strucKey"]["enterCommu"]){
@@ -688,6 +730,13 @@ export class Community extends THREE.Object3D{
     }
 
     public showEnterCommu(start: number, end: number, involvedMirror: boolean){
+        /**
+         * 将在指定时间区间内进入社群的个体设置为可见
+         * @param start: 区间起始时刻，包含在内
+         * @param end: 区间结束时刻，包含在内
+         * @param involvedMirror: 出进入社群的分身外，是否显示进入社群的个体的其他分身
+         * @return: 无
+         */
         if( start == 0){
             // 显示在时刻0进入社群的猴子
             this.basemember.forEach( e => {
@@ -972,7 +1021,11 @@ export class Community extends THREE.Object3D{
     }
 
     public traceMonkey(id: number){
-        // 追溯一个monkey的足迹，包括其性别、ID、名字、进入社群的时间、迁移的时间和目标单元、在那个时间与那个配偶产生了那个孩子、死亡时间
+        /**
+         * 追溯一个monkey的足迹，包括其性别、ID、名字、进入社群的时间、迁移的时间和目标单元、在那个时间与那个配偶产生了那个孩子、死亡时间
+         * @param id: 金丝猴的内部id
+         * @return: 包含该金丝猴个体的历史信息的字典对象
+         */ 
         let tmp = this.findMonkeyByID(id);
         if(tmp.length==0 ) {
             console.error("找不到ID为：" + id + " 的猴子！\n");
@@ -1055,6 +1108,11 @@ export class Community extends THREE.Object3D{
     }
 
     public monkeyLifeTreeData(id: number){
+        /**
+         * 获得指定id的金丝猴个体的历史数据，用于treeview的显示
+         * @param id: 金丝猴的内部id
+         * @return: 数组类型，元素为字典，每个字典用于treeview的显示
+         */
         let life = this.traceMonkey(id);
         if(!life)   return;
         let data = []
@@ -1134,6 +1192,11 @@ export class Community extends THREE.Object3D{
 
 
     public traceUnit(id: number){
+        /**
+         * 追溯一个单元的历史信息，从单元的创建时刻到当前时刻
+         * @param id: 单元的内部id
+         * @return: 表示单元历史信息的字典对象
+         */
         let tmp = this.allunits.filter(e => e.ID == id);
         if(tmp.length == 0){
             console.error("找不到ID为：" + id + " 的单元！\n");
@@ -1226,6 +1289,11 @@ export class Community extends THREE.Object3D{
     }
 
     public unitLifeTreeData(id: number){
+        /**
+         * 获得指定id的单元的历史数据，用于treeview的显示
+         * @param id: 单元的内部id
+         * @return: 数组类型，元素为字典，每个字典用于treeview的显示
+         */
         let life = this.traceUnit(id);
         if(!life){
             return;
@@ -1239,6 +1307,11 @@ export class Community extends THREE.Object3D{
     }
 
     public oneTickUnitTreeData(slice: Slice){
+        /**
+         * 获得单元的一个时刻的历史信息数据，用于treeview的显示
+         * @param slice: 单元的时间切片
+         * @return: 单元的一个时刻的历史数据
+         */
         let data = []
         let state = {
             checked:false,
@@ -1315,6 +1388,11 @@ export class Community extends THREE.Object3D{
     }
 
     public tickTreeData( tick: number){
+        /**
+         * 社群在指定时刻的历史数据，用于treeview的显示
+         * @param tick: 指定时刻
+         * @return: 字典，用于treeview的显示
+         */
         var commu = this;
         let data = [];
         let state = {
@@ -1496,6 +1574,13 @@ function baseCommunity(unitNum : number) : {
     baseMonkeys : Array<Monkey>,
     baseKinships :  Array<Kinship>,
 }{
+    /**
+     * 随机生成初始时刻的社群
+     * @param unitNum: 初始时刻单元的数量
+     * @return baseUnits: 初始时刻的单元
+     *         baseMonkeys: 初始时刻社群中的金丝猴
+     *         baseKinships: 初始时刻的亲缘关系
+     */
     var units = new Array<Unit>();
     var monkeys = new Array<Monkey>();
     var unit:Unit;
