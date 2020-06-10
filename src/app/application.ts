@@ -90,7 +90,7 @@ export class Application{
         window.addEventListener('resize', () => this.onWindowResize() );
         rendererContainer.addEventListener('resize', () => this.onWindowResize() );
         self = this;
-
+	console.log(window.APPINFO);
         this.animate();
         
     }
