@@ -12,7 +12,7 @@
   "author": "gzy",
   "license": "ISC",
   "dependencies": {
-    "three": "^0.114.0"
+    "three": "^0.137.0"
   },
   "devDependencies": {
     "@antv/g6": "^3.4.4",
